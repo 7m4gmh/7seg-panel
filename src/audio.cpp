@@ -1,59 +1,50 @@
-#include "common.h"
-#include <portaudio.h>
-#include <vector>
-#include <cstring>
-#include <thread>
-#include <mutex>
-#include <deque>
+#include "audio.h"
+#include <SDL2/SDL.h>
+#include <iostream>
 
-// --- Audioコールバック ---
-static int paCallback(const void *input,
-                      void *output,
-                      unsigned long frameCount,
-                      const PaStreamCallbackTimeInfo* timeInfo,
-                      PaStreamCallbackFlags statusFlags,
-                      void *userData )
-{
-    unsigned char* out = static_cast<unsigned char*>(output);
-    size_t need = frameCount * CHANNELS * sizeof(int16_t);
+static SDL_AudioDeviceID dev = 0;
+static SDL_AudioSpec obtained;
 
-    std::vector<char> chunk;
-    {
-        std::lock_guard<std::mutex> lock(audio_mtx);
-        if(!audio_buf.empty()){
-            chunk = audio_buf.front();
-            audio_buf.pop_front();
-        } else {
-            chunk.resize(need,0); // 無音
+bool audio_init(int samplerate, int channels) {
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    SDL_AudioSpec desired{};
+    desired.freq = samplerate;
+    desired.format = AUDIO_S16SYS;   // 16-bit PCM
+    desired.channels = channels;
+    desired.samples = 1024; // buffer size
+    desired.callback = nullptr; // push型
+
+    dev = SDL_OpenAudioDevice(nullptr, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);
+    if (dev == 0) {
+        std::cerr << "SDL_OpenAudioDevice failed: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    SDL_PauseAudioDevice(dev, 0);  // 再生開始
+    std::cout << "Audio device opened: "
+              << obtained.freq << " Hz, "
+              << (int)obtained.channels << " ch"
+              << std::endl;
+    return true;
+}
+
+void audio_queue(const char* data, size_t len) {
+    if (dev) {
+        if (SDL_QueueAudio(dev, data, len) < 0) {
+            std::cerr << "SDL_QueueAudio error: " << SDL_GetError() << std::endl;
         }
     }
-    if(chunk.size()<need) chunk.resize(need,0);
-    memcpy(out, chunk.data(), need);
-
-    return finished? paComplete : paContinue;
 }
 
-void start_audio() {
-    Pa_Initialize();
-    PaStream* stream;
-    PaStreamParameters outputParameters;
-    outputParameters.device = Pa_GetDefaultOutputDevice();
-    outputParameters.channelCount = CHANNELS;
-    outputParameters.sampleFormat = paInt16;
-    outputParameters.suggestedLatency =
-        Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
-    outputParameters.hostApiSpecificStreamInfo = NULL;
-
-    Pa_OpenStream(&stream, NULL, &outputParameters,
-                  SAMPLE_RATE,
-                  AUDIO_CHUNK_SIZE/(CHANNELS*2),
-                  paClipOff, paCallback, NULL);
-
-    Pa_StartStream(stream);
-    while(!finished) {
-        Pa_Sleep(100);
+void audio_cleanup() {
+    if (dev) {
+        SDL_CloseAudioDevice(dev);
+        dev = 0;
     }
-    Pa_StopStream(stream);
-    Pa_CloseStream(stream);
-    Pa_Terminate();
+    SDL_Quit();
 }
+

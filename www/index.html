@@ -1,0 +1,51 @@
+<!-- www/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>7seg-panel Controller</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f4; color: #333; }
+        h1, h2 { border-bottom: 2px solid #ddd; padding-bottom: 0.3em; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        li { margin-bottom: 0.7em; }
+        input[type="submit"] { font-size: 0.9em; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; transition: background-color 0.2s; }
+        .upload-btn { background-color: #28a745; color: white; }
+        .upload-btn:hover { background-color: #218838; }
+        .delete-btn { background-color: #dc3545; color: white; }
+        .delete-btn:hover { background-color: #c82333; }
+        .stop-btn { background-color: #ffc107; color: black; }
+        .stop-btn:hover { background-color: #e0a800; }
+        #now-playing-controls { display: flex; align-items: center; gap: 1em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>7seg-panel Video Uploader</h1>
+        <form id="upload-form">
+            <input type="file" name="video_file" accept="video/*"><br><br>
+            <input type="submit" class="upload-btn" value="Upload and Add to Queue">
+        </form>
+        <!-- ファイルサイズ制限の値はJSで動的に設定されます -->
+        <p id="max-file-size-text">Max file size: ...</p>
+        <hr>
+        <div class="status">
+            <h2>Status</h2>
+            <div id="now-playing-controls">
+                <span>Now Playing: <b id="now-playing-text">(loading...)</b></span>
+                <form id="stop-form" class="action-form" action="/stop" method="post" style="display: none;">
+                    <input type="submit" class="stop-btn" value="Stop Current Video">
+                </form>
+            </div>
+        </div>
+        <div class="queue">
+            <h2>Playback Queue</h2>
+            <ol id="queue-list"></ol>
+        </div>
+    </div>
+
+    <!-- ★★★ JavaScriptファイルを外部から読み込む ★★★ -->
+    <script src="/script.js"></script>
+</body>
+</html>
+
+

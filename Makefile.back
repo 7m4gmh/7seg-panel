@@ -1,0 +1,55 @@
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -O2 $(shell pkg-config --cflags opencv4) -I./cpp-httplib
+
+LDFLAGS = -lSDL2 -lpthread $(shell pkg-config --libs opencv4)
+# SSLサポートが必要な場合は、以下の2行のコメントを外してください
+# LDFLAGS += -lssl -lcrypto
+# CXXFLAGS += -DCPPHTTPLIB_OPENSSL_SUPPORT
+
+SRCS_COMMON = src/common.cpp src/led.cpp src/video.cpp src/audio.cpp
+OBJS_COMMON = $(SRCS_COMMON:.cpp=.o)
+
+SERVER_SRCS = src/server.cpp src/udp.cpp
+SERVER_OBJS = $(SERVER_SRCS:.cpp=.o)
+SERVER_BIN  = 7seg-server
+
+PLAYER_SRCS = src/player.cpp
+PLAYER_OBJS = $(PLAYER_SRCS:.cpp=.o)
+PLAYER_BIN  = 7seg-player
+
+HTTP_PLAYER_SRCS = src/http_player.cpp
+HTTP_PLAYER_OBJS = $(HTTP_PLAYER_SRCS:.cpp=.o)
+HTTP_PLAYER_BIN  = 7seg-http-player
+
+HTTP_STREAMER_BIN = 7seg-http-streamer
+HTTP_STREAMER_SRC = src/http_streamer.cpp
+HTTP_STREAMER_OBJ = $(HTTP_STREAMER_SRC:.cpp=.o)
+
+
+all: $(SERVER_BIN) $(PLAYER_BIN) $(HTTP_PLAYER_BIN) $(HTTP_STREAMER_BIN)
+
+$(SERVER_BIN): $(OBJS_COMMON) $(SERVER_OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+	@echo "Successfully built -> $@"
+
+$(PLAYER_BIN): $(OBJS_COMMON) $(PLAYER_OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+	@echo "Successfully built -> $@"
+
+$(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+	@echo "Successfully built -> $@"
+
+$(HTTP_STREAMER_BIN): $(HTTP_STREAMER_OBJ) $(COMMON_OBJ)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@echo "Successfully built -> $@"
+
+
+clean:
+	rm -f src/*.o $(SERVER_BIN) $(PLAYER_BIN) $(HTTP_PLAYER_BIN) $(HTTP_STREAMER_BIN)
+
+.PHONY: all clean
+
+src/%.o: src/%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+

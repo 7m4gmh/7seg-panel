@@ -10,3 +10,18 @@ std::vector<uint8_t> latest_frame;
 std::atomic<int> last_pts_ms(0);
 double start_time = 0.0;
 int audio_bytes_received = 0;
+
+// 共通モジュール I²C アドレス
+std::vector<int> module_addrs = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75};
+
+volatile sig_atomic_t g_should_exit = 0;
+
+static void signal_handler(int signum) {
+    g_should_exit = 1;
+}
+
+void setup_signal_handlers() {
+    std::signal(SIGINT,  signal_handler);  // Ctrl+C
+    std::signal(SIGTERM, signal_handler);  // kill コマンド
+}
+

@@ -6,6 +6,42 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <cstdio>
+#include <cstdint> 
+#include <iostream> // std::cout, std::cerr のために追加
+
+bool initialize_displays(int i2c_fd, const std::vector<int>& module_addrs)
+{
+    std::cout << "Initializing modules..." << std::endl;
+
+    for (int addr : module_addrs) {
+        // 通信対象のスレーブアドレスを設定
+        if (ioctl(i2c_fd, I2C_SLAVE, addr) < 0) {
+            perror("ioctl I2C_SLAVE failed during initialization");
+            return false;
+        }
+
+        // コマンドは1バイトずつ送信する
+        uint8_t commands[] = {
+            0x21, // 1. システムオシレータをON
+            0x81, // 2. ディスプレイをON（点滅なし）
+            0xEF  // 3. 輝度を最大に設定
+        };
+
+        for (uint8_t cmd : commands) {
+            if (write(i2c_fd, &cmd, 1) != 1) {
+                fprintf(stderr, "Failed to write command 0x%02X to address 0x%02X\n", cmd, addr);
+                perror("i2c write command");
+                // 1つのモジュールで失敗しても、他のモジュールの初期化を試みる場合は continue
+                // ここで処理を中断する場合は return false
+            }
+            // コマンド間に短いウェイトを入れると安定することがある
+            usleep(1000); // 1ms
+        }
+    }
+
+    std::cout << "Initialization complete." << std::endl;
+    return true;
+}
 
 void update_module_from_grid(int i2c_bus_fd, int addr, const std::vector<uint8_t>& grid16)
 {
