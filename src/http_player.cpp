@@ -21,7 +21,7 @@
 #include <sstream>
 
 extern volatile sig_atomic_t g_should_exit;
-extern std::vector<int> module_addrs;
+//extern std::vector<int> module_addrs;
 void frame_to_grid(const cv::Mat& bw_frame, std::vector<uint8_t>& grid);
 void update_display(int i2c_fd, const std::vector<uint8_t>& grid, const std::vector<int>& addrs);
 std::deque<std::string> video_queue;
@@ -31,10 +31,10 @@ std::mutex queue_mutex;
 std::condition_variable queue_cond;
 const size_t MAX_FILE_SIZE = 100 * 1024 * 1024;
 
-void play_video(const std::string& video_path) {
+int play_video(const std::string& video_path) {
     g_stop_current_video = false;
     int i2c_fd = open("/dev/i2c-0", O_RDWR);
-    if (i2c_fd < 0) { perror("open /dev/i2c-0 に失敗"); return; }
+    if (i2c_fd < 0) { perror("open /dev/i2c-0 に失敗"); return 1; }
     if (!initialize_displays(i2c_fd, MODULE_ADDRESSES)) {
         std::cerr << "Failed to initialize display modules." << std::endl;
         close(i2c_fd);
@@ -42,7 +42,7 @@ void play_video(const std::string& video_path) {
     }
 
     cv::VideoCapture cap(video_path, cv::CAP_FFMPEG);
-    if (!cap.isOpened()) { std::cerr << "動画ファイルを開けません: " << video_path << std::endl; close(i2c_fd); return; }
+    if (!cap.isOpened()) { std::cerr << "動画ファイルを開けません: " << video_path << std::endl; close(i2c_fd); return 1; }
     std::string command = "ffplay -nodisp -autoexit \"" + video_path + "\" > /dev/null 2>&1 &";
     system(command.c_str());
     double fps = cap.get(cv::CAP_PROP_FPS);
@@ -68,7 +68,7 @@ void play_video(const std::string& video_path) {
         cv::threshold(gray_frame, bw_frame, 128, 255, cv::THRESH_BINARY);
         std::vector<uint8_t> grid(TOTAL, 0);
         frame_to_grid(bw_frame, grid);
-        update_display(i2c_fd, grid, module_addrs);
+        update_display(i2c_fd, grid, MODULE_ADDRESSES);
         next_frame_time += frame_duration;
         std::this_thread::sleep_until(next_frame_time);
     }
@@ -77,6 +77,7 @@ void play_video(const std::string& video_path) {
     close(i2c_fd);
     if (g_stop_current_video) { std::cout << "再生中止: " << video_path << std::endl; }
     else { std::cout << "再生終了: " << video_path << std::endl; }
+    return 0;
 }
 void playback_thread_worker() {
     while (!g_should_exit) {

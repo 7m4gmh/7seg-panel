@@ -1,4 +1,4 @@
-// player.cpp (最終完成版)
+// player.cpp 
 #include "common.h"
 #include "led.h"
 #include "video.h"
@@ -14,7 +14,7 @@
 #include <fcntl.h>
 
 extern volatile sig_atomic_t g_should_exit;
-extern std::vector<int> module_addrs;
+
 
 void frame_to_grid(const cv::Mat& bw_frame, std::vector<uint8_t>& grid);
 void update_display(int i2c_fd, const std::vector<uint8_t>& grid, const std::vector<int>& addrs);
@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
 
         // デバッグでコメントアウトした2行を元に戻します
         frame_to_grid(bw_frame, grid);
-        update_display(i2c_fd, grid, module_addrs);
+        update_display(i2c_fd, grid, MODULE_ADDRESSES);
 
         next_frame_time += frame_duration;
         std::this_thread::sleep_until(next_frame_time);

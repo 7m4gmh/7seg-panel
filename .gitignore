@@ -1,1 +1,3 @@
 stream_key.conf
+*.o
+.DS_Store

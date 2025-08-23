@@ -17,6 +17,9 @@ extern volatile sig_atomic_t g_should_exit;
 // シグナルハンドラ設定用
 void setup_signal_handlers();
 
+extern const std::vector<int> MODULE_ADDRESSES;
+bool initialize_displays(int i2c_fd, const std::vector<int>& addresses);
+
 #endif
 
 // --- 設定値 ---

@@ -55,7 +55,7 @@ void video_thread(int i2c_fd) {
             }
             grid[i]=seg;
         }
-        update_display(i2c_fd, grid, module_addrs);
+        update_display(i2c_fd, grid, MODULE_ADDRESSES);
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
