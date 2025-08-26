@@ -2,7 +2,7 @@
 
 # フォーカスをオフにして固定
 v4l2-ctl -d /dev/video1 -c focus_automatic_continuous=0
-v4l2-ctl -d /dev/video1 -c focus_absolute=470
+v4l2-ctl -d /dev/video1 -c focus_absolute=460
 
 # 露出をオフにして固定
 v4l2-ctl -d /dev/video1 -c auto_exposure=1
