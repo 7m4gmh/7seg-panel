@@ -1,19 +1,13 @@
-// http_player.cpp (デフォルト動画ディレクトリを指定可能にした最終版)
+// src/http_player.cpp
 #include "common.h"
-#include "led.h"
-#include "video.h"
+#include "playback.h"
 #include "../cpp-httplib/httplib.h"
 
-#include <opencv2/opencv.hpp>
 #include <iostream>
 #include <vector>
 #include <deque>
-#include <chrono>
 #include <thread>
 #include <string>
-#include <cstdlib>
-#include <unistd.h>
-#include <fcntl.h>
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
@@ -21,29 +15,28 @@
 #include <sstream>
 #include <dirent.h>
 
-extern volatile sig_atomic_t g_should_exit;
-//extern std::vector<int> module_addrs;
-void frame_to_grid(const cv::Mat& bw_frame, std::vector<uint8_t>& grid);
-void update_display(int i2c_fd, const std::vector<uint8_t>& grid, const std::vector<int>& addrs);
-
 // --- グローバル変数 ---
+extern volatile sig_atomic_t g_should_exit;
 std::deque<std::string> video_queue;
 std::string g_currently_playing;
 std::atomic<bool> g_stop_current_video(false);
 std::mutex queue_mutex;
 std::condition_variable queue_cond;
 const size_t MAX_FILE_SIZE = 100 * 1024 * 1024;
-
 std::vector<std::string> g_default_videos;
 size_t g_next_default_video_index = 0;
-// const std::string DEFAULT_VIDEO_DIR = "default_videos"; // *** 変更点: main関数内で決定するため不要に ***
+const DisplayConfig* g_active_config = nullptr;
 
+// --- 関数プロトタイプ ---
+//void frame_to_grid(const cv::Mat& bw_frame, const DisplayConfig& config, std::vector<uint8_t>& grid);
+
+// ★★★ 修正: ent.d_name を ent->d_name に ★★★
 void load_default_videos(const std::string& path, std::vector<std::string>& videos) {
     DIR *dir;
     struct dirent *ent;
     if ((dir = opendir(path.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
-            std::string filename = ent->d_name;
+            std::string filename = ent->d_name; // ★★★ ここを修正 ★★★
             if (filename[0] != '.' && (
                 filename.length() > 4 && (filename.substr(filename.length() - 4) == ".mp4" || filename.substr(filename.length() - 4) == ".mov")
             )) {
@@ -51,90 +44,33 @@ void load_default_videos(const std::string& path, std::vector<std::string>& vide
             }
         }
         closedir(dir);
-        if (!videos.empty()) {
-            std::cout << videos.size() << " 個のデフォルト動画を '" << path << "' から読み込みました。" << std::endl;
-        } else {
-            std::cout << "'" << path << "' に再生可能なデフォルト動画が見つかりませんでした。" << std::endl;
-        }
+        if (!videos.empty()) std::cout << videos.size() << " 個のデフォルト動画を '" << path << "' から読み込みました。" << std::endl;
+        else std::cout << "'" << path << "' に再生可能なデフォルト動画が見つかりませんでした。" << std::endl;
     } else {
         std::cerr << "警告: デフォルト動画ディレクトリ '" << path << "' を開けませんでした。" << std::endl;
     }
 }
 
-int play_video(const std::string& video_path) {
-    g_stop_current_video = false;
-    int i2c_fd = open("/dev/i2c-0", O_RDWR);
-    if (i2c_fd < 0) { perror("open /dev/i2c-0 に失敗"); return 1; }
-    if (!initialize_displays(i2c_fd, MODULE_ADDRESSES)) {
-        std::cerr << "Failed to initialize display modules." << std::endl;
-        close(i2c_fd);
-        return 1;
-    }
-
-    cv::VideoCapture cap(video_path, cv::CAP_FFMPEG);
-    if (!cap.isOpened()) { std::cerr << "動画ファイルを開けません: " << video_path << std::endl; close(i2c_fd); return 1; }
-    std::string command = "ffplay -nodisp -autoexit \"" + video_path + "\" > /dev/null 2>&1 &";
-    system(command.c_str());
-    double fps = cap.get(cv::CAP_PROP_FPS);
-    if (fps <= 0) fps = 30.0;
-    auto frame_duration = std::chrono::microseconds(static_cast<long long>(1000000.0 / fps));
-    std::cout << "再生開始: " << video_path << " (" << fps << " FPS)" << std::endl;
-    auto next_frame_time = std::chrono::steady_clock::now();
-    cv::Mat frame;
-    while (!g_should_exit && !g_stop_current_video && cap.read(frame)) {
-        cv::Mat cropped_frame;
-        float source_aspect = (float)frame.cols / frame.rows;
-        const float target_aspect = (float)W / H;
-        if (source_aspect > target_aspect) {
-            int new_width = static_cast<int>(frame.rows * target_aspect); int x = (frame.cols - new_width) / 2;
-            cv::Rect crop_region(x, 0, new_width, frame.rows); cropped_frame = frame(crop_region);
-        } else {
-            int new_height = static_cast<int>(frame.cols / target_aspect); int y = (frame.rows - new_height) / 2;
-            cv::Rect crop_region(0, y, frame.cols, new_height); cropped_frame = frame(crop_region);
-        }
-        cv::Mat resized_frame, gray_frame, bw_frame;
-        cv::resize(cropped_frame, resized_frame, cv::Size(W, H));
-        cv::cvtColor(resized_frame, gray_frame, cv::COLOR_BGR2GRAY);
-        cv::threshold(gray_frame, bw_frame, 128, 255, cv::THRESH_BINARY);
-        std::vector<uint8_t> grid(TOTAL, 0);
-        frame_to_grid(bw_frame, grid);
-        update_display(i2c_fd, grid, MODULE_ADDRESSES);
-        next_frame_time += frame_duration;
-        std::this_thread::sleep_until(next_frame_time);
-    }
-    system("killall ffplay > /dev/null 2>&1");
-    cap.release();
-    close(i2c_fd);
-    if (g_stop_current_video) { std::cout << "再生中止: " << video_path << std::endl; }
-    else { std::cout << "再生終了: " << video_path << std::endl; }
-    return 0;
-}
-
 void playback_thread_worker() {
     while (!g_should_exit) {
         std::string path_to_play;
-
         {
             std::unique_lock<std::mutex> lock(queue_mutex);
-            queue_cond.wait(lock, [&]{
-                return !video_queue.empty() || !g_default_videos.empty() || g_should_exit;
-            });
+            queue_cond.wait(lock, [&]{ return !video_queue.empty() || !g_default_videos.empty() || g_should_exit; });
             if (g_should_exit) break;
             if (!video_queue.empty()) {
-                path_to_play = video_queue.front();
-                video_queue.pop_front();
-            } 
-            else if (!g_default_videos.empty()) {
+                path_to_play = video_queue.front(); video_queue.pop_front();
+            } else if (!g_default_videos.empty()) {
                 path_to_play = g_default_videos[g_next_default_video_index];
                 g_next_default_video_index = (g_next_default_video_index + 1) % g_default_videos.size();
             }
-            if (!path_to_play.empty()) {
-                g_currently_playing = path_to_play;
-            }
+            if (!path_to_play.empty()) g_currently_playing = path_to_play;
         }
 
-        if (!path_to_play.empty()) {
-            play_video(path_to_play);
+        if (!path_to_play.empty() && g_active_config != nullptr) {
+            // ★★★ 変更: 新しい共通関数を呼び出す ★★★
+            play_video_stream(path_to_play, *g_active_config, g_stop_current_video);
+            
             {
                 std::lock_guard<std::mutex> lock(queue_mutex);
                 g_currently_playing = "";
@@ -143,28 +79,29 @@ void playback_thread_worker() {
     }
 }
 
-// *** 変更点: コマンドライン引数を受け取れるように main のシグネチャを変更 ***
 int main(int argc, char* argv[]) {
     setup_signal_handlers();
 
-    // *** 変更点: コマンドライン引数からデフォルト動画のディレクトリを決定 ***
-    std::string default_video_path = "default_videos"; // デフォルト値
-    if (argc > 1) {
-        // 最初の引数をディレクトリパスとして使用
-        default_video_path = argv[1];
-    }
-    std::cout << "デフォルト動画ディレクトリとして '" << default_video_path << "' を使用します。" << std::endl;
+    std::string default_video_path = "default_videos";
+    std::string config_name = "24x4";
+    if (argc > 1) default_video_path = argv[1];
+    if (argc > 2) config_name = argv[2];
+
+    if (config_name == "12x8") g_active_config = &CONFIG_12x8;
+    else g_active_config = &CONFIG_24x4;
+    
+    std::cout << "Using display configuration: " << g_active_config->name << std::endl;
+    std::cout << "Using default video directory: '" << default_video_path << "'" << std::endl;
     load_default_videos(default_video_path, g_default_videos);
-
+    
     httplib::Server svr;
-
     const char* base_dir = "./www";
     if (!svr.set_mount_point("/", base_dir)) {
         std::cerr << "Error: The base directory '" << base_dir << "' does not exist." << std::endl;
         return 1;
     }
-
-    // APIエンドポイント: /status (変更なし)
+    
+    // ★★★ 修正: 省略していたラムダ式を元に戻す ★★★
     svr.Get("/status", [](const httplib::Request&, httplib::Response& res) {
         std::stringstream json;
         json << "{";
@@ -182,7 +119,6 @@ int main(int argc, char* argv[]) {
         res.set_content(json.str(), "application/json");
     });
     
-    // APIエンドポイント: /upload (変更なし)
     svr.Post("/upload", [&](const httplib::Request& req, httplib::Response& res) {
         if (req.form.has_file("video_file")) {
             const auto& file = req.form.get_file("video_file");
@@ -198,7 +134,6 @@ int main(int argc, char* argv[]) {
         }
     });
 
-    // APIエンドポイント: /delete (変更なし)
     svr.Post("/delete", [&](const httplib::Request& req, httplib::Response& res) {
         if (req.form.has_field("index")) {
             try {
@@ -212,28 +147,28 @@ int main(int argc, char* argv[]) {
                 }
             } catch (const std::exception& e) {
                 std::cerr << "Invalid index received for deletion: " << e.what() << std::endl;
-                res.status = 400; // Bad Request
+                res.status = 400;
                 return;
             }
         }
         res.status = 200;
     });
 
-    // APIエンドポイント: /stop (変更なし)
     svr.Post("/stop", [&](const httplib::Request&, httplib::Response& res) {
         std::cout << "再生中止リクエストを受信。" << std::endl;
         g_stop_current_video = true;
         res.status = 200;
     });
     
-    // (スレッド起動と終了処理は変更なし)
     std::cout << "再生キュー処理スレッドを起動します..." << std::endl;
     std::thread playback_thread(playback_thread_worker);
     std::thread server_thread([&]() {
         std::cout << "HTTPサーバーを http://<your-ip-address>:8080 で起動します" << std::endl;
         svr.listen("0.0.0.0", 8080);
     });
+    
     while (!g_should_exit) { std::this_thread::sleep_for(std::chrono::milliseconds(100)); }
+    
     std::cout << "\nサーバーを停止します..." << std::endl;
     svr.stop();
     g_stop_current_video = true;

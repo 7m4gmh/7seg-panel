@@ -39,13 +39,13 @@ SRCDIR = src
 OBJDIR = obj
 
 # (A) OpenCV/SDL2 を使用するターゲットのソース
-SRCS_COMMON = $(SRCDIR)/common.cpp $(SRCDIR)/led.cpp $(SRCDIR)/video.cpp $(SRCDIR)/audio.cpp
+SRCS_COMMON = $(SRCDIR)/common.cpp $(SRCDIR)/led.cpp $(SRCDIR)/video.cpp $(SRCDIR)/audio.cpp $(SRCDIR)/playback.cpp
 OBJS_COMMON = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS_COMMON))
 
-SERVER_SRCS = $(SRCDIR)/server.cpp $(SRCDIR)/udp.cpp
+SERVER_SRCS = $(SRCDIR)/udp_player.cpp $(SRCDIR)/udp.cpp
 SERVER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SERVER_SRCS))
 
-PLAYER_SRCS = $(SRCDIR)/player.cpp
+PLAYER_SRCS = $(SRCDIR)/file_player.cpp
 PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PLAYER_SRCS))
 
 HTTP_PLAYER_SRCS = $(SRCDIR)/http_player.cpp
@@ -58,7 +58,7 @@ HTTP_STREAMER_OBJ = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(HTTP_STREAMER_SRC
 # ----------------------------------------
 # 実行ファイル名
 # ----------------------------------------
-SERVER_BIN        = 7seg-udp-server
+SERVER_BIN        = 7seg-udp-player
 PLAYER_BIN        = 7seg-file-player
 HTTP_PLAYER_BIN   = 7seg-http-player
 HTTP_STREAMER_BIN = 7seg-http-streamer
