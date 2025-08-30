@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 
     // ★★★ 変更: コマンドライン引数で設定を選択 ★★★
     std::string config_name = (argc > 1) ? argv[1] : "24x4";
-    const DisplayConfig& active_config = (config_name == "12x8") ? CONFIG_12x8 : CONFIG_24x4;
+    const DisplayConfig& active_config = (config_name == "12x8") ? CONFIG_12x8_EXPANDED : CONFIG_24x4;
     std::cout << "Using display configuration: " << active_config.name << std::endl;
 
     while (!g_should_exit) {

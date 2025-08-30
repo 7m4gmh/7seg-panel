@@ -12,8 +12,7 @@ double start_time = 0.0;
 int audio_bytes_received = 0;
 
 // 共通モジュール I²C アドレス
-//std::vector<int> module_addrs = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75};
-const std::vector<int> MODULE_ADDRESSES = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75};
+//const std::vector<int> MODULE_ADDRESSES = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75};
 
 
 volatile sig_atomic_t g_should_exit = 0;

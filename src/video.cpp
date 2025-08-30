@@ -14,37 +14,70 @@ const std::map<int, std::pair<int, int>> SEG_MAP = {
 };
 
 
+// src/video.cpp
+
+// ... (他の #include や SEG_MAP はそのまま) ...
+// cv::Rect のために <opencv2/imgproc.hpp> があることを確認してください
+
+#include <iostream> // std::cout のために追加
+
+// src/video.cpp
+
+// ... (他の #include や SEG_MAP はそのまま) ...
+// cv::Rect のために <opencv2/imgproc.hpp> があることを確認
+
 void frame_to_grid(const cv::Mat& bw, const DisplayConfig& config, std::vector<uint8_t>& grid) {
-    const int TOTAL_DIGITS = config.total_digits();
+    // --- ステップ1: ディスプレイの物理アスペクト比を元に、高解像度フレームから切り取るべき領域(ROI)を計算 ---
+    const double display_aspect_ratio = 
+        (config.total_width * CHAR_WIDTH_MM) / (config.total_height * CHAR_HEIGHT_MM);
+    const double frame_aspect_ratio = (double)bw.cols / (double)bw.rows;
+
+    cv::Rect roi; // サンプリング領域 (x, y, width, height)
+    if (frame_aspect_ratio > display_aspect_ratio) {
+        // 映像がディスプレイより「横長」の場合 -> 左右をクロップ
+        int new_width = static_cast<int>(bw.rows * display_aspect_ratio);
+        roi = cv::Rect((bw.cols - new_width) / 2, 0, new_width, bw.rows);
+    } else {
+        // 映像がディスプレイより「縦長」の場合 -> 上下をクロップ
+        int new_height = static_cast<int>(bw.cols / display_aspect_ratio);
+        roi = cv::Rect(0, (bw.rows - new_height) / 2, bw.cols, new_height);
+    }
+
+    // --- ステップ2: 算出したROIを基準に、各文字・各セグメントのサンプリング座標を計算 ---
     const int TOTAL_WIDTH = config.total_width;
     const int TOTAL_HEIGHT = config.total_height;
-    
-    const int FRAME_W = W; 
-    const int FRAME_H = H;
+    grid.assign(config.total_digits(), 0);
 
-    grid.assign(TOTAL_DIGITS, 0);
+    // ROI（サンプリング領域）内での「1文字分」のセルの大きさをピクセル単位で計算
+    const double cell_width_in_roi = (double)roi.width / TOTAL_WIDTH;
+    const double cell_height_in_roi = (double)roi.height / TOTAL_HEIGHT;
 
-    for (int i = 0; i < TOTAL_DIGITS; i++) {
-        int r = i / TOTAL_WIDTH;
-        // ★★★ バグ修正: ここは TOTAL_WIDTH で割るのが正しいです ★★★
-        int c = i % TOTAL_WIDTH;
-        
-        int xs = c * (FRAME_W / TOTAL_WIDTH);
-        int ys = r * (FRAME_H / TOTAL_HEIGHT);
-        
-        uint8_t seg = 0;
-        for (auto const& [bit, pos] : SEG_MAP) {
-            auto [dx, dy] = pos;
-            int px = xs + dx;
-            int py = ys + dy;
-            if (px >= 0 && px < FRAME_W && py >= 0 && py < FRAME_H && bw.at<uint8_t>(py, px) > 128) {
-                seg |= (1 << bit);
+    for (int char_r = 0; char_r < TOTAL_HEIGHT; ++char_r) {
+        for (int char_c = 0; char_c < TOTAL_WIDTH; ++char_c) {
+            
+            // この文字の左上の基準座標を、元の高解像度フレーム上の絶対座標として計算
+            const double base_x = roi.x + char_c * cell_width_in_roi;
+            const double base_y = roi.y + char_r * cell_height_in_roi;
+
+            uint8_t seg = 0;
+            for (auto const& [bit, pos] : SEG_MAP) {
+                auto [dx, dy] = pos; // SEG_MAP内の抽象的な座標(0-4)
+
+                // 抽象的な5x5グリッド座標を、物理的な縦横比を持つcellの大きさに合わせてスケーリング
+                int px_offset = static_cast<int>((dx / 4.0) * cell_width_in_roi);
+                int py_offset = static_cast<int>((dy / 4.0) * cell_height_in_roi);
+                
+                int px = static_cast<int>(base_x) + px_offset;
+                int py = static_cast<int>(base_y) + py_offset;
+                
+                if (px >= 0 && px < bw.cols && py >= 0 && py < bw.rows && bw.at<uint8_t>(py, px) > 128) {
+                    seg |= (1 << bit);
+                }
             }
+            grid[char_r * TOTAL_WIDTH + char_c] = seg;
         }
-        grid[i] = seg;
     }
 }
-
 
 void video_thread(int i2c_fd, const DisplayConfig& config) {
     // ★★★ 修正点: current_frame はループ内で生成するため、ここでは不要 ★★★
@@ -87,3 +120,54 @@ void video_thread(int i2c_fd, const DisplayConfig& config) {
 }
 
 
+/* 
+#include <opencv2/imgproc.hpp> // cv::circle のために追加
+
+void debug_draw_sampling_points(const DisplayConfig& config, cv::Mat& output_frame) {
+    // この関数は frame_to_grid とほぼ同じロジックでサンプリング座標を計算し、
+    // 実際にピクセルを読む代わりに、その位置に点を描画します。
+
+    // --- 1. アスペクト比と仮想領域の計算 (frame_to_gridと全く同じ) ---
+    const double display_aspect_ratio = (config.total_width * CHAR_WIDTH_MM) / (config.total_height * CHAR_HEIGHT_MM);
+    const double frame_aspect_ratio = (double)output_frame.cols / (double)output_frame.rows;
+    int roi_x, roi_y, roi_w, roi_h;
+    if (frame_aspect_ratio > display_aspect_ratio) {
+        roi_h = output_frame.rows;
+        roi_w = static_cast<int>(output_frame.rows * display_aspect_ratio);
+        roi_x = (output_frame.cols - roi_w) / 2;
+        roi_y = 0;
+    } else {
+        roi_w = output_frame.cols;
+        roi_h = static_cast<int>(output_frame.cols / display_aspect_ratio);
+        roi_x = 0;
+        roi_y = (output_frame.rows - roi_h) / 2;
+    }
+
+    // --- 2. 仮想領域の範囲を矩形で描画 ---
+    cv::rectangle(output_frame, cv::Point(roi_x, roi_y), cv::Point(roi_x + roi_w, roi_y + roi_h), cv::Scalar(0, 255, 0), 1); // 緑色の矩形
+
+    // --- 3. 各サンプリングポイントを点で描画 ---
+    const int TOTAL_WIDTH = config.total_width;
+    const int TOTAL_HEIGHT = config.total_height;
+
+    for (int i = 0; i < config.total_digits(); i++) {
+        int r = i / TOTAL_WIDTH;
+        int c = i % TOTAL_WIDTH;
+        
+        int xs = roi_x + static_cast<int>(c * (roi_w / (double)TOTAL_WIDTH));
+        int ys = roi_y + static_cast<int>(r * (roi_h / (double)TOTAL_HEIGHT));
+        
+        for (auto const& [bit, pos] : SEG_MAP) {
+            auto [dx, dy] = pos;
+            int px = xs + dx;
+            int py = ys + dy;
+            
+            // サンプリング座標に赤い点を描画
+            if (px >= 0 && px < output_frame.cols && py >= 0 && py < output_frame.rows) {
+                // 小さな円を描画
+                cv::circle(output_frame, cv::Point(px, py), 1, cv::Scalar(0, 0, 255), -1); // 赤い点
+            }
+        }
+    }
+}
+*/

@@ -87,9 +87,12 @@ int main(int argc, char* argv[]) {
     if (argc > 1) default_video_path = argv[1];
     if (argc > 2) config_name = argv[2];
 
-    if (config_name == "12x8") g_active_config = &CONFIG_12x8;
+    if (config_name == "12x8") g_active_config = &CONFIG_12x8_EXPANDED;
+    else if (config_name == "48x4") g_active_config = &CONFIG_48x4_EXPANDED;
+    else if (config_name == "24x8") g_active_config = &CONFIG_24x8_EXPANDED;
     else g_active_config = &CONFIG_24x4;
-    
+ 
+
     std::cout << "Using display configuration: " << g_active_config->name << std::endl;
     std::cout << "Using default video directory: '" << default_video_path << "'" << std::endl;
     load_default_videos(default_video_path, g_default_videos);
