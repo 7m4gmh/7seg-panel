@@ -6,55 +6,112 @@ import argparse
 import time
 import random
 import curses
+import json
 from smbus2 import SMBus
 
-# --- 構成を柔軟に変更できるようにリファクタリングしたコード ---
-
+# ===# ==============================================================================
+# ▼▼▼ ゲーム定数 ▼▼▼
 # ==============================================================================
-# ▼▼▼ パネル構成定義 ▼▼▼
-# 使用したい構成のコメントを外してください。
-# ==============================================================================
-
-# --- 元の構成: 24桁 x 4行 (4x4モジュールを横に6個並べたもの) ---
-CONFIG_24x4 = {
-    "name": "24x4 Horizontal",
-    "module_grid": [ # モジュールの物理的な配置 (行x列)
-        [0x70, 0x71, 0x72, 0x73, 0x74, 0x75]
+# (0,0)を回転の中心とした、標準的なテトリミノ全7種類の形状定義
+# 座標系は (y, x) で、yは下方向がプラス、xは右方向がプラス
+SHAPES = {
+    'I': [
+        [(0, -1), (0, 0), (0, 1), (0, 2)],  # 縦向き
+        [(-1, 0), (0, 0), (1, 0), (2, 0)]   # 横向き (回転させるとこれになる)
     ],
-    "module_digits_width": 4,  # 1モジュールあたりの桁数 (横)
-    "module_digits_height": 4, # 1モジュールあたりの桁数 (縦)
-    "total_width": 24,         # 全体の表示幅
-    "total_height": 4          # 全体の表示高さ
+    'O': [
+        [(0, 0), (1, 0), (0, 1), (1, 1)]   # 正方形 (回転しても形は変わらない)
+    ],
+    'T': [
+        [(-1, 0), (0, 0), (1, 0), (0, 1)],  # 上向きのT
+        [(0, 1), (0, 0), (0, -1), (-1, 0)], # 右向きのT
+        [(1, 0), (0, 0), (-1, 0), (0, -1)], # 下向きのT
+        [(0, -1), (0, 0), (0, 1), (1, 0)]   # 左向きのT
+    ],
+    'L': [
+        [(0, -1), (0, 0), (0, 1), (1, 1)],
+        [(-1, 0), (0, 0), (1, 0), (1, -1)],
+        [(-1, -1), (0, -1), (0, 0), (0, 1)],
+        [(-1, 1), (-1, 0), (0, 0), (1, 0)]
+    ],
+    'J': [
+        [(0, -1), (0, 0), (0, 1), (-1, 1)],
+        [(-1, -1), (-1, 0), (0, 0), (1, 0)],
+        [(1, -1), (0, -1), (0, 0), (0, 1)],
+        [(-1, 0), (0, 0), (1, 0), (1, 1)]
+    ],
+    'S': [
+        [(-1, 0), (0, 0), (0, 1), (1, 1)],
+        [(0, 1), (0, 0), (1, 0), (1, -1)]
+    ],
+    'Z': [
+        [(-1, 1), (0, 1), (0, 0), (1, 0)],
+        [(0, -1), (0, 0), (1, 0), (1, 1)]
+    ]
 }
 
-# --- 拡張構成の例: 12桁 x 8行 (4x4モジュールを3x2のグリッド状に配置) ---
-CONFIG_12x8 = {
-    "name": "12x8 Grid",
-    "module_grid": [ # 3モジュールを2段に配置
-        [0x70, 0x71, 0x72],
-        [0x73, 0x74, 0x75]
-    ],
-    "module_digits_width": 4,
-    "module_digits_height": 4,
-    "total_width": 12, # 3モジュール * 4桁
-    "total_height": 8  # 2段 * 4行
-}
 
-# ==============================================================================
-# グローバル定数 (変更不要)
-# ==============================================================================
-DIGITS_PER_MODULE=16 # 1モジュールあたりのLED数 (4x4=16)
-digit_map={'0':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':0},'1':{'a':0,'b':1,'c':1,'d':0,'e':0,'f':0,'g':0},'2':{'a':1,'b':1,'c':0,'d':1,'e':1,'f':0,'g':1},'3':{'a':1,'b':1,'c':1,'d':1,'e':0,'f':0,'g':1},'4':{'a':0,'b':1,'c':1,'d':0,'e':0,'f':1,'g':1},'5':{'a':1,'b':0,'c':1,'d':1,'e':0,'f':1,'g':1},'6':{'a':1,'b':0,'c':1,'d':1,'e':1,'f':1,'g':1},'7':{'a':1,'b':1,'c':1,'d':0,'e':0,'f':0,'g':0},'8':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'9':{'a':1,'b':1,'c':1,'d':1,'e':0,'f':1,'g':1},'A':{'a':1,'b':1,'c':1,'d':0,'e':1,'f':1,'g':1},'B':{'a':0,'b':0,'c':1,'d':1,'e':1,'f':1,'g':1},'C':{'a':1,'b':0,'c':0,'d':1,'e':1,'f':1,'g':0},'D':{'a':0,'b':1,'c':1,'d':1,'e':1,'f':0,'g':1},'E':{'a':1,'b':0,'c':0,'d':1,'e':1,'f':1,'g':1},'F':{'a':1,'b':0,'c':0,'d':0,'e':1,'f':1,'g':1},'G':{'a':1,'b':0,'c':1,'d':1,'e':1,'f':1,'g':0},'H':{'a':0,'b':1,'c':1,'d':0,'e':1,'f':1,'g':1},'I':{'a':0,'b':0,'c':0,'d':0,'e':1,'f':1,'g':0},'J':{'a':0,'b':1,'c':1,'d':1,'e':0,'f':0,'g':0},'K':{'a':0,'b':1,'c':1,'d':0,'e':1,'f':1,'g':1},'L':{'a':0,'b':0,'c':0,'d':1,'e':1,'f':1,'g':0},'M':{'a':1,'b':1,'c':1,'d':0,'e':1,'f':1,'g':0},'N':{'a':0,'b':0,'c':1,'d':0,'e':1,'f':0,'g':1},'O':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':0},'P':{'a':1,'b':1,'c':0,'d':0,'e':1,'f':1,'g':1},'Q':{'a':1,'b':1,'c':1,'d':0,'e':0,'f':1,'g':1},'R':{'a':0,'b':0,'c':0,'d':0,'e':1,'f':0,'g':1},'S':{'a':1,'b':0,'c':1,'d':1,'e':0,'f':1,'g':1},'T':{'a':0,'b':0,'c':0,'d':1,'e':1,'f':1,'g':1},'U':{'a':0,'b':1,'c':1,'d':1,'e':1,'f':1,'g':0},'V':{'a':0,'b':1,'c':1,'d':1,'e':1,'f':0,'g':0},'W':{'a':0,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'X':{'a':0,'b':1,'c':1,'d':0,'e':1,'f':1,'g':1},'Y':{'a':0,'b':1,'c':1,'d':1,'e':0,'f':1,'g':1},'Z':{'a':1,'b':1,'c':0,'d':1,'e':1,'f':0,'g':1},' ': {'a':0,'b':0,'c':0,'d':0,'e':0,'f':0,'g':0},'-':{'g':1},'_':{'d':1},'.':{'dp':1},'*':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'#':{'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'=':{'d':1,'g':1},"'":{'f':1},"|":{'b':1,'c':1}}
+SHAPE_KEYS = list(SHAPES.keys())
+DIGITS_PER_MODULE = 16
+
+digit_map={'0':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':0},'1':{'a':0,'b':1,'c':1,'d':0,'e':0,'f':0,'g':0},'2':{'a':1,'b':1,'c':0,'d':1,'e':1,'f':0,'g':1},'3':{'a':1,'b':1,'c':1,'d':1,'e':0,'f':0,'g':1},'4':{'a':0,'b':1,'c':1,'d':0,'e':0,'f':1,'g':1},'5':{'a':1,'b':0,'c':1,'d':1,'e':0,'f':1,'g':1},'6':{'a':1,'b':0,'c':1,'d':1,'e':1,'f':1,'g':1},'7':{'a':1,'b':1,'c':1,'d':0,'e':0,'f':0,'g':0},'8':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'9':{'a':1,'b':1,'c':1,'d':1,'e':0,'f':1,'g':1},' ': {'a':0,'b':0,'c':0,'d':0,'e':0,'f':0,'g':0},'*':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'#':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1}}
 segment_memory_addr={'a':0,'b':2,'c':4,'d':6,'e':8,'f':10,'g':12,'dp':14}
-SHAPES={'I':[[(0,0),(1,0)],[(0,0),(0,1)]],'O':[[(0,0),(1,0),(0,1),(1,1)]],'T':[[(0,0),(-1,0),(1,0),(0,1)],[(0,0),(0,-1),(0,1),(1,0)],[(0,0),(-1,0),(1,0),(0,-1)],[(0,0),(0,-1),(0,1),(-1,0)]],'L':[[(0,0),(1,0),(-1,0),(1,1)],[(0,0),(0,1),(0,-1),(-1,1)],[(0,0),(1,0),(-1,0),(-1,-1)],[(0,0),(0,1),(0,-1),(1,-1)]],'S':[[(0,0),(1,0),(0,1),(-1,1)],[(0,0),(0,-1),(1,0),(1,1)]]}
-SHAPE_KEYS=list(SHAPES.keys())
+g_current_channel = -2
+
+
+def load_config(config_name, filename="config.json"):
+    """JSONファイルから指定された設定を読み込み、アドレスを数値に変換する"""
+    try:
+        with open(filename, 'r') as f:
+            all_configs = json.load(f)
+        
+        if config_name not in all_configs["configurations"]:
+            raise KeyError(f"Configuration '{config_name}' not found in {filename}")
+            
+        config = all_configs["configurations"][config_name]
+        
+        # --- アドレス文字列("0x70")を数値(112)に変換 ---
+        if config.get("tca9548a_address"):
+            config["tca9548a_address"] = int(config["tca9548a_address"], 16)
+        else:
+            config["tca9548a_address"] = None
+
+        new_channel_grids = {}
+        for ch_str, grid in config["channel_grids"].items():
+            ch_int = int(ch_str)
+            new_grid = [[int(addr, 16) for addr in row] for row in grid]
+            new_channel_grids[ch_int] = new_grid
+        config["channel_grids"] = new_channel_grids
+        
+        return config
+
+    except FileNotFoundError:
+        print(f"Error: Configuration file '{filename}' not found.", file=sys.stderr)
+        sys.exit(1)
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"Error: Could not parse '{filename}': {e}", file=sys.stderr)
+        sys.exit(1)
+
 
 # ==============================================================================
-# 低レベルI2C通信関数 (変更なし)
+# 低レベルI2C通信 & 描画関数
 # ==============================================================================
-def update_display(bus, ht16k33_addr, text):
+def tca_select_channel(bus, tca_addr, channel):
+    global g_current_channel
+    if tca_addr is None:
+        g_current_channel = -1
+        return
+    if channel == g_current_channel: return
+    try:
+        control_byte = 1 << channel if channel >= 0 else 0
+        bus.write_byte(tca_addr, control_byte)
+        g_current_channel = channel
+    except IOError as e:
+        print(f"Failed to select TCA channel {channel} on addr {hex(tca_addr)}: {e}", file=sys.stderr)
+
+def update_display_module(bus, ht16k33_addr, text_list):
     display_buffer = [0] * 16
-    for digit_index, char_to_display in enumerate(text[:DIGITS_PER_MODULE]):
+    for digit_index, char_to_display in enumerate(text_list[:DIGITS_PER_MODULE]):
         char_key = char_to_display if char_to_display in digit_map else ' '
         for seg_name, seg_on in digit_map[char_key].items():
             if seg_on:
@@ -63,207 +120,211 @@ def update_display(bus, ht16k33_addr, text):
     try:
         bus.write_i2c_block_data(ht16k33_addr, 0x00, display_buffer)
     except IOError as e:
-        print(f"[{time.time():.2f}] I2C Write Error on Address {hex(ht16k33_addr)}: {e}", file=sys.stderr)
+        print(f"I2C Write Error on Address {hex(ht16k33_addr)}: {e}", file=sys.stderr)
 
-# ==============================================================================
-# 座標マッピングと描画実行関数 (リファクタリングの核)
-# ==============================================================================
 def update_flexible_display(bus, config, full_text):
-    """
-    柔軟な構成に対応したディスプレイ更新関数
-    configオブジェクトに基づいて、1次元の文字列を各モジュールのデータにマッピングする
-    """
-    MODULE_GRID = config["module_grid"]
-    MOD_DIGITS_W = config["module_digits_width"]
-    MOD_DIGITS_H = config["module_digits_height"]
+    TCA_ADDR = config.get("tca9548a_address")
+    MOD_DIGITS_W, MOD_DIGITS_H = config["module_digits_width"], config["module_digits_height"]
     TOTAL_WIDTH = config["total_width"]
-    TOTAL_HEIGHT = config["total_height"]
-    TOTAL_DIGITS = TOTAL_WIDTH * TOTAL_HEIGHT
-
-    all_addresses = [addr for row in MODULE_GRID for addr in row]
-    module_chars = {addr: [' '] * DIGITS_PER_MODULE for addr in all_addresses}
-
-    for i, char in enumerate(full_text[:TOTAL_DIGITS]):
-        total_row, total_col = i // TOTAL_WIDTH, i % TOTAL_WIDTH
-        
-        module_grid_row = total_row // MOD_DIGITS_H
-        module_grid_col = total_col // MOD_DIGITS_W
-        
-        try:
-            addr = MODULE_GRID[module_grid_row][module_grid_col]
-        except IndexError:
-            continue
-            
-        row_in_module = total_row % MOD_DIGITS_H
-        col_in_module = total_col % MOD_DIGITS_W
-        
-        digit_index = (row_in_module * MOD_DIGITS_W) + col_in_module
-        
-        module_chars[addr][digit_index] = char
-
-    for addr, chars in module_chars.items():
-        update_display(bus, addr, "".join(chars))
+    digits_per_module = MOD_DIGITS_W * MOD_DIGITS_H
+    global_row_offset, global_col_offset = 0, 0
+    sorted_channels = sorted(config["channel_grids"].keys())
+    for channel in sorted_channels:
+        address_grid = config["channel_grids"][channel]
+        tca_select_channel(bus, TCA_ADDR, channel)
+        if not address_grid: continue
+        channel_grid_height, channel_grid_width = len(address_grid), len(address_grid[0])
+        for grid_r, row_of_addrs in enumerate(address_grid):
+            for grid_c, module_addr in enumerate(row_of_addrs):
+                module_data_buffer = [' '] * digits_per_module
+                module_start_col = global_col_offset + (grid_c * MOD_DIGITS_W)
+                module_start_row = global_row_offset + (grid_r * MOD_DIGITS_H)
+                for r_in_mod in range(MOD_DIGITS_H):
+                    for c_in_mod in range(MOD_DIGITS_W):
+                        grid_index = (module_start_row + r_in_mod) * TOTAL_WIDTH + (module_start_col + c_in_mod)
+                        module_buffer_index = r_in_mod * MOD_DIGITS_W + c_in_mod
+                        if grid_index < len(full_text):
+                            module_data_buffer[module_buffer_index] = full_text[grid_index]
+                update_display_module(bus, module_addr, module_data_buffer)
+        channel_width_in_digits = channel_grid_width * MOD_DIGITS_W
+        channel_height_in_digits = channel_grid_height * MOD_DIGITS_H
+        if (global_col_offset + channel_width_in_digits) < TOTAL_WIDTH:
+            global_col_offset += channel_width_in_digits
+        else:
+            global_col_offset, global_row_offset = 0, global_row_offset + channel_height_in_digits
 
 # ==============================================================================
-# アプリケーションクラス (変更なし)
+# 縦落ちテトリスのゲームクラス & ゲームループ
 # ==============================================================================
-class DemoMode:
-    def __init__(self,width,height,density=0.2):self.width,self.height,self.density,self.grid,self.raindrops=width,height,density,[[' ']*width for _ in range(height)],['|', '.', "'"]
-    def tick(self):
-        for r in range(self.height-1,0,-1):self.grid[r]=self.grid[r-1][:]
-        for c in range(self.width):self.grid[0][c]=random.choice(self.raindrops) if random.random()<self.density else ' '
-        return "".join(["".join(r) for r in self.grid])
+class VerticalTetrisGame:
+    def __init__(self, width, height):
+        self.width, self.height = width, height
+        self.field = [[' '] * width for _ in range(height)]
+        self.score, self.game_over = 0, False
+        self.new_block()
 
-class SideTetrisGame:
-    def __init__(self,width,height):
-        self.width,self.height=width,height;self.field=[[' ']*width for _ in range(height)];self.score,self.game_over=0,False;self.score_width=6;self.new_block()
     def new_block(self):
-        self.current_shape_key=random.choice(SHAPE_KEYS);self.current_shape=SHAPES[self.current_shape_key];self.rotation=0;self.block_pos={'y':1,'x':self.score_width}
-        if self.check_collision(self.get_current_rotation(),self.block_pos):self.game_over=True
-    def get_current_rotation(self):return self.current_shape[self.rotation%len(self.current_shape)]
-    def check_collision(self,shape,pos):
-        for dy,dx in shape:
-            ny,nx=pos['y']+dy,pos['x']+dx
-            if not(0<=nx<self.width and 0<=ny<self.height)or self.field[ny][nx]!=' ':return True
-        return False
-    def move(self,dy):
-        n={'y':self.block_pos['y']+dy,'x':self.block_pos['x']}
-        if not self.check_collision(self.get_current_rotation(),n):self.block_pos=n
-    def lock_block(self):
-        for dy,dx in self.get_current_rotation():
-            y,x=self.block_pos['y']+dy,self.block_pos['x']+dx
-            if 0<=y<self.height and 0<=x<self.width:self.field[y][x]='*'
-    def clear_lines(self):
-        new_field_columns=[]
-        for x in range(self.width):
-            if not all(self.field[y][x]!=' ' for y in range(self.height)):new_field_columns.append([self.field[y][x] for y in range(self.height)])
-        lines_cleared=self.width-len(new_field_columns)
-        if lines_cleared==0:return
-        final_columns=[[' ']*self.height for _ in range(lines_cleared)]+new_field_columns
-        for y in range(self.height):
-            for x in range(self.width):self.field[y][x]=final_columns[x][y]
-        self.score+=[0,100,300,500,800][lines_cleared]
-    def rotate(self):
-        nr=(self.rotation+1)%len(self.current_shape);
-        if not self.check_collision(self.current_shape[nr],self.block_pos):self.rotation=nr
-    def step_right(self):
-        n={'y':self.block_pos['y'],'x':self.block_pos['x']+1}
-        if not self.check_collision(self.get_current_rotation(),n):self.block_pos=n
-        else:self.lock_block();self.clear_lines();self.new_block()
-    def get_render_string(self):
-        t=[r[:] for r in self.field]
-        for dy,dx in self.get_current_rotation():
-            y,x=self.block_pos['y']+dy,self.block_pos['x']+dx
-            if 0<=y<self.height and 0<=x<self.width:t[y][x]='#'
-        for i,c in enumerate(str(self.score).ljust(self.score_width)):
-            if i<self.width:t[0][i]=c
-        return "".join(["".join(r) for r in t])
+        self.current_shape_key = random.choice(SHAPE_KEYS)
+        self.current_shape = SHAPES[self.current_shape_key]
+        self.rotation = 0
+        shape = self.get_current_rotation()
+        min_dy = min(dy for dy, dx in shape)
+        self.block_pos = {'y': 0 - min_dy, 'x': self.width // 2}
+        if self.check_collision(shape, self.block_pos): self.game_over = True
 
-# ==============================================================================
-# ゲームロジック (configオブジェクトを受け取るように修正)
-# ==============================================================================
-def play_tetris_game(stdscr, bus, config):
-    DISPLAY_WIDTH = config["total_width"]
-    DISPLAY_HEIGHT = config["total_height"]
-    game = SideTetrisGame(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-    
-    RENDER_FPS = 15; RENDER_INTERVAL = 1.0 / RENDER_FPS
-    last_render_time, last_step_time, step_interval = 0, time.time(), 0.5
-    stdscr.nodelay(1)
-    while not game.game_over:
-        try:
+    def get_current_rotation(self): return self.current_shape[self.rotation % len(self.current_shape)]
+
+    def check_collision(self, shape, pos):
+        for dy, dx in shape:
+            ny, nx = pos['y'] + dy, pos['x'] + dx
+            if not (0 <= nx < self.width and 0 <= ny < self.height) or self.field[ny][nx] != ' ':
+                return True
+        return False
+
+    def move_horizontal(self, dx):
+        new_pos = {'y': self.block_pos['y'], 'x': self.block_pos['x'] + dx}
+        if not self.check_collision(self.get_current_rotation(), new_pos): self.block_pos = new_pos
+
+    def move_down(self):
+        new_pos = {'y': self.block_pos['y'] + 1, 'x': self.block_pos['x']}
+        if not self.check_collision(self.get_current_rotation(), new_pos):
+            self.block_pos = new_pos
+            return True
+        return False
+
+    def rotate(self):
+        next_rotation = (self.rotation + 1) % len(self.current_shape)
+        if not self.check_collision(self.current_shape[next_rotation], self.block_pos):
+            self.rotation = next_rotation
+
+    def lock_block(self):
+        for dy, dx in self.get_current_rotation():
+            y, x = self.block_pos['y'] + dy, self.block_pos['x'] + dx
+            if 0 <= y < self.height and 0 <= x < self.width: self.field[y][x] = '*'
+
+    def clear_lines(self):
+        new_field, lines_cleared = [], 0
+        for row in self.field:
+            if ' ' in row: new_field.append(row)
+            else: lines_cleared += 1
+        empty_rows = [[' '] * self.width for _ in range(lines_cleared)]
+        self.field = empty_rows + new_field
+        if lines_cleared > 0: self.score += [0, 100, 300, 500, 800][lines_cleared]
+
+    def step(self):
+        if not self.move_down():
+            self.lock_block()
+            self.clear_lines()
+            self.new_block()
+
+    def get_render_string(self):
+        temp_field = [row[:] for row in self.field]
+        for dy, dx in self.get_current_rotation():
+            y, x = self.block_pos['y'] + dy, self.block_pos['x'] + dx
+            if 0 <= y < self.height and 0 <= x < self.width: temp_field[y][x] = '#'
+        return "".join(["".join(row) for row in temp_field])
+
+def play_game_session(stdscr, bus, config):
+        curses.curs_set(0)
+        DISPLAY_WIDTH, DISPLAY_HEIGHT = config["total_width"], config["total_height"]
+        game = VerticalTetrisGame(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        
+        RENDER_INTERVAL = 1.0 / 15  # 1秒間に15回画面を更新
+        last_render_time = 0
+        step_interval = 2.0  # ブロックが自動で1マス落ちる時間
+        last_step_time = time.time()
+         
+        stdscr.nodelay(1)  # キー入力を待たない非ブロッキングモード
+        while not game.game_over:
+            current_time = time.time()
+            
+            # --- ▼▼▼ キー操作のロジックを修正 ▼▼▼ ---
             key = stdscr.getch()
             if key != -1:
-                if key == curses.KEY_UP: game.move(-1)
-                elif key == curses.KEY_DOWN: game.move(1)
-                elif key == ord(' '): game.rotate()
-                elif key == curses.KEY_RIGHT: game.step_right(); last_step_time = time.time()
-                elif key == ord('q'): return
-            current_time = time.time()
+                if key == curses.KEY_LEFT:
+                    game.move_horizontal(-1)
+                elif key == curses.KEY_RIGHT:
+                    game.move_horizontal(1)
+                elif key == curses.KEY_DOWN:
+                    # 1マス下に移動し、自動落下のタイマーをリセット
+                    if game.move_down():
+                        last_step_time = current_time
+                elif key == curses.KEY_UP or key == ord(' '):  # ↑キーまたはスペースキー
+                    game.rotate()
+                elif key == ord('q'):
+                    return
+
+            # 自動落下（重力）
             if current_time - last_step_time > step_interval:
-                game.step_right(); last_step_time = current_time
+                game.step()
+                last_step_time = current_time
+                # スコアに応じてゲーム速度を上げる
+                step_interval = max(0.1, 0.5 - game.score / 20000.0)
+
+            # 画面描画
             if current_time - last_render_time > RENDER_INTERVAL:
-                update_flexible_display(bus, config, game.get_render_string())
+                game_field_str = game.get_render_string()
+                
+                # Curses画面（ターミナル）の描画
+                stdscr.clear()
+                stdscr.addstr(0, 0, f"SCORE: {game.score}")
+                for y in range(DISPLAY_HEIGHT):
+                    line = game_field_str[y * DISPLAY_WIDTH : (y + 1) * DISPLAY_WIDTH]
+                    stdscr.addstr(y + 2, 0, line)
+                stdscr.refresh()
+                
+                # LEDパネルの描画
+                update_flexible_display(bus, config, game_field_str)
                 last_render_time = current_time
+                
             time.sleep(0.01)
-        except Exception as e:
-            print(f"Unhandled error in game loop: {e}", file=sys.stderr)
-            break
-    
-    game_over_text = ("="*DISPLAY_WIDTH + "GAME OVER".center(DISPLAY_WIDTH) + 
-                      f"SCORE {game.score}".center(DISPLAY_WIDTH) + 
-                      "PRESS ANY KEY".center(DISPLAY_WIDTH))
-    update_flexible_display(bus, config, game_over_text)
-    stdscr.nodelay(0); stdscr.getch()
-
-def run_demo_mode(stdscr, bus, config):
-    demo = DemoMode(config["total_width"], config["total_height"])
-    stdscr.nodelay(1)
-    while True:
-        if stdscr.getch() != -1: return
-        update_flexible_display(bus, config, demo.tick())
-        time.sleep(0.15)
-
-def game_session(stdscr, bus, config):
-    curses.curs_set(0)
-    DISPLAY_WIDTH = config["total_width"]
-    demo_timeout=10.0
-    while True:
-        welcome_text = ("SIDEWAYS TETRIS".center(DISPLAY_WIDTH) + 
-                        (' '*DISPLAY_WIDTH) + 
-                        "PRESS ANY KEY TO START".center(DISPLAY_WIDTH) + 
-                        "      PRESS Q TO QUIT".center(DISPLAY_WIDTH))
-        update_flexible_display(bus, config, welcome_text)
         
-        stdscr.nodelay(1); start_time=time.time(); key_pressed=-1
-        while time.time()-start_time < demo_timeout:
-            key=stdscr.getch()
-            if key!=-1: key_pressed=key; break
-            time.sleep(0.05)
-        
-        if key_pressed==ord('q'): break
-        elif key_pressed!=-1: play_tetris_game(stdscr, bus, config)
-        else: run_demo_mode(stdscr, bus, config)
+        # ゲームオーバー処理
+        game_over_text = ("GAME OVER".center(DISPLAY_WIDTH) + (' ' * DISPLAY_WIDTH) + 
+                          f"SCORE {game.score}".center(DISPLAY_WIDTH) + "PRESS ANY KEY".center(DISPLAY_WIDTH))
+        update_flexible_display(bus, config, game_over_text)
+        stdscr.nodelay(0)
+        stdscr.getch()
 
 # ==============================================================================
-# メイン実行部 (configオブジェクトを生成・利用するように修正)
+# メイン実行部
 # ==============================================================================
 def main():
-    parser = argparse.ArgumentParser(description="Flexible 7-segment LED display control.")
-    parser.add_argument('--game', type=str, default='tetris', help='Game to run (e.g., "tetris").')
-    parser.add_argument('--config', type=str, default='24x4', choices=['24x4', '12x8'], help='Display configuration to use.')
+    parser = argparse.ArgumentParser(description="Vertical Tetris for 7-segment LED display.")
+    parser.add_argument('--config', type=str, default='12x8', 
+                        help='Display configuration name defined in config.json (e.g., 24x4, 12x8).')
     args = parser.parse_args()
 
-    # 引数に基づいて使用する設定を選択
-    if args.config == '12x8':
-        active_config = CONFIG_12x8
-    else:
-        active_config = CONFIG_24x4
+    # ★★★ JSONファイルから設定を読み込む ★★★
+    active_config = load_config(args.config)
 
     bus = None
     try:
-        if args.game == 'tetris':
-            bus = SMBus(0) # ROCK5は0, RPiは1
-            print(f"Using configuration: {active_config['name']}")
-            print("Initializing modules...")
-            
-            # 2次元のgridから全アドレスをフラットなリストとして取得
-            all_module_addresses = [addr for row in active_config["module_grid"] for addr in row]
+        bus = SMBus(0) 
+        print(f"Using configuration: {active_config['name']}")
+        print("Initializing modules...")
+        
+        TCA_ADDR = active_config.get("tca9548a_address")
+        for channel, address_grid in active_config["channel_grids"].items():
+            tca_select_channel(bus, TCA_ADDR, channel)
+            time.sleep(0.01)
+            for row in address_grid:
+                for addr in row:
+                    try:
+                        bus.write_byte_data(addr, 0x21, 0) # System setup: oscillator on
+                        bus.write_byte_data(addr, 0x81, 0) # Display setup: display on, no blink
+                        bus.write_byte_data(addr, 0xEF, 0) # Dimming setup: max brightness
+                    except IOError as e:
+                        print(f"Failed to initialize CH{channel} addr {hex(addr)}: {e}", file=sys.stderr)
+                        return
+        
+        if TCA_ADDR is not None:
+            tca_select_channel(bus, TCA_ADDR, -1)
+        
+        curses.wrapper(play_game_session, bus, active_config)
 
-            for addr in all_module_addresses:
-                try:
-                    bus.write_byte(addr, 0x21) # System setup: oscillator on
-                    bus.write_byte(addr, 0x81) # Display setup: display on, no blink
-                    bus.write_byte(addr, 0xEF) # Dimming setup: max brightness
-                except IOError as e:
-                    print(f"Failed to initialize address {hex(addr)}: {e}", file=sys.stderr)
-                    return
-            
-            # game_sessionにconfigオブジェクトを渡す
-            curses.wrapper(game_session, bus, active_config)
-        else:
-            print("Run with --game tetris to play.")
-
+    except FileNotFoundError:
+        print(f"Error: I2C bus device not found. Check your bus number (e.g., /dev/i2c-0).", file=sys.stderr)
     except (KeyboardInterrupt, SystemExit):
         print("\nExiting gracefully.", file=sys.stderr)
     except Exception as e:
@@ -280,9 +341,16 @@ def main():
                 bus.close()
             except Exception as e:
                 print(f"Could not clear displays on exit: {e}", file=sys.stderr)
+        
+        try:
+            if curses.isendwin() is False:
+                curses.endwin()
+        except:
+            pass
         print("Cleanup complete. Exiting.", file=sys.stderr)
 
 if __name__ == '__main__':
     main()
+
 
 

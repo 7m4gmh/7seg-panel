@@ -1,0 +1,68 @@
+{
+  "comment_char_dimensions": "LED character dimensions in mm",
+  "char_width_mm": 12.7,
+  "char_height_mm": 19.2,
+
+  "comment_configs": "Display panel configurations",
+  "configurations": {
+    "24x4": {
+      "name": "24x4 Horizontal",
+      "tca9548a_address": "0x77",
+      "channel_grids": {
+        "0": [
+          ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+        ]
+      },
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 24,
+      "total_height": 4
+    },
+    "12x8": {
+      "name": "12x8 Expanded (2x 12x4 via TCA9548a)",
+      "tca9548a_address": "0x77",
+      "channel_grids": {
+        "0": [
+          ["0x70", "0x71", "0x72"]
+        ],
+        "1": [
+          ["0x70", "0x71", "0x72"]
+        ]
+      },
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 12,
+      "total_height": 8
+    },
+    "48x4": {
+      "name": "48x4 Expanded (2x 24x4 via TCA9548a)",
+      "tca9548a_address": "0x77",
+      "channel_grids": {
+        "0": [
+          ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+        ],
+        "1": [
+          ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+        ]
+      },
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 48,
+      "total_height": 4
+    },
+    "12x8-direct": {
+      "name": "12x8 Grid (Direct Connection)",
+      "tca9548a_address": null,
+      "channel_grids": {
+        "-1": [
+          ["0x70", "0x71", "0x72"],
+          ["0x73", "0x74", "0x75"]
+        ]
+      },
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 12,
+      "total_height": 8
+    }
+  }
+}

@@ -13,7 +13,7 @@ MAKEFLAGS += -j$(NUM_CORES)
 # コンパイラと共通設定
 # ----------------------------------------
 CXX = g++
-BASE_CXXFLAGS = -std=c++17 -Wall -O2 -I../cpp-httplib
+BASE_CXXFLAGS = -std=c++17 -Wall -O2 -I../cpp-httplib -I./include
 BASE_LDFLAGS = -pthread
 
 # ----------------------------------------

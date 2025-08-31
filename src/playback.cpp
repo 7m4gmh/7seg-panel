@@ -2,14 +2,15 @@
 #include "playback.h"
 #include "common.h"
 #include "led.h"
-#include "video.h"
-
-#include <opencv2/opencv.hpp>
+#include "video.h" // ★★★ 'frame_to_grid' のために必要 ★★★
+#include <opencv2/opencv.hpp> // ★★★ 'cv::' 関連のすべてのエラーを解決します ★★★
 #include <iostream>
-#include <chrono>
-#include <thread>
+#include <chrono>             // ★★★ 'std::chrono' のために必要 ★★★
+#include <thread>             // ★★★ 'std::this_thread' のために必要 ★★★
 #include <unistd.h>
 #include <fcntl.h>
+#include <atomic>             // std::atomic のために念のため追加
+
 
 // 共通の動画再生ロジック
 int play_video_stream(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
@@ -89,4 +90,3 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
     }
     return 0;
 }
-

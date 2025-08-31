@@ -15,7 +15,8 @@
 #include <csignal>
 
 // Ctrl+C / SIGTERM で立つ終了フラグ
-extern volatile sig_atomic_t g_should_exit;
+//extern volatile sig_atomic_t g_should_exit;
+extern volatile std::sig_atomic_t g_should_exit;
 
 // シグナルハンドラ設定用
 void setup_signal_handlers();

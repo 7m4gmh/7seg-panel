@@ -14,17 +14,8 @@ const std::map<int, std::pair<int, int>> SEG_MAP = {
 };
 
 
-// src/video.cpp
+#include <iostream> 
 
-// ... (他の #include や SEG_MAP はそのまま) ...
-// cv::Rect のために <opencv2/imgproc.hpp> があることを確認してください
-
-#include <iostream> // std::cout のために追加
-
-// src/video.cpp
-
-// ... (他の #include や SEG_MAP はそのまま) ...
-// cv::Rect のために <opencv2/imgproc.hpp> があることを確認
 
 void frame_to_grid(const cv::Mat& bw, const DisplayConfig& config, std::vector<uint8_t>& grid) {
     // --- ステップ1: ディスプレイの物理アスペクト比を元に、高解像度フレームから切り取るべき領域(ROI)を計算 ---
@@ -79,12 +70,11 @@ void frame_to_grid(const cv::Mat& bw, const DisplayConfig& config, std::vector<u
     }
 }
 
-void video_thread(int i2c_fd, const DisplayConfig& config) {
-    // ★★★ 修正点: current_frame はループ内で生成するため、ここでは不要 ★★★
+void video_thread(int i2c_fd, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
     std::vector<uint8_t> grid(config.total_digits(), 0);
     auto frame_duration = std::chrono::milliseconds(1000 / FPS);
 
-    while (!finished) {
+    while (!stop_flag) {
         auto start_time = std::chrono::steady_clock::now();
         
         // ★★★ 修正点: vectorとしてデータを受け取り、cv::Matに変換する ★★★
