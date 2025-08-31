@@ -3,13 +3,13 @@
 #include "common.h"
 #include "led.h"
 #include "video.h" // ★★★ 'frame_to_grid' のために必要 ★★★
-#include <opencv2/opencv.hpp> // ★★★ 'cv::' 関連のすべてのエラーを解決します ★★★
+#include <opencv2/opencv.hpp> // ★★★ 'cv::' 関連 ★★★
 #include <iostream>
 #include <chrono>             // ★★★ 'std::chrono' のために必要 ★★★
 #include <thread>             // ★★★ 'std::this_thread' のために必要 ★★★
 #include <unistd.h>
 #include <fcntl.h>
-#include <atomic>             // std::atomic のために念のため追加
+#include <atomic>             // std::atomic のために念のため
 
 
 // 共通の動画再生ロジック
@@ -29,9 +29,26 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
         return -1;
     }
 
-    cv::VideoCapture cap(video_path, cv::CAP_FFMPEG);
+    cv::VideoCapture cap;
+    if (video_path == "-") {
+        std::cout << "標準入力からビデオストリームを読み込みます..." << std::endl;
+        // GStreamerパイプラインを使って標準入力(fd=0)から読み込む
+        //const std::string gst_pipeline = "fdsrc ! matroskademux ! videoconvert ! appsink";
+        //const std::string gst_pipeline = "fdsrc ! tsdemux ! videoconvert ! appsink";
+        // tsdemux と videoconvert の間に、avdec_h264 を追加
+        //const std::string gst_pipeline = "fdsrc ! tsdemux ! avdec_h264 ! videoconvert ! appsink";
+        //const std::string gst_pipeline = "fdsrc ! decodebin ! videoconvert ! appsink";
+        const std::string gst_pipeline = 
+             "fdsrc ! decodebin name=d "
+            "d. ! queue ! videoconvert ! appsink "
+            "d. ! queue ! audioconvert ! audioresample ! autoaudiosink";
+        cap.open(gst_pipeline, cv::CAP_GSTREAMER);
+    } else {
+        cap.open(video_path, cv::CAP_FFMPEG);
+    }
+
     if (!cap.isOpened()) {
-        std::cerr << "動画ファイルを開けません: " << video_path << std::endl;
+        std::cerr << "動画ソースを開けません: " << video_path << std::endl;
         close(i2c_fd);
         return -1;
     }

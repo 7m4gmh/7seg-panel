@@ -1,8 +1,7 @@
 #include "common.h"
 #include "playback.h"
-#include "main_common.hpp" // ★★★ 共通ヘッダーをインクルード
+#include "main_common.hpp" 
 #include <thread>   
-
 
 int main(int argc, char* argv[]) {
     const std::string usage = 
