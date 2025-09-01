@@ -34,6 +34,22 @@
       "total_width": 12,
       "total_height": 8
     },
+    "16x8": {
+      "name": "16x8 Expanded (2x 12x4 via TCA9548a)",
+      "tca9548a_address": "0x77",
+      "channel_grids": {
+        "0": [
+          ["0x70", "0x71", "0x72", "0x73"]
+        ],
+        "1": [
+          ["0x70", "0x71", "0x72", "0x73"]
+        ]
+      },
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 16,
+      "total_height": 8
+    },
     "48x4": {
       "name": "48x4 Expanded (2x 24x4 via TCA9548a)",
       "tca9548a_address": "0x77",
