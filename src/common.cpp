@@ -1,4 +1,9 @@
 #include "common.h"
+#include "led.h"      // initialize_displays, reset_i2c_channel_cache のために必要
+#include <iostream>
+#include <unistd.h>   // close, usleep, sleep
+#include <fcntl.h>    // open, O_RDWR
+
 
 std::atomic<bool> finished(false);
 std::atomic<bool> audio_waiting(false);
@@ -35,4 +40,47 @@ void setup_signal_handlers() {
     sa.sa_flags = 0;
     sigaction(SIGINT, &sa, NULL);
     sigaction(SIGTERM, &sa, NULL);
+}
+
+bool attempt_i2c_recovery(int& i2c_fd, const DisplayConfig& config) {
+    std::cerr << "I2C communication failed. Starting recovery procedure..." << std::endl;
+    
+    const int MAX_RECOVERY_RETRIES = 3; // 最大3回までリトライ
+
+    for (int retry_count = 1; retry_count <= MAX_RECOVERY_RETRIES; ++retry_count) {
+        std::cout << "[Recovery] Attempt " << retry_count << "/" << MAX_RECOVERY_RETRIES << "..." << std::endl;
+
+        // 1. I2Cファイルディスクリプタを閉じる
+        if (i2c_fd >= 0) {
+            close(i2c_fd);
+        }
+        
+        // 2. 状態キャッシュをリセット
+        reset_i2c_channel_cache();
+        
+        // 3. (オプション) I2Cバスをリフレッシュ
+        // system("i2cdetect -y 0 > /dev/null 2>&1");
+        
+        // 4. リトライ間隔を設ける
+        usleep(retry_count * 500000); // 0.5秒, 1.0秒, 1.5秒...
+
+        // 5. I2Cデバイスを再度オープン
+        i2c_fd = open("/dev/i2c-0", O_RDWR);
+        if (i2c_fd < 0) {
+            perror("[Recovery] Failed to re-open /dev/i2c-0. Retrying...");
+            continue; // 次のリトライへ
+        }
+
+        // 6. 再初期化を試みる
+        if (initialize_displays(i2c_fd, config)) {
+            std::cout << "[Recovery] Recovery successful!" << std::endl;
+            return true; // ★成功したので true を返して終了
+        } else {
+            std::cerr << "[Recovery] Re-initialization failed." << std::endl;
+        }
+    }
+
+    // すべてのリトライが失敗した場合
+    std::cerr << "[Recovery] All recovery attempts failed." << std::endl;
+    return false; // ★失敗したので false を返して終了
 }

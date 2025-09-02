@@ -44,14 +44,13 @@ void udp_loop(int i2c_fd, int sockfd, const DisplayConfig& config, std::atomic<b
             start_time = (double)clock() / CLOCKS_PER_SEC;
             audio_bytes_received = 0;
             // video.h と引数を完全に一致させます
-            std::thread(video_thread, i2c_fd, std::ref(config), std::ref(stop_flag)).detach();
+            std::thread(video_thread, std::ref(i2c_fd), std::ref(config), std::ref(stop_flag)).detach();
         } else if (type == 'A') {
             std::vector<char> chunk(buf + 21, buf + n);
             audio_queue(chunk.data(), chunk.size());
         } else if (type == 'V') {
             int pts;
             memcpy(&pts, buf + 21, sizeof(int));
-            // ★★★ ‘uintuint8_t’ のタイポを ‘uint8_t’ に修正 ★★★
             std::vector<uint8_t> frame_vec(buf + 25, buf + n);
             {
                 std::lock_guard<std::mutex> lock(frame_mtx);

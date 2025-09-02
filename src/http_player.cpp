@@ -14,6 +14,11 @@
 #include <sstream>
 #include <dirent.h>
 
+#include <csignal>   // ★★★ signal のために追加 ★★★
+#include <map>       // ★★★ エラー分析のために追加 ★★★
+#include <utility>   // ★★★ エラー分析のために追加 ★★★
+#include <iomanip>   // ★★★ std::hex のために追加 ★★★
+
 // --- グローバル変数 ---
 std::deque<std::string> video_queue;
 std::string g_currently_playing;
@@ -24,7 +29,34 @@ const size_t MAX_FILE_SIZE = 100 * 1024 * 1024;
 std::vector<std::string> g_default_videos;
 size_t g_next_default_video_index = 0;
 
-// (http_player固有の関数はそのまま残す)
+// I2Cエラー分析用のグローバル変数
+std::map<std::pair<int, int>, int> g_error_counts;
+
+// アプリケーション終了用のシグナルハンドラ
+void http_player_shutdown_handler(int signal_num) {
+    if (signal_num == SIGINT) {
+        if (!g_should_exit) {
+            std::cout << "\nSIGINT received, shutting down..." << std::endl;
+            
+            // --- I2C Error Analysis ---
+            std::cout << "\n--- I2C Error Analysis ---" << std::endl;
+            if (g_error_counts.empty()) {
+                std::cout << "No I2C errors were recorded." << std::endl;
+            } else {
+                for (const auto& [key, count] : g_error_counts) {
+                    std::cout << "Channel: " << key.first 
+                              << ", Address: 0x" << std::hex << key.second << std::dec
+                              << "  => " << count << " errors" << std::endl;
+                }
+            }
+            std::cout << "--------------------------" << std::endl;
+
+            g_should_exit = true;
+        }
+    }
+}
+
+
 void load_default_videos(const std::string& path, std::vector<std::string>& videos) {
     DIR *dir;
     struct dirent *ent;
@@ -77,6 +109,8 @@ int main(int argc, char* argv[]) {
         "Usage: " + std::string(argv[0]) + " <default_video_path> [config_name]\n"
         "  config_name: 24x4 (default), 12x8, etc. from config.json";
 
+    signal(SIGINT, http_player_shutdown_handler);
+
     return common_main_runner(usage, argc, argv,
         [](const std::string& default_video_path, const DisplayConfig& config) {
             std::cout << "Using default video directory: '" << default_video_path << "'" << std::endl;
@@ -89,7 +123,6 @@ int main(int argc, char* argv[]) {
                 return;
             }
             
-            // --- ▼▼▼ 省略されていた部分を元に戻す ▼▼▼ ---
             svr.Get("/status", [](const httplib::Request&, httplib::Response& res) {
                 std::stringstream json;
                 json << "{";
@@ -157,7 +190,9 @@ int main(int argc, char* argv[]) {
                 svr.listen("0.0.0.0", 8080);
             });
             
-            while (!g_should_exit) { std::this_thread::sleep_for(std::chrono::milliseconds(100)); }
+            while (!g_should_exit) { 
+                std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
+            }
             
             std::cout << "\nStopping server..." << std::endl;
             svr.stop();

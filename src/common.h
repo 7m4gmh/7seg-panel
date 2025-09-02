@@ -49,4 +49,18 @@ extern double start_time;
 extern int audio_bytes_received;
 
 
+/**
+ * @brief I2Cバスの通信エラーからの復旧を試みる関数
+ * 
+ * @param i2c_fd 参照渡しのI2Cファイルディスクリプタ。復旧成功時に新しい値で更新される。
+ * @param config ディスプレイ設定。再初期化に必要。
+ * @return true 復旧に成功した場合
+ * @return false 復旧に失敗した場合
+ */
+bool attempt_i2c_recovery(int& i2c_fd, const DisplayConfig& config);
 
+struct I2CErrorInfo {
+    int channel = -1; // エラーが発生したTCAのチャンネル番号
+    int address = -1; // エラーが発生したI2Cデバイスのアドレス
+    bool error_occurred = false; // エラーが発生したかどうか
+};

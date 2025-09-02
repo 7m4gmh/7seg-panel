@@ -7,16 +7,33 @@
 #include <iostream>
 #include <chrono>             // ★★★ 'std::chrono' のために必要 ★★★
 #include <thread>             // ★★★ 'std::this_thread' のために必要 ★★★
+#include <map>    // std::map のために必要
+#include <utility> // std::pair のために必要
+#include <csignal> // signal のために必要
 #include <unistd.h>
 #include <fcntl.h>
 #include <atomic>             // std::atomic のために念のため
 
+std::atomic<bool>* g_current_stop_flag = nullptr;
+//std::map<std::pair<int, int>, int> g_error_counts;
+
+/*
+void handle_signal(int signal) {
+    if (signal == SIGINT) {
+        // グローバルポインタが設定されていれば、
+        // それが指す先のstop_flagをtrueにする
+        if (g_current_stop_flag) {
+            *g_current_stop_flag = true;
+        }
+    }
+}
+*/
 
 // 共通の動画再生ロジック
 int play_video_stream(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
-    // この関数が呼ばれるたびに stop_flag をリセットするのが安全
+    g_current_stop_flag = &stop_flag;
     stop_flag = false;
-
+    
     int i2c_fd = open("/dev/i2c-0", O_RDWR);
     if (i2c_fd < 0) {
         perror("open /dev/i2c-0 に失敗");
@@ -90,8 +107,19 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
 
         std::vector<uint8_t> grid;
         frame_to_grid(bw_frame, config, grid);
-        update_flexible_display(i2c_fd, config, grid);
+   
+        I2CErrorInfo error_info;
 
+        if (!update_flexible_display(i2c_fd, config, grid, error_info)) {
+               if (error_info.error_occurred) {
+                //g_error_counts[{error_info.channel, error_info.address}]++;
+            }
+            if (!attempt_i2c_recovery(i2c_fd, config)) {
+            // 全ての復旧に失敗した場合、長めに待つ
+            std::cerr << "Recovery failed. Pausing before next attempt..." << std::endl;
+            sleep(2);    
+            }   
+        }
         next_frame_time += frame_duration;
         std::this_thread::sleep_until(next_frame_time);
     }
@@ -105,5 +133,8 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
     } else {
         std::cout << "再生終了: " << video_path << std::endl;
     }
+    //handle_signal(SIGINT);
+    g_current_stop_flag = nullptr;
     return 0;
 }
+

@@ -14,60 +14,63 @@
 // 現在選択されているチャンネルを記憶する (-1は未選択/直接接続)
 static int g_current_channel = -2; // 初期値を-2にして初回は必ず設定されるようにする
 
-void select_i2c_channel(int i2c_fd, int expander_addr, int channel) {
+void reset_i2c_channel_cache() {
+    g_current_channel = -2; // 初期値に戻す
+}
+
+
+
+// ★変更★ 戻り値の型を void から bool に変更
+bool select_i2c_channel(int i2c_fd, int expander_addr, int channel, I2CErrorInfo& error_info_out) {
     if (expander_addr < 0) {
         g_current_channel = -1;
-        return;
+        return true; // TCAがない場合は常に成功
     }
     if (channel == g_current_channel) {
-        return;
+        return true; // チャンネル変更が不要な場合は成功
     }
 
     if (ioctl(i2c_fd, I2C_SLAVE, expander_addr) < 0) {
         fprintf(stderr, "ERROR: ioctl I2C_SLAVE for TCA9548A (0x%02X) failed\n", expander_addr);
         perror("ioctl");
-        return;
+        error_info_out.error_occurred = true;
+        error_info_out.channel = channel;
+        error_info_out.address = expander_addr; // エラーはエキスパンダ自体で発生
+        return false; // ★変更★ エラー時に false を返す
     }
-
     uint8_t cmd = (channel < 0) ? 0x00 : (1 << channel);
     if (write(i2c_fd, &cmd, 1) != 1) {
         fprintf(stderr, "ERROR: Failed to write to TCA9548A (0x%02X) to select channel %d\n", expander_addr, channel);
         perror("write");
-    } else {
-        // ★★★ デバッグログ ★★★
-       // std::cout << "[DEBUG] Switched I2C expander to Channel " << channel << std::endl;
+        error_info_out.error_occurred = true;
+        error_info_out.channel = channel;
+        error_info_out.address = expander_addr;
+        return false; // ★変更★ エラー時に false を返す
     }
     
     g_current_channel = channel;
     usleep(1000); 
+    return true; // ★変更★ 成功時に true を返す
 }
+
 
 bool initialize_displays(int i2c_fd, const DisplayConfig& config) {
     std::cout << "Initializing modules..." << std::endl;
-    
-    // ★★★ TCAなしの場合は、古いロジックに戻す ★★★
+    I2CErrorInfo dummy_error_info; // ★★★ ダミーの変数を定義 ★★★
+
     if (config.tca9548a_address < 0) {
-        std::vector<int> module_addrs = config.all_addresses();
-        for (int addr : module_addrs) {
-            if (ioctl(i2c_fd, I2C_SLAVE, addr) < 0) {
-                perror("ioctl I2C_SLAVE failed during initialization");
+        // TCAなしの場合 (省略)
+        // ... こちらもエラー時に return false; が必要
+    } else {
+        // TCAありの場合
+        for (auto const& [channel, grid] : config.channel_grids) {
+            // チャンネル切り替えに失敗したら、即座に中断
+            if (!select_i2c_channel(i2c_fd, config.tca9548a_address, channel, dummy_error_info)) {
+                fprintf(stderr, "ERROR [Init]: Failed to select channel %d\n", channel);
                 return false;
             }
-            uint8_t commands[] = { 0x21, 0x81, 0xEF };
-            for (uint8_t cmd : commands) {
-                if (write(i2c_fd, &cmd, 1) != 1) {
-                    fprintf(stderr, "ERROR [Init]: Failed to write command 0x%02X to address 0x%02X\n", cmd, addr);
-                    perror(" -> i2c write command");
-                    // return false; // エラーなら初期化を中断した方が良い
-              }
-                usleep(1000);
-            }
-        }
-    } else {
-        // ★★★ TCAありの場合は、新しいロジックを使う ★★★
-        for (auto const& [channel, grid] : config.channel_grids) {
-            select_i2c_channel(i2c_fd, config.tca9548a_address, channel);
-            usleep(5000); // ★★★ チャンネル切り替え後、少し長めに待機してみる (5ms) ★★★
+            usleep(5000);
+
             for (const auto& row : grid) {
                 for (int addr : row) {
                     if (ioctl(i2c_fd, I2C_SLAVE, addr) < 0) {
@@ -76,31 +79,31 @@ bool initialize_displays(int i2c_fd, const DisplayConfig& config) {
                     }
                     uint8_t commands[] = { 0x21, 0x81, 0xEF };
                     for (uint8_t cmd : commands) {
-    if (write(i2c_fd, &cmd, 1) != 1) {
-        // どのチャンネルのどのアドレスで失敗したかを出力すると、より分かりやすい
-        fprintf(stderr, "ERROR [Init]: Failed to write command 0x%02X to CH%d addr 0x%02X\n", cmd, channel, addr);
-        perror(" -> i2c write command");
-    }
-    usleep(1000);
-}
-                    for (uint8_t cmd : commands) {
                         if (write(i2c_fd, &cmd, 1) != 1) {
-                            fprintf(stderr, "Failed to write command 0x%02X to address 0x%02X\n", cmd, addr);
-                            perror("i2c write command");
+                            fprintf(stderr, "ERROR [Init]: Failed to write command 0x%02X to CH%d addr 0x%02X\n", cmd, channel, addr);
+                            perror(" -> i2c write command");
+                            // エラー発生時に即座に false を返す
+                            return false; 
                         }
                         usleep(1000);
                     }
                 }
             }
         }
-        select_i2c_channel(i2c_fd, config.tca9548a_address, -1);
+        // 全チャンネルを無効化
+        if (!select_i2c_channel(i2c_fd, config.tca9548a_address, -1, dummy_error_info)) {
+            fprintf(stderr, "ERROR [Init]: Failed to disable all channels on TCA9548A\n");
+            return false;
+        }
     }
     
     std::cout << "Initialization complete." << std::endl;
-    return true;
+    return true; 
 }
 
-void update_module_from_grid(int i2c_bus_fd, int addr, const std::vector<uint8_t>& grid16) {
+
+bool update_module_from_grid(int i2c_bus_fd, int addr, const std::vector<uint8_t>& grid16, I2CErrorInfo& error_info_out) {
+    // ... バッファ作成のロジック...
     uint8_t display_buffer[16] = {0};
     const int DIGITS_PER_MODULE = 16; 
     for (int digit_index = 0; digit_index < DIGITS_PER_MODULE && static_cast<size_t>(digit_index) < grid16.size(); ++digit_index) {
@@ -120,17 +123,27 @@ void update_module_from_grid(int i2c_bus_fd, int addr, const std::vector<uint8_t
             }
         }
     }
+
     if (ioctl(i2c_bus_fd, I2C_SLAVE, addr) < 0) {
-        perror("ioctl I2C_SLAVE"); return;
+        perror("ioctl I2C_SLAVE");
+        error_info_out.error_occurred = true;
+        error_info_out.address = addr;
+        return false; // ★変更★ エラー時に false を返す
     }
+
     uint8_t buf[17];
     buf[0] = 0x00;
     memcpy(buf + 1, display_buffer, 16);
     if (write(i2c_bus_fd, buf, 17) != 17) {
         fprintf(stderr, "ERROR: Failed to write display data to module at address 0x%02X\n", addr);
-        perror(" -> i2c write"); // perrorの前にどの処理かを示すと更に分かりやすい
+        perror(" -> i2c write");
+        error_info_out.error_occurred = true;
+        error_info_out.address = addr;
+        return false; // ★変更★ エラー時に false を返す
     }
+    return true; // ★変更★ 成功時に true を返す
 }
+
 
 /**
  * @brief 物理レイアウトを元にディスプレイ全体を更新する (修正版)
@@ -139,9 +152,9 @@ void update_module_from_grid(int i2c_bus_fd, int addr, const std::vector<uint8_t
  * @param config ディスプレイの物理構成
  * @param grid 表示データ（左上から右下への一次元配列）
  */
-// src/led.cpp
 
-void update_flexible_display(int i2c_fd, const DisplayConfig& config, const std::vector<uint8_t>& grid) {
+
+bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std::vector<uint8_t>& grid, I2CErrorInfo& error_info_out) {
     bool use_tca = (config.tca9548a_address != -1);
     const int digits_per_module = config.module_digits_width * config.module_digits_height;
     std::vector<uint8_t> module_data_buffer(digits_per_module);
@@ -150,7 +163,10 @@ void update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
 
     for (const auto& [channel, address_grid] : config.channel_grids) {
         if (use_tca) {
-            select_i2c_channel(i2c_fd, config.tca9548a_address, channel);
+            // ★変更★ select_i2c_channel の戻り値を確認
+            if (!select_i2c_channel(i2c_fd, config.tca9548a_address, channel, error_info_out)) {
+                return false;
+            }
         }
         if (address_grid.empty()) continue;
         const int channel_grid_height = address_grid.size();
@@ -158,6 +174,7 @@ void update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
 
         for (int grid_r = 0; grid_r < channel_grid_height; ++grid_r) {
             for (int grid_c = 0; grid_c < channel_grid_width; ++grid_c) {
+                //  データ準備のロジック  
                 int module_addr = address_grid[grid_r][grid_c];
                 int module_start_col = global_col_offset + (grid_c * config.module_digits_width);
                 int module_start_row = global_row_offset + (grid_r * config.module_digits_height);
@@ -173,10 +190,17 @@ void update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
                         }
                     }
                 }
-                update_module_from_grid(i2c_fd, module_addr, module_data_buffer);
+
+                // ★変更★ update_module_from_grid の戻り値を確認
+                if (!update_module_from_grid(i2c_fd, module_addr, module_data_buffer, error_info_out)) {
+                    fprintf(stderr, "Failed to update module at CH%d addr 0x%02X. Aborting update.\n", channel, module_addr);
+                    error_info_out.channel = channel; 
+                    return false; // エラーを伝播
+                }
             }
         }
         
+        // ... (オフセット計算のロジックは変更なし) ...
         int channel_width_in_digits = channel_grid_width * config.module_digits_width;
         int channel_height_in_digits = channel_grid_height * config.module_digits_height;
         if ((global_col_offset + channel_width_in_digits) < config.total_width) {
@@ -186,4 +210,5 @@ void update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
             global_row_offset += channel_height_in_digits;
         }
     }
+    return true; // ★変更★ すべて成功したら true を返す
 }

@@ -6,6 +6,8 @@
 #include <chrono>
 #include <map>
 #include <opencv2/opencv.hpp>
+#include <fcntl.h>  // open() と O_RDWR のために必要
+#include <unistd.h> // close(), usleep() のために必要
 
 // 7セグ1文字内のピクセルサンプリング位置 (変更なし)
 const std::map<int, std::pair<int, int>> SEG_MAP = {
@@ -70,17 +72,19 @@ void frame_to_grid(const cv::Mat& bw, const DisplayConfig& config, std::vector<u
     }
 }
 
-void video_thread(int i2c_fd, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
+
+
+// ★修正1★ 引数を「値渡し」から「参照渡し」に変更 (int -> int&)
+// これにより、関数内で i2c_fd を再オープンした結果が呼び出し元に反映される
+void video_thread(int& i2c_fd, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
     std::vector<uint8_t> grid(config.total_digits(), 0);
     auto frame_duration = std::chrono::milliseconds(1000 / FPS);
 
     while (!stop_flag) {
         auto start_time = std::chrono::steady_clock::now();
         
-        // ★★★ 修正点: vectorとしてデータを受け取り、cv::Matに変換する ★★★
         std::vector<uint8_t> frame_data;
 
-        // 最新のフレームをロックしてローカルベクターにコピー
         {
             std::lock_guard<std::mutex> lock(frame_mtx);
             if (!latest_frame.empty()) {
@@ -88,18 +92,21 @@ void video_thread(int i2c_fd, const DisplayConfig& config, std::atomic<bool>& st
             }
         }
 
-        // コピーしたフレームデータが有効な場合のみ処理を実行
         if (!frame_data.empty()) {
-            // vectorのデータを指すcv::Matオブジェクトを作成 (データコピーは発生しない)
             cv::Mat current_frame(H, W, CV_8UC1, frame_data.data());
-
-            // フレームを7セグのグリッドデータに変換
             frame_to_grid(current_frame, config, grid);
+            I2CErrorInfo error_info; 
 
-            // 新しい関数を使ってディスプレイを更新
-            update_flexible_display(i2c_fd, config, grid);
+if (!update_flexible_display(i2c_fd, config, grid, error_info)) {
+                    if (!attempt_i2c_recovery(i2c_fd, config)) {
+                    // 全ての復旧に失敗した場合、長めに待つ
+                    std::cerr << "Recovery failed in video_thread. Pausing before next attempt..." << std::endl;
+                    sleep(2);
+                }                                  
+            }     
         }
 
+        // sleep_until と sleep_for の混在をやめ、シンプルな形でフレームレートを維持する
         auto end_time = std::chrono::steady_clock::now();
         auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
         auto wait_time = frame_duration - elapsed_time;
@@ -108,7 +115,6 @@ void video_thread(int i2c_fd, const DisplayConfig& config, std::atomic<bool>& st
         }
     }
 }
-
 
 /* 
 #include <opencv2/imgproc.hpp> // cv::circle のために追加

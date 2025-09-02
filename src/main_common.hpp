@@ -6,6 +6,11 @@
 #include <stdexcept>
 #include "config.h"
 #include "config_loader.hpp"
+#include <map>
+#include <utility>
+
+extern std::map<std::pair<int, int>, int> g_error_counts;
+
 
 // C++17の [[nodiscard]] 属性。戻り値を使わないと警告を出す。
 [[nodiscard]]
