@@ -4,8 +4,6 @@
 PROJECT_NAME = 7seg-panel
 VERSION      = 1.0.0
 
-# 利用可能なCPUコア数を自動で取得して、その数で並列ビルドする
-# nprocコマンドがない環境のために、失敗したらデフォルトで4にする
 NUM_CORES := $(shell nproc 2>/dev/null || echo 4)
 MAKEFLAGS += -j$(NUM_CORES)
 
@@ -13,7 +11,8 @@ MAKEFLAGS += -j$(NUM_CORES)
 # コンパイラと共通設定
 # ----------------------------------------
 CXX = g++
-BASE_CXXFLAGS = -std=c++17 -Wall -O2 -I../cpp-httplib -I./include
+INCLUDES = -Iinclude -I../cpp-httplib
+BASE_CXXFLAGS = -std=c++17 -Wall -O2 $(INCLUDES)
 BASE_LDFLAGS = -pthread
 
 # ----------------------------------------
@@ -25,42 +24,44 @@ GST_CFLAGS = $(shell pkg-config --cflags gstreamer-1.0)
 GST_LIBS   = $(shell pkg-config --libs gstreamer-1.0)
 
 # ----------------------------------------
-# ターゲットごとの最終的なフラグを定義
-# ----------------------------------------
-CXXFLAGS_CV_SDL = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS)
-LDFLAGS_CV_SDL  = $(BASE_LDFLAGS) $(CV_SDL_LIBS)
-CXXFLAGS_GST = $(BASE_CXXFLAGS) $(GST_CFLAGS)
-LDFLAGS_GST  = $(BASE_LDFLAGS) $(GST_LIBS)
-
-# ----------------------------------------
 # ソースファイルとオブジェクトファイル
 # ----------------------------------------
 SRCDIR = src
 OBJDIR = obj
+DEPDIR = $(OBJDIR)
 
-SRCS_COMMON = $(SRCDIR)/common.cpp $(SRCDIR)/led.cpp $(SRCDIR)/video.cpp $(SRCDIR)/audio.cpp $(SRCDIR)/playback.cpp
+SRCS_COMMON = $(wildcard $(SRCDIR)/common.cpp $(SRCDIR)/led.cpp $(SRCDIR)/video.cpp $(SRCDIR)/audio.cpp $(SRCDIR)/playback.cpp)
+UDP_PLAYER_SRCS = $(wildcard $(SRCDIR)/udp_player.cpp $(SRCDIR)/udp.cpp)
+FILE_PLAYER_SRCS = $(wildcard $(SRCDIR)/file_player.cpp)
+HTTP_PLAYER_SRCS = $(wildcard $(SRCDIR)/http_player.cpp)
+SRCS_HTTP_STREAMER = $(wildcard $(SRCDIR)/http_streamer.cpp)
+
 OBJS_COMMON = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS_COMMON))
-
-SERVER_SRCS = $(SRCDIR)/udp_player.cpp $(SRCDIR)/udp.cpp
-SERVER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SERVER_SRCS))
-
-PLAYER_SRCS = $(SRCDIR)/file_player.cpp
-PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(PLAYER_SRCS))
-
-HTTP_PLAYER_SRCS = $(SRCDIR)/http_player.cpp
+UDP_PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(UDP_PLAYER_SRCS))
+FILE_PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(FILE_PLAYER_SRCS))
 HTTP_PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(HTTP_PLAYER_SRCS))
+OBJS_HTTP_STREAMER = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS_HTTP_STREAMER))
 
-HTTP_STREAMER_SRC = $(SRCDIR)/http_streamer.cpp
-HTTP_STREAMER_OBJ = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(HTTP_STREAMER_SRC))
+ALL_OBJS = $(OBJS_COMMON) $(UDP_PLAYER_OBJS) $(FILE_PLAYER_OBJS) $(HTTP_PLAYER_OBJS) $(OBJS_HTTP_STREAMER)
+DEPS = $(patsubst $(OBJDIR)/%.o,$(DEPDIR)/%.d,$(ALL_OBJS))
 
 # ----------------------------------------
 # 実行ファイル名
 # ----------------------------------------
-SERVER_BIN        = 7seg-udp-player
-PLAYER_BIN        = 7seg-file-player
+UDP_PLAYER_BIN    = 7seg-udp-player
+FILE_PLAYER_BIN   = 7seg-file-player
 HTTP_PLAYER_BIN   = 7seg-http-player
 HTTP_STREAMER_BIN = 7seg-http-streamer
-TARGETS = $(SERVER_BIN) $(PLAYER_BIN) $(HTTP_PLAYER_BIN) $(HTTP_STREAMER_BIN)
+TARGETS = $(UDP_PLAYER_BIN) $(FILE_PLAYER_BIN) $(HTTP_PLAYER_BIN) $(HTTP_STREAMER_BIN)
+
+# ----------------------------------------
+# ターゲットごとのフラグとオブジェクトを定義
+# ----------------------------------------
+# ★★★ 修正点: オブジェクトファイルにフラグを関連付ける ★★★
+OBJS_CV_SDL = $(OBJS_COMMON) $(UDP_PLAYER_OBJS) $(FILE_PLAYER_OBJS) $(HTTP_PLAYER_OBJS)
+$(OBJS_CV_SDL): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS)
+
+$(OBJS_HTTP_STREAMER): CXXFLAGS = $(BASE_CXXFLAGS) $(GST_CFLAGS)
 
 # ----------------------------------------
 # ビルドルール
@@ -69,45 +70,44 @@ TARGETS = $(SERVER_BIN) $(PLAYER_BIN) $(HTTP_PLAYER_BIN) $(HTTP_STREAMER_BIN)
 
 all: $(TARGETS)
 
-# --- 実行ファイルのリンク (★★★ ここが欠落していました ★★★) ---
-
-# (A) OpenCV/SDL2 を使用するターゲット
-$(SERVER_BIN): $(OBJS_COMMON) $(SERVER_OBJS)
-	$(CXX) -o $@ $^ $(LDFLAGS_CV_SDL)
+# --- 実行ファイルのリンク ---
+$(UDP_PLAYER_BIN): $(OBJS_COMMON) $(UDP_PLAYER_OBJS)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
 	@echo "Successfully built -> $@"
 
-$(PLAYER_BIN): $(OBJS_COMMON) $(PLAYER_OBJS)
-	$(CXX) -o $@ $^ $(LDFLAGS_CV_SDL)
+$(FILE_PLAYER_BIN): $(OBJS_COMMON) $(FILE_PLAYER_OBJS)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
 	@echo "Successfully built -> $@"
 
 $(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
-	$(CXX) -o $@ $^ $(LDFLAGS_CV_SDL)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
 	@echo "Successfully built -> $@"
 
-# (B) GStreamer を使用するターゲット
-$(HTTP_STREAMER_BIN): $(HTTP_STREAMER_OBJ)
-	$(CXX) -o $@ $^ $(LDFLAGS_GST)
+$(HTTP_STREAMER_BIN): $(OBJS_HTTP_STREAMER)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(GST_LIBS)
 	@echo "Successfully built -> $@"
 
 # --- オブジェクトファイルのコンパイル ---
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(DEPDIR)
+	@echo "Compiling $<..."
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJDIR):
-	@mkdir -p $(OBJDIR)
+$(DEPDIR):
+	@mkdir -p $(DEPDIR)
 
-# (A) OpenCV/SDL2 に依存するソースをコンパイルするルール
-$(OBJS_COMMON) $(SERVER_OBJS) $(PLAYER_OBJS) $(HTTP_PLAYER_OBJS): $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
-	$(CXX) $(CXXFLAGS_CV_SDL) -c $< -o $@
-
-# (B) GStreamer に依存するソースをコンパイルするルール
-$(HTTP_STREAMER_OBJ): $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
-	$(CXX) $(CXXFLAGS_GST) -c $< -o $@
+# 依存関係ファイルをインクルード
+-include $(DEPS)
 
 # ----------------------------------------
 # パッケージ作成 (ソース)
 # ----------------------------------------
 PACKAGE       = $(PROJECT_NAME)-$(VERSION)
 ARCHIVE       = $(PACKAGE).tar.gz
-PACKAGE_FILES = src www Makefile README.md README.en.md README.ja.md README.zh-CN.md docs
+PACKAGE_FILES = src include www Makefile README.md README.en.md README.ja.md README.zh-CN.md docs
 
 package: $(ARCHIVE)
 
@@ -142,7 +142,7 @@ $(DEB_NAME): all
 	@echo "Version: $(VERSION)" >> $(DEB_DIR)/DEBIAN/control
 	@echo "Architecture: $(ARCH)" >> $(DEB_DIR)/DEBIAN/control
 	@echo "Maintainer: Your Name <your.email@example.com>" >> $(DEB_DIR)/DEBIAN/control
-	@echo "Depends: libopencv-core406, libopencv-videoio406, libsdl2-2.0-0, libgstreamer1.0-0" >> $(DEB_DIR)/DEBIAN/control
+	@echo "Depends: libopencv-core, libopencv-videoio, libsdl2-2.0-0, libgstreamer1.0-0" >> $(DEB_DIR)/DEBIAN/control
 	@echo "Description: 7-Segment LED Panel Video Player" >> $(DEB_DIR)/DEBIAN/control
 	@echo " A suite of tools to play videos on a custom I2C 7-segment display." >> $(DEB_DIR)/DEBIAN/control
 	cp $(TARGETS) $(DEB_DIR)/usr/local/bin/
@@ -157,4 +157,4 @@ $(DEB_NAME): all
 # クリーンアップ
 # ----------------------------------------
 clean:
-	rm -rf $(OBJDIR) $(TARGETS) $(PROJECT_NAME)-*.tar.gz $(PROJECT_NAME)_*.deb
+	rm -rf $(OBJDIR) $(TARGETS) $(PROJECT_NAME)-*.tar.gz
