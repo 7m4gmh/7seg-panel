@@ -15,5 +15,5 @@ i2cで駆動する自作の7セグメントLEDパネルで、動画を再生す�
 
 
 
-[![デモ動画](./docs/7seg-output_hq.gif)](https://www.youtube.com/watch?v=https://youtube.com/live/B6jOceDTkTE)
+[![デモ動画](./docs/7seg-output_hq.gif)](https://www.instagram.com/reel/DOIo3QTEZs0/?utm_source=ig_web_button_share_sheet)
 
