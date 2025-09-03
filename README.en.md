@@ -1,133 +1,125 @@
-# 7-Segment LED Panel Video Player
+# 7-Segment LED Panel Player
 
-[![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
-[![Library](https://img.shields.io/badge/Library-OpenCV%20%7C%20GStreamer-green.svg)](https://opencv.org/)
-[![Platform](https://img.shields.io/badge/Platform-Linux-lightgrey.svg)](https://www.linux.org/)
+## Overview
 
-This project provides a suite of tools for playing videos on a custom display panel composed of I2C-connected, HT16K33-based 7-segment LED modules. It supports flexible display configurations and automatically corrects the aspect ratio for video playback.
+This project is a comprehensive suite of tools designed to play videos on a custom-built large-scale 7-segment LED panel array. It processes video files in real-time, converting them into signals to drive multiple I2C-based LED modules, managed by a TCA9548A I2C multiplexer.
 
-![Demo GIF](docs/demo.gif)
-*(It is recommended to place an image or GIF demonstrating the project here)*
+It features a robust error detection and recovery mechanism, allowing for stable, long-term operation by automatically attempting to recover from unstable I2C communication.
 
----
+## Features
 
-## ✨ Key Features
+- **Multiple Players**:
+  - `7seg-file-player`: Plays a local video file.
+  - `7seg-http-player`: Provides a web UI for video uploads, queue management, and playback control.
+  - `7seg-udp-player`: Receives and displays a real-time UDP stream.
+- **Flexible Panel Configuration**: Define the physical layout and I2C addresses of your LED modules freely via `config.json`.
+- **Advanced I2C Error Recovery**:
+  - Automatically detects communication errors and re-initializes the display.
+  - Retries the recovery process multiple times if the initial attempt fails.
+- **Hardware Issue Analysis**: On exit (`Ctrl+C`), it displays an aggregated report of errors by I2C channel and address, helping to pinpoint problematic hardware (modules, wiring).
+- **Remote Control via Web UI** (`7seg-http-player`):
+  - Upload video files.
+  - Manage the playback queue (add/delete).
+  - Stop the currently playing video.
+  - Check playback status.
 
-- **Flexible Display Configuration:**
-  - Easily add or modify the physical layout of LED modules (e.g., horizontal, grid) by editing `config.h`.
-  - Switch between configurations like `24x4` or `12x8` using command-line arguments.
+## Prerequisites
 
-- **Automatic Aspect Ratio Correction:**
-  - Automatically crops source videos to match the aspect ratio of the selected display configuration.
-
-- **Multiple Playback Modes:**
-  1.  **HTTP Player (`7seg-http-player`):** A web server to upload videos and manage a playback queue from a browser.
-  2.  **File Player (`7seg-file-player`):** A simple command-line tool to play a single video file directly.
-  3.  **UDP Stream Player (`7seg-udp-player`):** A server that receives video/audio data via UDP and displays it in real-time.
-  4.  **HTTP GStreamer Player (`7seg-http-streamer`):** An alternative HTTP server that uses GStreamer for video processing.
-
-- **Modular Design:**
-  - The core OpenCV-based video playback logic is centralized in `playback.cpp` for high maintainability.
-
-## Hardware Requirements
-
-- A Linux-based single-board computer with I2C capabilities (e.g., Raspberry Pi, Rockchip SBC).
-- Multiple 7-segment LED modules featuring the HT16K33 LED driver IC.
-- I2C bus wiring to connect the modules.
-
-## Software Dependencies
-
-- A C++17 compliant compiler (g++)
+- C++17 compatible compiler (`g++`)
 - `make`
-- OpenCV 4 (`libopencv-dev`)
-- GStreamer 1.0 (`libgstreamer1.0-dev`)
-- `libi2c-dev` (for I2C communication)
-- SDL2 (for audio playback in UDP streaming, `libsdl2-dev`)
-- `cpp-httplib` (included in the project)
+- **OpenCV 4** (`libopencv-dev`)
+- **libSDL2** (`libsdl2-dev`) (for audio playback)
+- **GStreamer** (for streaming from stdin)
 
-#### Installation Example on Ubuntu / Debian / Radxa OS
+## How to Build
+
+In the root directory of the repository, run the following commands:
+
 ```bash
-sudo apt update
-sudo apt install -y build-essential make libopencv-dev libi2c-dev libsdl2-dev libgstreamer1.0-dev
-```
-
-## 🚀 How to Build
-
-Run the `make` command to build all executables:
-```bash
+make clean
 make
 ```
-Upon success, four executables will be generated in the project's root directory.
 
-## 📖 Usage
+## Configuration
 
-Each executable can optionally take a display configuration argument. If omitted, `24x4` is used by default.
+Edit the `config.json` file to define the hardware configuration of your LED panel.
 
-### 1. HTTP Player (`7seg-http-player`)
+**Example Configuration (`16x16_expanded`):**
+```json
+{
+  "configs": {
+    "16x16_expanded": {
+      "tca9548a_address": 119,
+      "total_width": 16,
+      "total_height": 16,
+      "module_digits_width": 16,
+      "module_digits_height": 4,
+      "channel_grids": {
+        "0": [
+          [ 112 ]
+        ],
+        "1": [
+          [ 112, 113, 114, 115 ]
+        ],
+        "2": [
+          [ 112, 113, 114, 115 ]
+        ]
+      }
+    }
+  }
+}
+```
 
-Manage and play videos via a web UI. (Backend: OpenCV)
+- `tca9548a_address`: The decimal address of the TCA9548A I2C multiplexer. Set to `-1` if not in use.
+- `total_width`, `total_height`: The total width and height of the panel in number of characters.
+- `module_digits_width`, `module_digits_height`: The width and height of a single LED module in number of characters.
+- `channel_grids`: Defines the I2C addresses of modules connected to each channel of the TCA9548A in a 2D array.
 
-**Command:**
+## Usage
+
+### 1. File Player (`7seg-file-player`)
+
+Plays a local video file.
+
 ```bash
-./7seg-http-player [default_video_dir] [config]
+./7seg-file-player <path_to_video_file> [config_name]
 ```
-- `[default_video_dir]` (Optional): Path to the directory with default videos. (Default: `default_videos`)
-- `[config]` (Optional): The display configuration to use. (e.g., `12x8`, Default: `24x4`)
+Example: `./7seg-file-player ./videos/my_video.mp4 16x16_expanded`
 
-**Example:**
+### 2. HTTP Player (`7seg-http-player`)
+
+Starts a web server for browser-based control.
+
 ```bash
-./7seg-http-player default_videos 12x8
+./7seg-http-player <path_to_default_videos_dir> [config_name]
 ```
-After starting, access the web UI from a PC on the same network at `http://<SBC_IP_ADDRESS>:8080`.
+Example: `./7seg-http-player ./default_videos 16x16_expanded`
 
-### 2. File Player (`7seg-file-player`)
+After starting the server, access the UI by navigating to `http://<your_pi_ip_address>:8080` in your web browser.
 
-Plays a single video file directly. (Backend: OpenCV)
+### 3. UDP Player (`7seg-udp-player`)
 
-**Command:**
+Listens for a UDP stream on a specified port.
+
 ```bash
-./7seg-file-player <video_file> [config]
+./7seg-udp-player <port_number> [config_name]
 ```
-**Example:**
-```bash
-./7seg-file-player test.mp4 12x8
+Example: `./7seg-udp-player 12345 16x16_expanded`
+
+## Troubleshooting
+
+If you experience frequent I2C communication failures, the program will attempt to recover automatically. When you exit the program with `Ctrl+C`, an analysis report is displayed to help identify the source of the errors.
+
+**Example Analysis Report:**
 ```
-
-### 3. UDP Stream Player (`7seg-udp-player`)
-
-Accepts and plays streaming data over the network.
-
-**Command:**
-```bash
-./7seg-udp-player [config]
+--- I2C Error Analysis ---
+Channel: 2, Address: 0x70  => 15 errors
+Channel: 2, Address: 0x72  => 42 errors
+--------------------------
 ```
-**Example:**
-```bash
-./7seg-udp-player 12x8
-```
-The server listens for UDP packets on port `9999`.
+This example indicates that the errors are concentrated on **Channel 2** of the TCA9548A. This strongly suggests a physical problem with the wiring for Channel 2 or with the modules connected to it (`0x70`, `0x72`).
 
-### 4. HTTP GStreamer Player (`7seg-http-streamer`)
+## License
+All files in this repository made by the author are copyrighted, and are protected by copyright laws and regulations in Japan and other jurisdictions.
 
-An HTTP server that uses GStreamer as its backend, which may offer different performance characteristics or format support.
-
-**Command:**
-```bash
-./7seg-http-streamer
-```
-
-## 📂 Project Structure
-
-```
-.
-├── src/
-│   ├── config.h
-│   ├── playback.h/.cpp     # Common OpenCV playback engine
-│   ├── http_player.cpp   # Main for 7seg-http-player
-│   ├── file_player.cpp   # Main for 7seg-file-player
-│   ├── udp_player.cpp    # Main for 7seg-udp-player
-│   ├── http_streamer.cpp # Main for 7seg-http-streamer
-│   └── ...
-├── Makefile              # Build script
-└── README.md
-```
+Other files created by others are subject to their own license terms, which are described in the files themselves.
