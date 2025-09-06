@@ -9,7 +9,8 @@ APORT="${3:-5006}"
 
 pick_venc() {
   if gst-inspect-1.0 x264enc >/dev/null 2>&1; then
-    echo 'x264enc tune=zerolatency speed-preset=ultrafast bitrate=800 key-int-max=40 profile=baseline byte-stream=true'
+    # Baseline相当: Bフレーム&CABAC無効、AnnexB
+    echo 'x264enc tune=zerolatency speed-preset=ultrafast bitrate=800 key-int-max=40 bframes=0 cabac=false byte-stream=true'
     return
   fi
   if gst-inspect-1.0 vtenc_h264 >/dev/null 2>&1; then
@@ -30,7 +31,7 @@ pick_venc() {
 VENC="$(pick_venc)"
 if [ -z "${VENC}" ]; then
   echo "No H.264 encoder found (x264enc/vtenc_h264/avenc_h264/openh264enc)." >&2
-  echo "Install one of: gst-plugins-ugly (x264enc), gst-plugins-bad (vtenc_h264, openh264enc with openh264), gst-libav (avenc_h264)." >&2
+  echo "Install one of: gst-plugins-ugly (x264enc), gst-plugins-bad (vtenc_h264, openh264enc + openh264), gst-libav (avenc_h264)." >&2
   exit 1
 fi
 
@@ -39,4 +40,3 @@ gst-launch-1.0 -v \
   ${VENC} ! h264parse ! rtph264pay pt=96 config-interval=1 ! udpsink host="${HOST}" port="${VPORT}" \
   audiotestsrc is-live=true wave=sine freq=440 ! audioconvert ! audioresample ! \
   opusenc bitrate=64000 ! rtpopuspay pt=97 ! udpsink host="${HOST}" port="${APORT}"
-
