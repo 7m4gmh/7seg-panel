@@ -22,14 +22,14 @@
 
 static std::atomic<bool> stop_flag(false);
 
-static GstFlowReturn on_new_sample_video(GstAppSink* sink, gpointer user_data) {
+static GstFlowReturn on_new_sample_video(GstAppSink* sink, gpointer) {
     GstSample* sample = gst_app_sink_pull_sample(sink);
     if (!sample) return GST_FLOW_OK;
 
     GstBuffer* buffer = gst_sample_get_buffer(sample);
     GstCaps* caps = gst_sample_get_caps(sample);
     if (!buffer || !caps) {
-        gst_sample_unref(sample);
+        if (sample) gst_sample_unref(sample);
         return GST_FLOW_OK;
     }
 
@@ -46,29 +46,23 @@ static GstFlowReturn on_new_sample_video(GstAppSink* sink, gpointer user_data) {
         return GST_FLOW_OK;
     }
 
-    int width = GST_VIDEO_INFO_WIDTH(&vinfo);
+    int width  = GST_VIDEO_INFO_WIDTH(&vinfo);
     int height = GST_VIDEO_INFO_HEIGHT(&vinfo);
-    int stride = GST_VIDEO_INFO_PLANE_STRIDE(&vinfo, 0); // BGR 3ch想定
-    // OpenCV Mat をラップ（BGR）
-    cv::Mat img(height, width, CV_8UC3, (void*)map.data, stride);
 
-    // LED 側の既存パイプラインに合わせて JPEG にエンコードして渡す（udp と同等の流儀）
+    // appsinkはBGRで受ける設定
+    cv::Mat img(height, width, CV_8UC3, const_cast<guint8*>(map.data));
     std::vector<uint8_t> jpg;
     std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 45};
     cv::imencode(".jpg", img, jpg, params);
 
-    // PTS を ms に変換して last_pts_ms に保存
-    GstClockTime pts = GST_BUFFER_PTS(buffer);
     int pts_ms = 0;
-    if (GST_CLOCK_TIME_IS_VALID(pts)) {
-        pts_ms = static_cast<int>(pts / GST_MSECOND);
+    if (GST_BUFFER_PTS_IS_VALID(buffer)) {
+        pts_ms = static_cast<int>(GST_BUFFER_PTS(buffer) / GST_MSECOND);
     }
 
     {
         std::lock_guard<std::mutex> lk(frame_mtx);
-        if (!jpg.empty()) {
-            latest_frame = std::move(jpg);
-        }
+        if (!jpg.empty()) latest_frame = std::move(jpg);
         last_pts_ms = pts_ms;
     }
 
@@ -77,7 +71,7 @@ static GstFlowReturn on_new_sample_video(GstAppSink* sink, gpointer user_data) {
     return GST_FLOW_OK;
 }
 
-static GstFlowReturn on_new_sample_audio(GstAppSink* sink, gpointer user_data) {
+static GstFlowReturn on_new_sample_audio(GstAppSink* sink, gpointer) {
     GstSample* sample = gst_app_sink_pull_sample(sink);
     if (!sample) return GST_FLOW_OK;
 
@@ -88,17 +82,14 @@ static GstFlowReturn on_new_sample_audio(GstAppSink* sink, gpointer user_data) {
     }
 
     GstMapInfo map;
-    if (!gst_buffer_map(buffer, &map, GST_MAP_READ)) {
-        gst_sample_unref(sample);
-        return GST_FLOW_OK;
+    if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
+        if (map.size > 0) {
+            audio_queue(reinterpret_cast<const char*>(map.data),
+                        static_cast<int>(map.size));
+        }
+        gst_buffer_unmap(buffer, &map);
     }
 
-    // そのまま audio_queue に投入（PCM S16LE / SAMPLE_RATE / CHANNELS に変換済み）
-    if (map.size > 0) {
-        audio_queue(reinterpret_cast<const char*>(map.data), static_cast<int>(map.size));
-    }
-
-    gst_buffer_unmap(buffer, &map);
     gst_sample_unref(sample);
     return GST_FLOW_OK;
 }
@@ -129,15 +120,35 @@ static gboolean on_bus_message(GstBus* bus, GstMessage* msg, gpointer loop_ptr) 
     return TRUE;
 }
 
+static std::string make_video_pipeline_desc(int port) {
+    return
+        "udpsrc port=" + std::to_string(port) + " "
+        "caps=application/x-rtp,media=video,encoding-name=H264,clock-rate=90000,payload=96 "
+        "! rtpjitterbuffer latency=80 "
+        "! rtph264depay ! h264parse disable-passthrough=true "
+        "! avdec_h264 "
+        "! videoconvert ! video/x-raw,format=BGR "
+        "! appsink name=vsink emit-signals=true sync=false max-buffers=4 drop=true";
+}
+
+static std::string make_audio_pipeline_desc(int port) {
+    return
+        "udpsrc port=" + std::to_string(port) + " "
+        "caps=application/x-rtp,media=audio,encoding-name=OPUS,clock-rate=48000,payload=97 "
+        "! rtpjitterbuffer latency=80 "
+        "! rtpopusdepay ! opusdec "
+        "! audioconvert ! audioresample "
+        "! audio/x-raw,format=S16LE,rate=" + std::to_string(SAMPLE_RATE) +
+        ",channels=" + std::to_string(CHANNELS) + " "
+        "! appsink name=asink emit-signals=true sync=false max-buffers=16 drop=true";
+}
+
 int main(int argc, char* argv[]) {
-    // 使い方:
     // ./7seg-rtp-player [config_name] [video_port] [audio_port]
-    // 例: ./7seg-rtp-player 16x16_expanded 5004 5006
     std::string config_name = (argc > 1) ? argv[1] : "24x4";
     int video_port = (argc > 2) ? std::stoi(argv[2]) : 5004;
     int audio_port = (argc > 3) ? std::stoi(argv[3]) : 5006;
 
-    // 構成読み込み
     DisplayConfig active_config;
     try {
         active_config = load_config_from_json(config_name);
@@ -147,7 +158,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // I2C 初期化
     int i2c_fd = open("/dev/i2c-0", O_RDWR);
     if (i2c_fd < 0) {
         perror("Failed to open /dev/i2c-0");
@@ -161,34 +171,16 @@ int main(int argc, char* argv[]) {
 
     setup_signal_handlers();
 
-    // オーディオ初期化（既存の audio_* を利用）
     if (!audio_init(SAMPLE_RATE, CHANNELS)) {
         std::cerr << "Audio init failed" << std::endl;
     }
 
-    // 映像レンダリングスレッド（既存の video_thread を流用）
     std::thread vthr(video_thread, std::ref(i2c_fd), std::ref(active_config), std::ref(stop_flag));
 
-    // GStreamer 初期化
     gst_init(&argc, &argv);
 
-    // パイプライン構築（RTP H.264 / RTP Opus）
-    // 低遅延向けに jitterbuffer latency は小さめ（環境に応じて調整）
-    std::string vpipe_desc =
-        "udpsrc port=" + std::to_string(video_port) +
-        " caps=application/x-rtp,media=video,encoding-name=H264,clock-rate=90000 "
-        "! rtpjitterbuffer latency=50 drop-on-late=true "
-        "! rtph264depay ! avdec_h264 "
-        "! videoconvert ! video/x-raw,format=BGR "
-        "! appsink name=vsink emit-signals=true max-buffers=2 drop=true";
-
-    std::string apipe_desc =
-        "udpsrc port=" + std::to_string(audio_port) +
-        " caps=application/x-rtp,media=audio,encoding-name=OPUS,clock-rate=48000 "
-        "! rtpjitterbuffer latency=50 drop-on-late=true "
-        "! rtpopusdepay ! opusdec ! audioconvert ! audioresample "
-        "! audio/x-raw,format=S16LE,rate=" + std::to_string(SAMPLE_RATE) + ",channels=" + std::to_string(CHANNELS) + " "
-        "! appsink name=asink emit-signals=true max-buffers=8 drop=true";
+    std::string vpipe_desc = make_video_pipeline_desc(video_port);
+    std::string apipe_desc = make_audio_pipeline_desc(audio_port);
 
     GError* err = nullptr;
     GstElement* vpipe = gst_parse_launch(vpipe_desc.c_str(), &err);
@@ -216,7 +208,6 @@ int main(int argc, char* argv[]) {
     }
     if (err) { g_error_free(err); err = nullptr; }
 
-    // appsink を取得してコールバック接続
     GstElement* vsink_el = gst_bin_get_by_name(GST_BIN(vpipe), "vsink");
     GstElement* asink_el = gst_bin_get_by_name(GST_BIN(apipe), "asink");
     if (!vsink_el || !asink_el) {
@@ -237,18 +228,15 @@ int main(int argc, char* argv[]) {
     g_signal_connect(vsink, "new-sample", G_CALLBACK(on_new_sample_video), nullptr);
     g_signal_connect(asink, "new-sample", G_CALLBACK(on_new_sample_audio), nullptr);
 
-    // バス監視
     GMainLoop* loop = g_main_loop_new(nullptr, FALSE);
     GstBus* vbus = gst_element_get_bus(vpipe);
     GstBus* abus = gst_element_get_bus(apipe);
     gst_bus_add_watch(vbus, (GstBusFunc)on_bus_message, loop);
     gst_bus_add_watch(abus, (GstBusFunc)on_bus_message, loop);
 
-    // 再生開始
     gst_element_set_state(vpipe, GST_STATE_PLAYING);
     gst_element_set_state(apipe, GST_STATE_PLAYING);
 
-    // Ctrl+C 監視スレッド
     std::thread stopper([&]() {
         while (!g_should_exit) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -256,10 +244,8 @@ int main(int argc, char* argv[]) {
         g_main_loop_quit(loop);
     });
 
-    // ループ実行
     g_main_loop_run(loop);
 
-    // 終了処理
     stop_flag = true;
 
     if (stopper.joinable()) stopper.join();

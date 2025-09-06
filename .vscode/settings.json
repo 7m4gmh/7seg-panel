@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "atomic": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "csignal": "cpp"
     }
 }

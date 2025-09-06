@@ -20,8 +20,10 @@ BASE_LDFLAGS = -pthread
 # ----------------------------------------
 CV_SDL_CFLAGS = $(shell pkg-config --cflags opencv4)
 CV_SDL_LIBS   = -lSDL2 $(shell pkg-config --libs opencv4)
-GST_CFLAGS = $(shell pkg-config --cflags gstreamer-1.0)
-GST_LIBS   = $(shell pkg-config --libs gstreamer-1.0)
+# GStreamer: core + app (appsink/src) + video (gst/video/video.h)
+# pkg-config のモジュール名は distro により同じ: gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0
+GST_CFLAGS = $(shell pkg-config --cflags gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
+GST_LIBS   = $(shell pkg-config --libs   gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
 
 # ----------------------------------------
 # ソースファイルとオブジェクトファイル
