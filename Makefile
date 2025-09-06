@@ -54,14 +54,29 @@ HTTP_PLAYER_BIN   = 7seg-http-player
 HTTP_STREAMER_BIN = 7seg-http-streamer
 TARGETS = $(UDP_PLAYER_BIN) $(FILE_PLAYER_BIN) $(HTTP_PLAYER_BIN) $(HTTP_STREAMER_BIN)
 
+
+# 追加のターゲット: RTP プレイヤー
+RTP_PLAYER_SRCS = $(wildcard $(SRCDIR)/rtp_player.cpp)
+RTP_PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(RTP_PLAYER_SRCS))
+RTP_PLAYER_BIN  = 7seg-rtp-player
+TARGETS += $(RTP_PLAYER_BIN)
+
+$(RTP_PLAYER_OBJS): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) $(GST_CFLAGS)
+
+$(RTP_PLAYER_BIN): $(OBJS_COMMON) $(RTP_PLAYER_OBJS)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
+	@echo "Successfully built -> $@"
+	
 # ----------------------------------------
 # ターゲットごとのフラグとオブジェクトを定義
 # ----------------------------------------
-# ★★★ 修正点: オブジェクトファイルにフラグを関連付ける ★★★
 OBJS_CV_SDL = $(OBJS_COMMON) $(UDP_PLAYER_OBJS) $(FILE_PLAYER_OBJS) $(HTTP_PLAYER_OBJS)
 $(OBJS_CV_SDL): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS)
 
 $(OBJS_HTTP_STREAMER): CXXFLAGS = $(BASE_CXXFLAGS) $(GST_CFLAGS)
+
+
 
 # ----------------------------------------
 # ビルドルール
