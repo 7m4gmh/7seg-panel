@@ -39,6 +39,15 @@ else
   VENC="x264enc tune=zerolatency speed-preset=veryfast bitrate=${VBPS_K} key-int-max=${GOP} bframes=0"
 fi
 
+# 音声ソース自動判定（avfaudiosrc が無ければ osxaudiosrc、さらに無ければ autoaudiosrc）
+if gst-inspect-1.0 avfaudiosrc >/dev/null 2>&1; then
+  ASRC="avfaudiosrc device-index=${AUDIO_IDX}"
+elif gst-inspect-1.0 osxaudiosrc >/dev/null 2>&1; then
+  ASRC="osxaudiosrc"
+else
+  ASRC="autoaudiosrc"
+fi
+
 gst-launch-1.0 -e -v \
   avfvideosrc device-index=${VIDEO_IDX} ! queue \
     ! videoconvert ! videoscale ! videorate \
@@ -47,7 +56,7 @@ gst-launch-1.0 -e -v \
     ! h264parse config-interval=1 \
     ! rtph264pay pt=96 config-interval=1 \
     ! udpsink host="${HOST}" port=${VPORT} \
-  avfaudiosrc device-index=${AUDIO_IDX} ! queue \
+  ${ASRC} ! queue \
     ! audioconvert ! audioresample \
     ! audio/x-raw,rate=48000,channels=1 \
     ! opusenc inband-fec=true bitrate=${ABPS_BITS} frame-size=20 \
