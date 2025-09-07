@@ -58,6 +58,10 @@ extern int audio_bytes_received;
  */
 bool attempt_i2c_recovery(int& i2c_fd, const DisplayConfig& config);
 
+// 利用可能な I2C デバイスを自動検出してオープン (/dev/i2c-0 → /dev/i2c-1 の順)
+// 成功時はファイルディスクリプタ、失敗時は -1 を返す
+int open_i2c_auto();
+
 struct I2CErrorInfo {
     int channel = -1; // エラーが発生したTCAのチャンネル番号
     int address = -1; // エラーが発生したI2Cデバイスのアドレス

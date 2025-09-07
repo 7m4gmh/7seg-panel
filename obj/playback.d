@@ -104,7 +104,8 @@ obj/playback.o: src/playback.cpp include/playback.h include/common.h \
  /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
  /usr/include/opencv4/opencv2/video.hpp \
  /usr/include/opencv4/opencv2/video/tracking.hpp \
- /usr/include/opencv4/opencv2/video/background_segm.hpp
+ /usr/include/opencv4/opencv2/video/background_segm.hpp \
+ include/file_audio_gst.h include/audio.h
 include/playback.h:
 include/common.h:
 include/config.h:
@@ -215,3 +216,5 @@ include/video.h:
 /usr/include/opencv4/opencv2/video.hpp:
 /usr/include/opencv4/opencv2/video/tracking.hpp:
 /usr/include/opencv4/opencv2/video/background_segm.hpp:
+include/file_audio_gst.h:
+include/audio.h:

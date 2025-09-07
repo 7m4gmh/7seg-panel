@@ -93,8 +93,20 @@ static GstFlowReturn on_new_sample_audio(GstAppSink* sink, gpointer user_data) {
         return GST_FLOW_OK;
     }
 
-    if (map.size > 0) {
-        audio_queue(reinterpret_cast<const char*>(map.data), static_cast<int>(map.size));
+    static int warmup_bytes = []{
+        int ms = 100; if (const char* v = std::getenv("AUDIO_WARMUP_MS")) ms = std::max(0, atoi(v));
+        return (48000 * 2 * 2 * ms) / 1000;
+    }();
+    if ((int)map.size > 0) {
+        if (warmup_bytes > 0) {
+            int drop = std::min<int>(warmup_bytes, (int)map.size);
+            warmup_bytes -= drop;
+            if ((int)map.size > drop) {
+                audio_queue(reinterpret_cast<const char*>(map.data) + drop, static_cast<int>(map.size) - drop);
+            }
+        } else {
+            audio_queue(reinterpret_cast<const char*>(map.data), static_cast<int>(map.size));
+        }
     }
 
     gst_buffer_unmap(buffer, &map);
@@ -144,9 +156,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int i2c_fd = open("/dev/i2c-0", O_RDWR);
+    int i2c_fd = open_i2c_auto();
     if (i2c_fd < 0) {
-        perror("Failed to open /dev/i2c-0");
+        perror("Failed to open I2C device");
         return 1;
     }
     if (!initialize_displays(i2c_fd, active_config)) {

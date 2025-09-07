@@ -3,6 +3,8 @@
 #include "common.h"
 #include "led.h"
 #include "video.h" // ★★★ 'frame_to_grid' のために必要 ★★★
+#include "file_audio_gst.h"
+#include "audio.h"
 #include <opencv2/opencv.hpp> // ★★★ 'cv::' 関連 ★★★
 #include <iostream>
 #include <chrono>             // ★★★ 'std::chrono' のために必要 ★★★
@@ -34,9 +36,9 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
     g_current_stop_flag = &stop_flag;
     stop_flag = false;
     
-    int i2c_fd = open("/dev/i2c-0", O_RDWR);
+    int i2c_fd = open_i2c_auto();
     if (i2c_fd < 0) {
-        perror("open /dev/i2c-0 に失敗");
+        perror("open_i2c_auto に失敗");
         return -1;
     }
 
@@ -70,9 +72,27 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
         return -1;
     }
 
-    // ffplayで音声のみ再生
-    std::string command = "ffplay -nodisp -autoexit \"" + video_path + "\" > /dev/null 2>&1 &";
-    system(command.c_str());
+    // ローカルファイル時の音声: 既定では SDL 再生（環境変数でFFPLAYへ切替）。SDL開始失敗時はffplayへフォールバック。
+    bool use_ffplay = false;
+    if (const char* e = std::getenv("FILE_AUDIO_USE_FFPLAY")) {
+        if (std::string(e) == "1" || std::string(e) == "true") use_ffplay = true;
+    }
+    if (video_path != "-") {
+        if (use_ffplay) {
+            std::string command = "ffplay -nodisp -autoexit \"" + video_path + "\" > /dev/null 2>&1 &";
+            system(command.c_str());
+        } else {
+            // SDL(Audio) 経由再生（失敗時はffplayへ）
+            bool inited = audio_init(SAMPLE_RATE, CHANNELS);
+            bool ok = inited && file_audio_start(video_path);
+            if (!ok) {
+                if (inited) audio_cleanup();
+                std::string command = "ffplay -nodisp -autoexit \"" + video_path + "\" > /dev/null 2>&1 &";
+                system(command.c_str());
+                use_ffplay = true;
+            }
+        }
+    }
 
     double fps = cap.get(cv::CAP_PROP_FPS);
     if (fps <= 0) fps = 30.0;
@@ -124,7 +144,14 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
         std::this_thread::sleep_until(next_frame_time);
     }
 
-    system("killall ffplay > /dev/null 2>&1");
+    if (video_path != "-") {
+        if (use_ffplay) {
+            system("killall ffplay > /dev/null 2>&1");
+        } else {
+            file_audio_stop();
+            audio_cleanup();
+        }
+    }
     cap.release();
     close(i2c_fd);
 

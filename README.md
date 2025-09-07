@@ -40,7 +40,7 @@ make gst
 
 # Individual targets
 make rtp        # 7seg-rtp-player
-make streamer   # 7seg-http-streamer
+# (http-streamerは削除済み)
 
 # Everything
 make all
@@ -63,3 +63,4 @@ Tip
 	 - README.en.md → "File Player"
 	 - README.ja.md → 「ファイルプレイヤー」
 	 - README.zh-TW.md → 「檔案播放器」
+

@@ -83,3 +83,16 @@ bool attempt_i2c_recovery(int& i2c_fd, const DisplayConfig& config) {
     std::cerr << "[Recovery] All recovery attempts failed." << std::endl;
     return false; // ★失敗したので false を返して終了
 }
+
+int open_i2c_auto() {
+    const char* cands[] = {"/dev/i2c-0", "/dev/i2c-1"};
+    for (auto dev : cands) {
+        int fd = open(dev, O_RDWR);
+        if (fd >= 0) {
+            std::cout << "[I2C] using device: " << dev << std::endl;
+            return fd;
+        }
+    }
+    perror("[I2C] open_i2c_auto failed");
+    return -1;
+}

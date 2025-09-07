@@ -1,7 +1,7 @@
-obj/http_streamer.o: src/http_streamer.cpp \
- ../cpp-httplib/../cpp-httplib/httplib.h \
- /usr/include/gstreamer-1.0/gst/gst.h /usr/include/glib-2.0/glib.h \
- /usr/include/glib-2.0/glib/galloca.h /usr/include/glib-2.0/glib/gtypes.h \
+obj/file_audio_gst.o: src/file_audio_gst.cpp include/file_audio_gst.h \
+ include/audio.h /usr/include/gstreamer-1.0/gst/gst.h \
+ /usr/include/glib-2.0/glib.h /usr/include/glib-2.0/glib/galloca.h \
+ /usr/include/glib-2.0/glib/gtypes.h \
  /usr/lib/aarch64-linux-gnu/glib-2.0/include/glibconfig.h \
  /usr/include/glib-2.0/glib/gmacros.h \
  /usr/include/glib-2.0/glib/gversionmacros.h \
@@ -166,8 +166,13 @@ obj/http_streamer.o: src/http_streamer.cpp \
  /usr/include/gstreamer-1.0/gst/gsttypefindfactory.h \
  /usr/include/gstreamer-1.0/gst/gstutils.h \
  /usr/include/gstreamer-1.0/gst/gstparse.h \
- /usr/include/gstreamer-1.0/gst/gstcompat.h
-../cpp-httplib/../cpp-httplib/httplib.h:
+ /usr/include/gstreamer-1.0/gst/gstcompat.h \
+ /usr/include/gstreamer-1.0/gst/app/gstappsink.h \
+ /usr/include/gstreamer-1.0/gst/base/gstbasesink.h \
+ /usr/include/gstreamer-1.0/gst/base/base-prelude.h \
+ /usr/include/gstreamer-1.0/gst/app/app-prelude.h
+include/file_audio_gst.h:
+include/audio.h:
 /usr/include/gstreamer-1.0/gst/gst.h:
 /usr/include/glib-2.0/glib.h:
 /usr/include/glib-2.0/glib/galloca.h:
@@ -351,3 +356,7 @@ obj/http_streamer.o: src/http_streamer.cpp \
 /usr/include/gstreamer-1.0/gst/gstutils.h:
 /usr/include/gstreamer-1.0/gst/gstparse.h:
 /usr/include/gstreamer-1.0/gst/gstcompat.h:
+/usr/include/gstreamer-1.0/gst/app/gstappsink.h:
+/usr/include/gstreamer-1.0/gst/base/gstbasesink.h:
+/usr/include/gstreamer-1.0/gst/base/base-prelude.h:
+/usr/include/gstreamer-1.0/gst/app/app-prelude.h:

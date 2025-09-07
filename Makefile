@@ -36,22 +36,24 @@ OBJDIR = obj
 DEPDIR = $(OBJDIR)
 
 SRCS_COMMON        = $(wildcard $(SRCDIR)/common.cpp $(SRCDIR)/led.cpp $(SRCDIR)/video.cpp $(SRCDIR)/audio.cpp $(SRCDIR)/playback.cpp)
+SRCS_COMMON       += $(SRCDIR)/file_audio_stub.cpp
 UDP_PLAYER_SRCS    = $(wildcard $(SRCDIR)/udp_player.cpp $(SRCDIR)/udp.cpp)
 FILE_PLAYER_SRCS   = $(wildcard $(SRCDIR)/file_player.cpp)
+FILE_PLAYER_SRCS  += $(SRCDIR)/file_audio_gst.cpp
 HTTP_PLAYER_SRCS   = $(wildcard $(SRCDIR)/http_player.cpp)
-SRCS_HTTP_STREAMER = $(wildcard $(SRCDIR)/http_streamer.cpp)
 RTP_PLAYER_SRCS    = $(wildcard $(SRCDIR)/rtp_player.cpp)
 NET_PLAYER_SRCS    = $(wildcard $(SRCDIR)/net_player.cpp)
+TEST_I2C_SRCS      = $(SRCDIR)/test_i2c.cpp
 
 OBJS_COMMON         = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS_COMMON))
 UDP_PLAYER_OBJS     = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(UDP_PLAYER_SRCS))
 FILE_PLAYER_OBJS    = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(FILE_PLAYER_SRCS))
 HTTP_PLAYER_OBJS    = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(HTTP_PLAYER_SRCS))
-OBJS_HTTP_STREAMER  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS_HTTP_STREAMER))
 RTP_PLAYER_OBJS     = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(RTP_PLAYER_SRCS))
 NET_PLAYER_OBJS     = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(NET_PLAYER_SRCS))
+TEST_I2C_OBJS       = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(TEST_I2C_SRCS))
 
-ALL_OBJS = $(OBJS_COMMON) $(UDP_PLAYER_OBJS) $(FILE_PLAYER_OBJS) $(HTTP_PLAYER_OBJS) $(OBJS_HTTP_STREAMER) $(RTP_PLAYER_OBJS) $(NET_PLAYER_OBJS)
+ALL_OBJS = $(OBJS_COMMON) $(UDP_PLAYER_OBJS) $(FILE_PLAYER_OBJS) $(HTTP_PLAYER_OBJS) $(RTP_PLAYER_OBJS) $(NET_PLAYER_OBJS) $(TEST_I2C_OBJS)
 DEPS     = $(patsubst $(OBJDIR)/%.o,$(DEPDIR)/%.d,$(ALL_OBJS))
 
 # ----------------------------------------
@@ -60,14 +62,15 @@ DEPS     = $(patsubst $(OBJDIR)/%.o,$(DEPDIR)/%.d,$(ALL_OBJS))
 UDP_PLAYER_BIN    = 7seg-udp-player
 FILE_PLAYER_BIN   = 7seg-file-player
 HTTP_PLAYER_BIN   = 7seg-http-player
-HTTP_STREAMER_BIN = 7seg-http-streamer
+ 
 RTP_PLAYER_BIN    = 7seg-rtp-player
 NET_PLAYER_BIN    = 7seg-net-player
+TEST_I2C_BIN      = 7seg-test-i2c
 
 # ターゲットのグループ
 CORE_TARGETS = $(UDP_PLAYER_BIN) $(FILE_PLAYER_BIN) $(HTTP_PLAYER_BIN)
-GST_TARGETS  = $(HTTP_STREAMER_BIN) $(RTP_PLAYER_BIN) $(NET_PLAYER_BIN)
-TARGETS      = $(CORE_TARGETS) $(GST_TARGETS)
+GST_TARGETS  = $(RTP_PLAYER_BIN) $(NET_PLAYER_BIN)
+TARGETS      = $(CORE_TARGETS) $(GST_TARGETS) $(TEST_I2C_BIN)
 
 # RTP/NETプレイヤー用の専用フラグ
 $(RTP_PLAYER_OBJS) $(NET_PLAYER_OBJS): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) $(GST_CFLAGS)
@@ -78,12 +81,15 @@ $(RTP_PLAYER_OBJS) $(NET_PLAYER_OBJS): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLA
 OBJS_CV_SDL = $(OBJS_COMMON) $(UDP_PLAYER_OBJS) $(FILE_PLAYER_OBJS) $(HTTP_PLAYER_OBJS)
 $(OBJS_CV_SDL): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS)
 
-$(OBJS_HTTP_STREAMER): CXXFLAGS = $(BASE_CXXFLAGS) $(GST_CFLAGS)
+$(TEST_I2C_OBJS): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS)
+
+# file_audio_gst は GStreamer ヘッダが必要
+$(OBJDIR)/file_audio_gst.o: CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) $(GST_CFLAGS)
 
 # ----------------------------------------
 # ビルドルール
 # ----------------------------------------
-.PHONY: all core gst rtp net streamer clean package deb help
+.PHONY: all core gst rtp net clean package deb help
 
 # すべて（core + gst）
 all: $(TARGETS)
@@ -97,7 +103,7 @@ gst: $(GST_TARGETS)
 # 個別ターゲット
 rtp: $(RTP_PLAYER_BIN)
 net: $(NET_PLAYER_BIN)
-streamer: $(HTTP_STREAMER_BIN)
+test: $(TEST_I2C_BIN)
 
 # --- 実行ファイルのリンク ---
 $(UDP_PLAYER_BIN): $(OBJS_COMMON) $(UDP_PLAYER_OBJS)
@@ -107,7 +113,7 @@ $(UDP_PLAYER_BIN): $(OBJS_COMMON) $(UDP_PLAYER_OBJS)
 
 $(FILE_PLAYER_BIN): $(OBJS_COMMON) $(FILE_PLAYER_OBJS)
 	@echo "Linking $@..."
-	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
 	@echo "Successfully built -> $@"
 
 $(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
@@ -115,10 +121,6 @@ $(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
 	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
 	@echo "Successfully built -> $@"
 
-$(HTTP_STREAMER_BIN): $(OBJS_HTTP_STREAMER)
-	@echo "Linking $@..."
-	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(GST_LIBS)
-	@echo "Successfully built -> $@"
 
 $(RTP_PLAYER_BIN): $(OBJS_COMMON) $(RTP_PLAYER_OBJS)
 	@echo "Linking $@..."
@@ -128,6 +130,11 @@ $(RTP_PLAYER_BIN): $(OBJS_COMMON) $(RTP_PLAYER_OBJS)
 $(NET_PLAYER_BIN): $(OBJS_COMMON) $(NET_PLAYER_OBJS)
 	@echo "Linking $@..."
 	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
+	@echo "Successfully built -> $@"
+
+$(TEST_I2C_BIN): $(OBJDIR)/common.o $(OBJDIR)/led.o $(OBJDIR)/video.o $(OBJDIR)/test_i2c.o
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
 	@echo "Successfully built -> $@"
 
 # --- オブジェクトファイルのコンパイル ---
@@ -207,7 +214,7 @@ help:
 	@echo "  make core       - Build non-GStreamer players: $(CORE_TARGETS)"
 	@echo "  make gst        - Build GStreamer targets:    $(GST_TARGETS)"
 	@echo "  make rtp        - Build only:                 $(RTP_PLAYER_BIN)"
-	@echo "  make streamer   - Build only:                 $(HTTP_STREAMER_BIN)"
+	@echo "  make test       - Build only:                 $(TEST_I2C_BIN)"
 	@echo "  make all        - Build all targets"
 	@echo "  make clean      - Remove build artifacts"
 	@echo "  make package    - Create source tarball"
