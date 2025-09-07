@@ -6,6 +6,22 @@
 
 專案內建了穩健的錯誤偵測與恢復機制，當 I2C 通訊不穩定時，程式會自動嘗試恢復，以實現穩定且長時間的運作。
 
+## 目錄
+
+- [專案簡介](#專案簡介)
+- [主要功能](#主要功能)
+- [系統需求](#系統需求)
+- [如何編譯](#如何編譯)
+- [設定方法](#設定方法)
+- [使用方法](#使用方法)
+  - [檔案播放器 (7seg-file-player)](#檔案播放器-7seg-file-player)
+  - [HTTP 播放器 (7seg-http-player)](#http-播放器-7seg-http-player)
+  - [RTP 播放器（建議） (7seg-rtp-player)](#rtp-播放器建議-7seg-rtp-player)
+  - [UDP 播放器 (7seg-udp-player)](#udp-播放器-7seg-udp-player)
+- [問題排解](#問題排解)
+  - [RTP 接收提示](#rtp-接收提示)
+- [授權條款](#授權條款)
+
 ## 主要功能
 
 - **多種播放模式**:
@@ -72,7 +88,7 @@ See [README.md](README.md)
 
 ## 使用方法
 
-### 1. 檔案播放器 (`7seg-file-player`)
+### 檔案播放器 (`7seg-file-player`)
 
 播放本地影片檔案。
 
@@ -81,7 +97,7 @@ See [README.md](README.md)
 ```
 範例: `./7seg-file-player ./videos/my_video.mp4 16x16_expanded`
 
-### 2. HTTP 播放器 (`7seg-http-player`)
+### HTTP 播放器 (`7seg-http-player`)
 
 啟動一個 Web 伺服器，可透過瀏覽器進行操作。
 
@@ -92,7 +108,52 @@ See [README.md](README.md)
 
 伺服器啟動後，請在瀏覽器中訪問 `http://<您的裝置IP位址>:8080`。
 
-### 3. UDP 播放器 (`7seg-udp-player`)
+### RTP 播放器（建議） (`7seg-rtp-player`)
+
+RTP 具備更好的網路抖動處理能力，通常在一般網路環境下較為穩定。
+
+```bash
+./7seg-rtp-player [設定名稱] [視訊連接埠] [音訊連接埠]
+```
+範例: `./7seg-rtp-player 16x12 9999 10000`
+
+啟動接收端後，請從傳送端將 H.264（pt=96）與 Opus（pt=97）的 RTP 串流送到相同主機。
+
+#### 傳送（GStreamer：檔案 → RTP）
+```bash
+gst-launch-1.0 -e -v \
+  filesrc location=INPUT.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! videorate \
+    ! video/x-raw,width=320,height=240,framerate=15/1 \
+    ! x264enc tune=zerolatency speed-preset=veryfast bitrate=300 key-int-max=30 bframes=0 \
+    ! h264parse config-interval=1 ! rtph264pay pt=96 config-interval=1 ! udpsink host=ROCK_IP port=9999 \
+  d. ! queue ! audioconvert ! audioresample \
+    ! audio/x-raw,rate=48000,channels=2 \
+    ! opusenc inband-fec=true bitrate=96000 frame-size=20 \
+    ! rtpopuspay pt=97 ! udpsink host=ROCK_IP port=10000
+```
+
+#### 傳送（macOS：相機/麥克風 → RTP）
+若您的 Mac 已安裝 GStreamer，可使用隨附腳本快速送出：
+
+```bash
+./send_rtp_cam_gst.sh ROCK_IP 0 0 9999 10000
+```
+- 會自動偵測可用的編碼器與音源（VideoToolbox 優先，否則退回 x264enc；音源 avfaudiosrc → osxaudiosrc → autoaudiosrc 順序）。
+- 預設為 320x240 / 15fps、H.264 約 300kbps，音訊為 Opus 48kHz 96kbps 並啟用 FEC。
+
+#### 傳送（mac/PC：檔案 → RTP）
+亦提供檔案傳送用腳本：
+
+```bash
+./send_rtp_test_gst.sh [INPUT] [HOST] [VPORT] [APORT]
+# 範例
+./send_rtp_test_gst.sh ../led/mtknsmb2.mp4 192.168.10.107 9999 10000
+```
+
+> 提示：有線網路通常更穩定。若畫面卡頓，請降低視訊位元率/幀率/解析度；若音訊斷續，請適度提高接收與傳送端的延遲（例如增加 jitterbuffer latency）。
+
+### UDP 播放器 (`7seg-udp-player`)
 
 在指定的連接埠上監聽 UDP 串流。
 
@@ -113,6 +174,12 @@ Channel: 2, Address: 0x72  => 42 errors
 --------------------------
 ```
 此範例顯示錯誤集中在 TCA9548A 的**通道 2**。這強烈暗示問題很可能出在通道 2 的線路，或是連接到該通道的模組（`0x70`, `0x72`）上。
+
+### RTP 接收提示
+- 範例使用視訊 9999 / 音訊 10000 作為連接埠，可依環境調整。
+- 建議先以 320x240 / 15fps / H.264（keyframe=30、zerolatency、bframes=0）作為穩定起點。
+- 音訊建議使用 Opus 48kHz，約 96 kbps、20 ms frame，並啟用 in-band FEC，以提升對封包遺失的容忍度。
+- 若仍有卡頓，請提高接收端的 jitterbuffer latency（將增加端到端延遲）。
 
 ## 授權條款
 

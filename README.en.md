@@ -6,6 +6,22 @@ This project is a comprehensive suite of tools designed to play videos on a cust
 
 It features a robust error detection and recovery mechanism, allowing for stable, long-term operation by automatically attempting to recover from unstable I2C communication.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [How to Build](#how-to-build)
+- [Configuration](#configuration)
+- [Usage](#usage)
+  - [File Player (7seg-file-player)](#file-player-7seg-file-player)
+  - [HTTP Player (7seg-http-player)](#http-player-7seg-http-player)
+  - [RTP Player (Recommended) (7seg-rtp-player)](#rtp-player-recommended-7seg-rtp-player)
+  - [UDP Player (7seg-udp-player)](#udp-player-7seg-udp-player)
+- [Troubleshooting](#troubleshooting)
+  - [Tips for RTP reception](#tips-for-rtp-reception)
+- [License](#license)
+
 ## Features
 
 - **Multiple Players**:
@@ -72,7 +88,7 @@ Edit the `config.json` file to define the hardware configuration of your LED pan
 
 ## Usage
 
-### 1. File Player (`7seg-file-player`)
+### File Player (`7seg-file-player`)
 
 Plays a local video file.
 
@@ -81,7 +97,7 @@ Plays a local video file.
 ```
 Example: `./7seg-file-player ./videos/my_video.mp4 16x16_expanded`
 
-### 2. HTTP Player (`7seg-http-player`)
+### HTTP Player (`7seg-http-player`)
 
 Starts a web server for browser-based control.
 
@@ -92,7 +108,50 @@ Example: `./7seg-http-player ./default_videos 16x16_expanded`
 
 After starting the server, access the UI by navigating to `http://<your_pi_ip_address>:8080` in your web browser.
 
-### 3. UDP Player (`7seg-udp-player`)
+### RTP Player (Recommended) (`7seg-rtp-player`)
+
+RTP reception provides stronger jitter handling and is generally more stable on typical networks.
+
+```bash
+./7seg-rtp-player [config_name] [video_port] [audio_port]
+```
+Example: `./7seg-rtp-player 16x12 9999 10000`
+
+After starting the receiver, send H.264 (pt=96) and Opus (pt=97) RTP streams to the same host.
+
+#### Sender (GStreamer: file → RTP)
+```bash
+gst-launch-1.0 -e -v \
+  filesrc location=INPUT.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! videorate \
+    ! video/x-raw,width=320,height=240,framerate=15/1 \
+    ! x264enc tune=zerolatency speed-preset=veryfast bitrate=300 key-int-max=30 bframes=0 \
+    ! h264parse config-interval=1 ! rtph264pay pt=96 config-interval=1 ! udpsink host=ROCK_IP port=9999 \
+  d. ! queue ! audioconvert ! audioresample \
+    ! audio/x-raw,rate=48000,channels=2 \
+    ! opusenc inband-fec=true bitrate=96000 frame-size=20 \
+    ! rtpopuspay pt=97 ! udpsink host=ROCK_IP port=10000
+```
+
+#### Sender (macOS: camera/mic → RTP)
+If GStreamer is installed on your Mac, use the bundled script:
+
+```bash
+./send_rtp_cam_gst.sh ROCK_IP 0 0 9999 10000
+```
+- Automatically selects available encoders and audio sources (VideoToolbox preferred, fallback to x264enc; avfaudiosrc → osxaudiosrc → autoaudiosrc).
+- Defaults: 320x240 @ 15fps, H.264 ~300kbps; audio Opus 48kHz 96kbps with FEC.
+
+#### Sender (mac/PC: file → RTP)
+Use the bundled file sender script:
+
+```bash
+./send_rtp_test_gst.sh [INPUT] [HOST] [VPORT] [APORT]
+# Example
+./send_rtp_test_gst.sh ../led/mtknsmb2.mp4 192.168.10.107 9999 10000
+```
+
+### UDP Player (`7seg-udp-player`)
 
 Listens for a UDP stream on a specified port.
 
@@ -113,6 +172,12 @@ Channel: 2, Address: 0x72  => 42 errors
 --------------------------
 ```
 This example indicates that the errors are concentrated on **Channel 2** of the TCA9548A. This strongly suggests a physical problem with the wiring for Channel 2 or with the modules connected to it (`0x70`, `0x72`).
+
+### Tips for RTP reception
+- The examples use 9999 for video and 10000 for audio; adjust ports to your environment.
+- For stable video, start with 320x240 @ 15fps, H.264 (keyframe=30, zerolatency, bframes=0).
+- For audio, prefer Opus at 48kHz. Around 96 kbps, 20 ms frame, and in-band FEC improve robustness against packet loss.
+- If you still see stutter, increase the jitterbuffer latency on the receiver (at the cost of additional end-to-end latency).
 
 ## License
 All files in this repository made by the author are copyrighted, and are protected by copyright laws and regulations in Japan and other jurisdictions.
