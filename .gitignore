@@ -1,4 +1,5 @@
 stream_key.conf
+obj/
 *.o
 .DS_Store
 .vscode/
