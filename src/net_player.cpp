@@ -140,12 +140,18 @@ static gboolean on_bus_message(GstBus* bus, GstMessage* msg, gpointer loop_ptr) 
     return TRUE;
 }
 
+
 int main(int argc, char* argv[]) {
     // 使い方:
-    // ./7seg-net-player [config_name] [port]
-    // 例: ./7seg-net-player 16x16_expanded 5004
-    std::string config_name = (argc > 1) ? argv[1] : "24x4";
-    int port = (argc > 2) ? std::stoi(argv[2]) : 5004;
+    // ./7seg-net-player [mode] [config_name] [port]
+    // mode: ts (デフォルト/MPEG-TS), raw (rawvideo/gray), stdin (標準入力raw)
+    // 例: ./7seg-net-player ts 16x16_expanded 5004
+    //     ./7seg-net-player raw 24x4 5004
+    //     ./7seg-net-player stdin 24x4
+
+    std::string mode = (argc > 1) ? argv[1] : "ts";
+    std::string config_name = (argc > 2) ? argv[2] : "24x4";
+    int port = (argc > 3) ? std::stoi(argv[3]) : 5004;
 
     DisplayConfig active_config;
     try {
@@ -177,19 +183,41 @@ int main(int argc, char* argv[]) {
 
     gst_init(&argc, &argv);
 
-    std::string pipeline_desc =
-        // UDP TS は RTP と異なりジッタバッファが無い => do-timestamp + queue2 + tsparse で到着時刻付与とバッファリング
-        "udpsrc port=" + std::to_string(port) + " caps=\"video/mpegts,systemstream=true,packetsize=188\" buffer-size=2097152 do-timestamp=true ! "
-        "queue2 use-buffering=true max-size-time=1500000000 max-size-buffers=0 max-size-bytes=0 ! "
-        "tsparse set-timestamps=true ! tsdemux name=demux "
-        // 映像ブランチ
-        "demux. ! queue2 use-buffering=true max-size-time=1000000000 max-size-buffers=0 max-size-bytes=0 ! "
-        "h264parse config-interval=-1 disable-passthrough=true ! avdec_h264 ! videoconvert ! video/x-raw,format=BGR ! "
-        "appsink name=vsink emit-signals=true sync=false max-buffers=8 drop=true "
-        // 音声ブランチ（音飛び対策でバッファ多め、dropしない）
-        "demux. ! queue2 use-buffering=true max-size-time=1500000000 max-size-buffers=0 max-size-bytes=0 ! "
-        "aacparse ! avdec_aac ! audioconvert ! audioresample ! audio/x-raw,format=S16LE,rate=" + std::to_string(SAMPLE_RATE) + ",channels=" + std::to_string(CHANNELS) + " ! "
-        "appsink name=asink emit-signals=true sync=false max-buffers=100 drop=false";
+    std::string pipeline_desc;
+    if (mode == "ts") {
+        pipeline_desc =
+            "udpsrc port=" + std::to_string(port) + " caps=\"video/mpegts,systemstream=true,packetsize=188\" buffer-size=2097152 do-timestamp=true ! "
+            "queue2 use-buffering=true max-size-time=1500000000 max-size-buffers=0 max-size-bytes=0 ! "
+            "tsparse set-timestamps=true ! tsdemux name=demux "
+            // 映像ブランチ
+            "demux. ! queue2 use-buffering=true max-size-time=1000000000 max-size-buffers=0 max-size-bytes=0 ! "
+            "h264parse config-interval=-1 disable-passthrough=true ! avdec_h264 ! videoconvert ! video/x-raw,format=BGR ! "
+            "appsink name=vsink emit-signals=true sync=false max-buffers=8 drop=true "
+            // 音声ブランチ
+            "demux. ! queue2 use-buffering=true max-size-time=1500000000 max-size-buffers=0 max-size-bytes=0 ! "
+            "aacparse ! avdec_aac ! audioconvert ! audioresample ! audio/x-raw,format=S16LE,rate=" + std::to_string(SAMPLE_RATE) + ",channels=" + std::to_string(CHANNELS) + " ! "
+            "appsink name=asink emit-signals=true sync=false max-buffers=100 drop=false";
+    } else if (mode == "raw") {
+        // UDP rawvideo/gray8 受信例: ffmpeg -i ... -vf scale=24:4,format=gray -f rawvideo -pix_fmt gray - | nc -u ...
+        pipeline_desc =
+            "udpsrc port=" + std::to_string(port) + " ! "
+            "queue2 ! "
+            "videoparse width=" + std::to_string(active_config.total_width) +
+            " height=" + std::to_string(active_config.total_height) +
+            " format=gray8 framerate=30/1 ! "
+            "appsink name=vsink emit-signals=true sync=false max-buffers=8 drop=true";
+    } else if (mode == "stdin") {
+        // 標準入力rawvideo/gray8受信例: ffmpeg ... | ./7seg-net-player stdin 24x4
+        pipeline_desc =
+            "fdsrc ! "
+            "videoparse width=" + std::to_string(active_config.total_width) +
+            " height=" + std::to_string(active_config.total_height) +
+            " format=gray8 framerate=30/1 ! "
+            "appsink name=vsink emit-signals=true sync=false max-buffers=8 drop=true";
+    } else {
+        std::cerr << "Unknown mode: " << mode << std::endl;
+        return 1;
+    }
 
     GError* err = nullptr;
     GstElement* pipeline = gst_parse_launch(pipeline_desc.c_str(), &err);
