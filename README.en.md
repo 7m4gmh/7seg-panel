@@ -33,12 +33,7 @@ It features a robust error detection and recovery mechanism, allowing for stable
 
 ## How to Build
 
-In the root directory of the repository, run the following commands:
-
-```bash
-make clean
-make
-```
+See [README.md](README.md)
 
 ## Configuration
 

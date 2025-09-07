@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
-#include "include/json.hpp" // nlohmann/json をインクルード
+#include "json.hpp" // nlohmann/json をインクルード
 #include "config.h" // 既存のDisplayConfig構造体の定義をインクルード
 
 // JSONをパースするためのヘルパー

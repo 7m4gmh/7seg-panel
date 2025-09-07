@@ -15,7 +15,7 @@ bool audio_init(int samplerate, int channels) {
     desired.freq = samplerate;
     desired.format = AUDIO_S16SYS;   // 16-bit PCM
     desired.channels = channels;
-    desired.samples = 1024; // buffer size
+    desired.samples = 2048; // buffer size (増やしてジッタに強く)
     desired.callback = nullptr; // push型
 
     dev = SDL_OpenAudioDevice(nullptr, 0, &desired, &obtained, SDL_AUDIO_ALLOW_ANY_CHANGE);

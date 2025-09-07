@@ -15,8 +15,7 @@
 #include <csignal>
 
 // Ctrl+C / SIGTERM で立つ終了フラグ
-//extern volatile sig_atomic_t g_should_exit;
-extern volatile std::sig_atomic_t g_should_exit;
+extern std::atomic<bool> g_should_exit;
 
 // シグナルハンドラ設定用
 void setup_signal_handlers();
@@ -33,7 +32,7 @@ const int H = 480;
 constexpr int FPS = 15;
 constexpr int AUDIO_CHUNK_SIZE = 2048;
 constexpr int FRAMES_PER_BUFFER = 1024;
-constexpr int SAMPLE_RATE = 44100;
+constexpr int SAMPLE_RATE = 48000;
 constexpr int CHANNELS = 2; // 1 for monoral, 2 for stereo
 
 // --- グローバル変数 ---

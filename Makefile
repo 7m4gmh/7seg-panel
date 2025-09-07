@@ -7,6 +7,9 @@ VERSION      = 1.0.0
 NUM_CORES := $(shell nproc 2>/dev/null || echo 4)
 MAKEFLAGS += -j$(NUM_CORES)
 
+# デフォルトはヘルプを表示（何もビルドしない）
+.DEFAULT_GOAL := help
+
 # ----------------------------------------
 # コンパイラと共通設定
 # ----------------------------------------
@@ -32,20 +35,24 @@ SRCDIR = src
 OBJDIR = obj
 DEPDIR = $(OBJDIR)
 
-SRCS_COMMON = $(wildcard $(SRCDIR)/common.cpp $(SRCDIR)/led.cpp $(SRCDIR)/video.cpp $(SRCDIR)/audio.cpp $(SRCDIR)/playback.cpp)
-UDP_PLAYER_SRCS = $(wildcard $(SRCDIR)/udp_player.cpp $(SRCDIR)/udp.cpp)
-FILE_PLAYER_SRCS = $(wildcard $(SRCDIR)/file_player.cpp)
-HTTP_PLAYER_SRCS = $(wildcard $(SRCDIR)/http_player.cpp)
+SRCS_COMMON        = $(wildcard $(SRCDIR)/common.cpp $(SRCDIR)/led.cpp $(SRCDIR)/video.cpp $(SRCDIR)/audio.cpp $(SRCDIR)/playback.cpp)
+UDP_PLAYER_SRCS    = $(wildcard $(SRCDIR)/udp_player.cpp $(SRCDIR)/udp.cpp)
+FILE_PLAYER_SRCS   = $(wildcard $(SRCDIR)/file_player.cpp)
+HTTP_PLAYER_SRCS   = $(wildcard $(SRCDIR)/http_player.cpp)
 SRCS_HTTP_STREAMER = $(wildcard $(SRCDIR)/http_streamer.cpp)
+RTP_PLAYER_SRCS    = $(wildcard $(SRCDIR)/rtp_player.cpp)
+NET_PLAYER_SRCS    = $(wildcard $(SRCDIR)/net_player.cpp)
 
-OBJS_COMMON = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS_COMMON))
-UDP_PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(UDP_PLAYER_SRCS))
-FILE_PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(FILE_PLAYER_SRCS))
-HTTP_PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(HTTP_PLAYER_SRCS))
-OBJS_HTTP_STREAMER = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS_HTTP_STREAMER))
+OBJS_COMMON         = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS_COMMON))
+UDP_PLAYER_OBJS     = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(UDP_PLAYER_SRCS))
+FILE_PLAYER_OBJS    = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(FILE_PLAYER_SRCS))
+HTTP_PLAYER_OBJS    = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(HTTP_PLAYER_SRCS))
+OBJS_HTTP_STREAMER  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS_HTTP_STREAMER))
+RTP_PLAYER_OBJS     = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(RTP_PLAYER_SRCS))
+NET_PLAYER_OBJS     = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(NET_PLAYER_SRCS))
 
-ALL_OBJS = $(OBJS_COMMON) $(UDP_PLAYER_OBJS) $(FILE_PLAYER_OBJS) $(HTTP_PLAYER_OBJS) $(OBJS_HTTP_STREAMER)
-DEPS = $(patsubst $(OBJDIR)/%.o,$(DEPDIR)/%.d,$(ALL_OBJS))
+ALL_OBJS = $(OBJS_COMMON) $(UDP_PLAYER_OBJS) $(FILE_PLAYER_OBJS) $(HTTP_PLAYER_OBJS) $(OBJS_HTTP_STREAMER) $(RTP_PLAYER_OBJS) $(NET_PLAYER_OBJS)
+DEPS     = $(patsubst $(OBJDIR)/%.o,$(DEPDIR)/%.d,$(ALL_OBJS))
 
 # ----------------------------------------
 # 実行ファイル名
@@ -54,38 +61,43 @@ UDP_PLAYER_BIN    = 7seg-udp-player
 FILE_PLAYER_BIN   = 7seg-file-player
 HTTP_PLAYER_BIN   = 7seg-http-player
 HTTP_STREAMER_BIN = 7seg-http-streamer
-TARGETS = $(UDP_PLAYER_BIN) $(FILE_PLAYER_BIN) $(HTTP_PLAYER_BIN) $(HTTP_STREAMER_BIN)
+RTP_PLAYER_BIN    = 7seg-rtp-player
+NET_PLAYER_BIN    = 7seg-net-player
 
+# ターゲットのグループ
+CORE_TARGETS = $(UDP_PLAYER_BIN) $(FILE_PLAYER_BIN) $(HTTP_PLAYER_BIN)
+GST_TARGETS  = $(HTTP_STREAMER_BIN) $(RTP_PLAYER_BIN) $(NET_PLAYER_BIN)
+TARGETS      = $(CORE_TARGETS) $(GST_TARGETS)
 
-# 追加のターゲット: RTP プレイヤー
-RTP_PLAYER_SRCS = $(wildcard $(SRCDIR)/rtp_player.cpp)
-RTP_PLAYER_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(RTP_PLAYER_SRCS))
-RTP_PLAYER_BIN  = 7seg-rtp-player
-TARGETS += $(RTP_PLAYER_BIN)
+# RTP/NETプレイヤー用の専用フラグ
+$(RTP_PLAYER_OBJS) $(NET_PLAYER_OBJS): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) $(GST_CFLAGS)
 
-$(RTP_PLAYER_OBJS): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) $(GST_CFLAGS)
-
-$(RTP_PLAYER_BIN): $(OBJS_COMMON) $(RTP_PLAYER_OBJS)
-	@echo "Linking $@..."
-	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
-	@echo "Successfully built -> $@"
-	
 # ----------------------------------------
-# ターゲットごとのフラグとオブジェクトを定義
+# ターゲットごとのフラグ
 # ----------------------------------------
 OBJS_CV_SDL = $(OBJS_COMMON) $(UDP_PLAYER_OBJS) $(FILE_PLAYER_OBJS) $(HTTP_PLAYER_OBJS)
 $(OBJS_CV_SDL): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS)
 
 $(OBJS_HTTP_STREAMER): CXXFLAGS = $(BASE_CXXFLAGS) $(GST_CFLAGS)
 
-
-
 # ----------------------------------------
 # ビルドルール
 # ----------------------------------------
-.PHONY: all clean package deb
+.PHONY: all core gst rtp net streamer clean package deb help
 
+# すべて（core + gst）
 all: $(TARGETS)
+
+# GStreamer非依存のプレイヤーのみ
+core: $(CORE_TARGETS)
+
+# GStreamer依存ターゲットのみ
+gst: $(GST_TARGETS)
+
+# 個別ターゲット
+rtp: $(RTP_PLAYER_BIN)
+net: $(NET_PLAYER_BIN)
+streamer: $(HTTP_STREAMER_BIN)
 
 # --- 実行ファイルのリンク ---
 $(UDP_PLAYER_BIN): $(OBJS_COMMON) $(UDP_PLAYER_OBJS)
@@ -106,6 +118,16 @@ $(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
 $(HTTP_STREAMER_BIN): $(OBJS_HTTP_STREAMER)
 	@echo "Linking $@..."
 	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(GST_LIBS)
+	@echo "Successfully built -> $@"
+
+$(RTP_PLAYER_BIN): $(OBJS_COMMON) $(RTP_PLAYER_OBJS)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
+	@echo "Successfully built -> $@"
+
+$(NET_PLAYER_BIN): $(OBJS_COMMON) $(NET_PLAYER_OBJS)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
 	@echo "Successfully built -> $@"
 
 # --- オブジェクトファイルのコンパイル ---
@@ -175,3 +197,19 @@ $(DEB_NAME): all
 # ----------------------------------------
 clean:
 	rm -rf $(OBJDIR) $(TARGETS) $(PROJECT_NAME)-*.tar.gz
+
+# ----------------------------------------
+# ヘルプ
+# ----------------------------------------
+help:
+	@echo ""
+	@echo "Usage:"
+	@echo "  make core       - Build non-GStreamer players: $(CORE_TARGETS)"
+	@echo "  make gst        - Build GStreamer targets:    $(GST_TARGETS)"
+	@echo "  make rtp        - Build only:                 $(RTP_PLAYER_BIN)"
+	@echo "  make streamer   - Build only:                 $(HTTP_STREAMER_BIN)"
+	@echo "  make all        - Build all targets"
+	@echo "  make clean      - Remove build artifacts"
+	@echo "  make package    - Create source tarball"
+	@echo "  make deb        - Create Debian package"
+	@echo ""

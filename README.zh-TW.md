@@ -33,12 +33,7 @@
 
 ## 如何編譯
 
-在專案的根目錄下執行以下指令：
-
-```bash
-make clean
-make
-```
+See [README.md](README.md)
 
 ## 設定方法
 

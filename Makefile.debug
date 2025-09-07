@@ -1,0 +1,76 @@
+# App
+APP := 7seg-rtp-player
+
+# Sources
+SRC_DIR := src
+SRCS := \
+  $(SRC_DIR)/rtp_player.cpp \
+  $(SRC_DIR)/common.cpp \
+  $(SRC_DIR)/led.cpp \
+  $(SRC_DIR)/video.cpp \
+  $(SRC_DIR)/audio.cpp \
+  $(SRC_DIR)/playback.cpp
+OBJS := $(SRCS:.cpp=.o)
+
+# Include directories (common.h などがある場所を列挙)
+INC_DIRS := include src
+
+# Packages via pkg-config
+PKGS := gstreamer-1.0 gstreamer-app-1.0 sdl2
+
+# Build mode: release or debug
+BUILD ?= debug
+
+# Sanitizers: none (default) or address,undefined などカンマ区切り
+SAN ?= none
+
+# Toolchain
+CXX ?= g++
+PKG_CONFIG ?= pkg-config
+
+# Base flags
+CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic
+CXXFLAGS += $(addprefix -I,$(INC_DIRS))
+CXXFLAGS += $(shell $(PKG_CONFIG) --cflags $(PKGS))
+CXXFLAGS += -pthread
+LDFLAGS  := $(shell $(PKG_CONFIG) --libs $(PKGS))
+LDFLAGS  += -pthread
+
+# Optimize / Debug
+ifeq ($(BUILD),debug)
+  CXXFLAGS += -O0 -g -DDEBUG
+else
+  CXXFLAGS += -O2
+endif
+
+# Sanitizers
+ifneq ($(SAN),none)
+  CXXFLAGS += -fsanitize=$(SAN) -fno-omit-frame-pointer
+  LDFLAGS  += -fsanitize=$(SAN)
+endif
+
+# Dependency files
+DEPFILES := $(OBJS:.o=.d)
+CXXFLAGS += -MMD -MP
+
+# Targets
+.PHONY: all release debug clean
+
+all: $(APP)
+
+release: BUILD = release
+release: clean $(APP)
+
+debug: BUILD = debug
+debug: clean $(APP)
+
+$(APP): $(OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+-include $(DEPFILES)
+
+clean:
+	$(RM) $(OBJS) $(DEPFILES) $(APP)

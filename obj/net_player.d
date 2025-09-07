@@ -1,4 +1,4 @@
-obj/rtp_player.o: src/rtp_player.cpp include/common.h include/config.h \
+obj/net_player.o: src/net_player.cpp include/common.h include/config.h \
  src/config_loader.hpp include/json.hpp include/led.h include/video.h \
  /usr/include/opencv4/opencv2/opencv.hpp \
  /usr/include/opencv4/opencv2/opencv_modules.hpp \
@@ -275,7 +275,47 @@ obj/rtp_player.o: src/rtp_player.cpp include/common.h include/config.h \
  /usr/include/gstreamer-1.0/gst/app/gstappsink.h \
  /usr/include/gstreamer-1.0/gst/base/gstbasesink.h \
  /usr/include/gstreamer-1.0/gst/base/base-prelude.h \
- /usr/include/gstreamer-1.0/gst/app/app-prelude.h
+ /usr/include/gstreamer-1.0/gst/app/app-prelude.h \
+ /usr/include/gstreamer-1.0/gst/video/video.h \
+ /usr/include/gstreamer-1.0/gst/video/video-prelude.h \
+ /usr/include/gstreamer-1.0/gst/video/video-format.h \
+ /usr/include/gstreamer-1.0/gst/video/video-enumtypes.h \
+ /usr/include/gstreamer-1.0/gst/video/video-tile.h \
+ /usr/include/gstreamer-1.0/gst/video/video-chroma.h \
+ /usr/include/gstreamer-1.0/gst/video/video-color.h \
+ /usr/include/gstreamer-1.0/gst/video/video-dither.h \
+ /usr/include/gstreamer-1.0/gst/video/video-info.h \
+ /usr/include/gstreamer-1.0/gst/video/video-frame.h \
+ /usr/include/gstreamer-1.0/gst/video/video-converter.h \
+ /usr/include/gstreamer-1.0/gst/video/video-scaler.h \
+ /usr/include/gstreamer-1.0/gst/video/video-resampler.h \
+ /usr/include/gstreamer-1.0/gst/video/video-multiview.h \
+ /usr/include/gstreamer-1.0/gst/video/colorbalancechannel.h \
+ /usr/include/gstreamer-1.0/gst/video/colorbalance.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideoaffinetransformationmeta.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideoaggregator.h \
+ /usr/include/gstreamer-1.0/gst/base/gstaggregator.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideocodecalphameta.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideodecoder.h \
+ /usr/include/gstreamer-1.0/gst/base/gstadapter.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideoutils.h \
+ /usr/include/gstreamer-1.0/gst/video/video-hdr.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideoencoder.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideofilter.h \
+ /usr/include/gstreamer-1.0/gst/base/gstbasetransform.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideometa.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideotimecode.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideopool.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideosink.h \
+ /usr/include/gstreamer-1.0/gst/video/navigation.h \
+ /usr/include/gstreamer-1.0/gst/video/video-anc.h \
+ /usr/include/gstreamer-1.0/gst/video/video-blend.h \
+ /usr/include/gstreamer-1.0/gst/video/videodirection.h \
+ /usr/include/gstreamer-1.0/gst/video/video-event.h \
+ /usr/include/gstreamer-1.0/gst/video/videoorientation.h \
+ /usr/include/gstreamer-1.0/gst/video/video-overlay-composition.h \
+ /usr/include/gstreamer-1.0/gst/video/videooverlay.h \
+ /usr/include/gstreamer-1.0/gst/video/video-sei.h
 include/common.h:
 include/config.h:
 src/config_loader.hpp:
@@ -575,3 +615,43 @@ include/audio.h:
 /usr/include/gstreamer-1.0/gst/base/gstbasesink.h:
 /usr/include/gstreamer-1.0/gst/base/base-prelude.h:
 /usr/include/gstreamer-1.0/gst/app/app-prelude.h:
+/usr/include/gstreamer-1.0/gst/video/video.h:
+/usr/include/gstreamer-1.0/gst/video/video-prelude.h:
+/usr/include/gstreamer-1.0/gst/video/video-format.h:
+/usr/include/gstreamer-1.0/gst/video/video-enumtypes.h:
+/usr/include/gstreamer-1.0/gst/video/video-tile.h:
+/usr/include/gstreamer-1.0/gst/video/video-chroma.h:
+/usr/include/gstreamer-1.0/gst/video/video-color.h:
+/usr/include/gstreamer-1.0/gst/video/video-dither.h:
+/usr/include/gstreamer-1.0/gst/video/video-info.h:
+/usr/include/gstreamer-1.0/gst/video/video-frame.h:
+/usr/include/gstreamer-1.0/gst/video/video-converter.h:
+/usr/include/gstreamer-1.0/gst/video/video-scaler.h:
+/usr/include/gstreamer-1.0/gst/video/video-resampler.h:
+/usr/include/gstreamer-1.0/gst/video/video-multiview.h:
+/usr/include/gstreamer-1.0/gst/video/colorbalancechannel.h:
+/usr/include/gstreamer-1.0/gst/video/colorbalance.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideoaffinetransformationmeta.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideoaggregator.h:
+/usr/include/gstreamer-1.0/gst/base/gstaggregator.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideocodecalphameta.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideodecoder.h:
+/usr/include/gstreamer-1.0/gst/base/gstadapter.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideoutils.h:
+/usr/include/gstreamer-1.0/gst/video/video-hdr.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideoencoder.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideofilter.h:
+/usr/include/gstreamer-1.0/gst/base/gstbasetransform.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideometa.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideotimecode.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideopool.h:
+/usr/include/gstreamer-1.0/gst/video/gstvideosink.h:
+/usr/include/gstreamer-1.0/gst/video/navigation.h:
+/usr/include/gstreamer-1.0/gst/video/video-anc.h:
+/usr/include/gstreamer-1.0/gst/video/video-blend.h:
+/usr/include/gstreamer-1.0/gst/video/videodirection.h:
+/usr/include/gstreamer-1.0/gst/video/video-event.h:
+/usr/include/gstreamer-1.0/gst/video/videoorientation.h:
+/usr/include/gstreamer-1.0/gst/video/video-overlay-composition.h:
+/usr/include/gstreamer-1.0/gst/video/videooverlay.h:
+/usr/include/gstreamer-1.0/gst/video/video-sei.h:

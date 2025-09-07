@@ -33,12 +33,7 @@
 
 ## ビルド方法
 
-リポジトリのルートディレクトリで以下のコマンドを実行します。
-
-```bash
-make clean
-make
-```
+See [README.md](README.md)
 
 ## 設定方法
 

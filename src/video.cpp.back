@@ -6,7 +6,6 @@
 #include <chrono>
 #include <map>
 #include <opencv2/opencv.hpp>
-#include <opencv2/imgcodecs.hpp> // imdecode 用を明示
 #include <fcntl.h>  // open() と O_RDWR のために必要
 #include <unistd.h> // close(), usleep() のために必要
 
@@ -81,8 +80,6 @@ void video_thread(int& i2c_fd, const DisplayConfig& config, std::atomic<bool>& s
     std::vector<uint8_t> grid(config.total_digits(), 0);
     auto frame_duration = std::chrono::milliseconds(1000 / FPS);
 
-    static int dbg_count = 0;
-
     while (!stop_flag) {
         auto start_time = std::chrono::steady_clock::now();
         
@@ -91,31 +88,22 @@ void video_thread(int& i2c_fd, const DisplayConfig& config, std::atomic<bool>& s
         {
             std::lock_guard<std::mutex> lock(frame_mtx);
             if (!latest_frame.empty()) {
-                frame_data = latest_frame; // JPEG バイト列
+                frame_data = latest_frame;
             }
         }
 
         if (!frame_data.empty()) {
-            // JPEG をグレースケールにデコード
-            cv::Mat decoded = cv::imdecode(frame_data, cv::IMREAD_GRAYSCALE);
-            if (decoded.empty()) {
-                std::cerr << "[video] JPEG decode failed (size=" << frame_data.size() << " bytes)" << std::endl;
-            } else {
-                if (++dbg_count <= 3) {
-                    std::cout << "[video] decoded frame: " << decoded.cols << "x" << decoded.rows << " ("
-                              << frame_data.size() << " bytes)" << std::endl;
-                }
-                frame_to_grid(decoded, config, grid);
-                I2CErrorInfo error_info; 
+            cv::Mat current_frame(H, W, CV_8UC1, frame_data.data());
+            frame_to_grid(current_frame, config, grid);
+            I2CErrorInfo error_info; 
 
-                if (!update_flexible_display(i2c_fd, config, grid, error_info)) {
+if (!update_flexible_display(i2c_fd, config, grid, error_info)) {
                     if (!attempt_i2c_recovery(i2c_fd, config)) {
-                        // 全ての復旧に失敗した場合、長めに待つ
-                        std::cerr << "Recovery failed in video_thread. Pausing before next attempt..." << std::endl;
-                        sleep(2);
-                    }                                  
-                }     
-            }
+                    // 全ての復旧に失敗した場合、長めに待つ
+                    std::cerr << "Recovery failed in video_thread. Pausing before next attempt..." << std::endl;
+                    sleep(2);
+                }                                  
+            }     
         }
 
         // sleep_until と sleep_for の混在をやめ、シンプルな形でフレームレートを維持する

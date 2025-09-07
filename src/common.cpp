@@ -19,8 +19,7 @@ int audio_bytes_received = 0;
 // 共通モジュール I²C アドレス
 //const std::vector<int> MODULE_ADDRESSES = {0x70, 0x71, 0x72, 0x73, 0x74, 0x75};
 
-volatile std::sig_atomic_t g_should_exit = 0;
-//volatile sig_atomic_t g_should_exit = 0;
+std::atomic<bool> g_should_exit(false);
 
 double CHAR_WIDTH_MM = 12.7;
 double CHAR_HEIGHT_MM = 19.2;
@@ -28,7 +27,7 @@ double CHAR_HEIGHT_MM = 19.2;
 // シグナルハンドラ関数
 void signal_handler(int signal) {
     if (signal == SIGINT || signal == SIGTERM) {
-        g_should_exit = 1;
+        g_should_exit = true;
     }
 }
 
