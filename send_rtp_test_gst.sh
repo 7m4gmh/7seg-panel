@@ -4,7 +4,7 @@ set -euo pipefail
 # Usage: ./send_rtp_test_gst.sh [INPUT] [HOST] [VPORT] [APORT]
 # Defaults: INPUT=../led/mtknsmb2.mp4, HOST=192.168.10.107, VPORT=9999, APORT=10000
 
-INPUT=${1:-"../led/mtknsmb2.mp4"}
+INPUT=${1:-"../led/badapple.mp4"}
 HOST=${2:-"192.168.10.107"}
 VPORT=${3:-9999}
 APORT=${4:-10000}
