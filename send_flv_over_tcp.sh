@@ -32,14 +32,22 @@ FPS=${FPS:-15}
 OUT_URL="tcp://${HOST}:${PORT}?listen=0"
 
 set -x
-if [[ "${V_COPY}" == "1" && "${A_COPY}" == "1" ]]; then
-  "${FFMPEG}" -re -i "${INPUT}" -map 0:v:0 -c:v copy -map 0:a:0 -c:a copy -f flv "${OUT_URL}"
-elif [[ "${V_COPY}" == "1" ]]; then
-  "${FFMPEG}" -re -i "${INPUT}" -map 0:v:0 -c:v copy -map 0:a:0 -c:a aac -b:a ${ABPS} -ar 48000 -ac 2 -f flv "${OUT_URL}"
-elif [[ "${A_COPY}" == "1" ]]; then
-  "${FFMPEG}" -re -i "${INPUT}" -map 0:v:0 -c:v libx264 -preset veryfast -b:v ${VBPS} -maxrate ${VBPS} -bufsize $((2*${VBPS%k} ))k -g $((2*${FPS})) -r ${FPS} \
-    -map 0:a:0 -c:a copy -f flv "${OUT_URL}"
+# 3番目の引数が '-' で始まっていれば、その後ろをすべてffmpegオプションとして透過
+if [[ "$#" -ge 3 && "${INPUT}" == -* ]]; then
+  # shellcheck disable=SC2124
+  FFM_OPTS="${@:3}"
+  # shellcheck disable=SC2086
+  exec ${FFMPEG} ${FFM_OPTS} -c:v libx264 -preset veryfast -g $((2*${FPS})) -tune zerolatency -c:a aac -b:a ${ABPS} -ar 48000 -ac 2 -f flv "${OUT_URL}"
 else
-  "${FFMPEG}" -re -i "${INPUT}" -map 0:v:0 -c:v libx264 -preset veryfast -b:v ${VBPS} -maxrate ${VBPS} -bufsize $((2*${VBPS%k}))k -g $((2*${FPS})) -r ${FPS} \
-    -map 0:a:0 -c:a aac -b:a ${ABPS} -ar 48000 -ac 2 -f flv "${OUT_URL}"
+  if [[ "${V_COPY}" == "1" && "${A_COPY}" == "1" ]]; then
+    "${FFMPEG}" -re -i "${INPUT}" -map 0:v:0 -c:v copy -map 0:a:0 -c:a copy -f flv "${OUT_URL}"
+  elif [[ "${V_COPY}" == "1" ]]; then
+    "${FFMPEG}" -re -i "${INPUT}" -map 0:v:0 -c:v copy -map 0:a:0 -c:a aac -b:a ${ABPS} -ar 48000 -ac 2 -f flv "${OUT_URL}"
+  elif [[ "${A_COPY}" == "1" ]]; then
+    "${FFMPEG}" -re -i "${INPUT}" -map 0:v:0 -c:v libx264 -preset veryfast -b:v ${VBPS} -maxrate ${VBPS} -bufsize $((2*${VBPS%k} ))k -g $((2*${FPS})) -r ${FPS} \
+      -map 0:a:0 -c:a copy -f flv "${OUT_URL}"
+  else
+    "${FFMPEG}" -re -i "${INPUT}" -map 0:v:0 -c:v libx264 -preset veryfast -b:v ${VBPS} -maxrate ${VBPS} -bufsize $((2*${VBPS%k}))k -g $((2*${FPS})) -r ${FPS} \
+      -map 0:a:0 -c:a aac -b:a ${ABPS} -ar 48000 -ac 2 -f flv "${OUT_URL}"
+  fi
 fi

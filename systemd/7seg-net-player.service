@@ -1,0 +1,38 @@
+[Unit]
+Description=7seg-net-player (FLV/TS listener)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 実行ユーザー/グループ（環境に合わせて変更してください）
+User=radxa
+Group=radxa
+
+# 実行時設定は /etc/default/7seg-net-player から読み込み（存在しなくても起動）
+EnvironmentFile=-/etc/default/7seg-net-player
+
+# デフォルト値（EnvironmentFile で上書き可能）
+Environment=WORKDIR=/home/radxa/7seg-panel
+Environment=MODE=flv
+Environment=CONFIG=16x12
+Environment=PORT=5004
+Environment=EXIT_ON_EOF=1
+
+# 作業ディレクトリ（固定パス。必要に応じて変更）
+WorkingDirectory=/home/radxa/7seg-panel
+
+# 起動コマンド（環境変数は systemd により展開されます）
+ExecStart=/home/radxa/7seg-panel/7seg-net-player ${MODE} ${CONFIG} ${PORT}
+
+# EOS/ERRORでプロセスが終了したら常に再起動（EXIT_ON_EOF=1 を推奨）
+Restart=always
+RestartSec=0.8
+
+# 追加オプション（必要に応じて）
+NoNewPrivileges=true
+ProtectSystem=full
+# ProtectHome=read-only  # HOMEパスにアクセスが必要ならコメントアウト
+
+[Install]
+WantedBy=multi-user.target
