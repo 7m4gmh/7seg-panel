@@ -20,6 +20,21 @@ Note (platform): Developed and tested primarily on Radxa ROCK 5B. It may also wo
 
 [![デモ動画](./docs/7seg-output_hq.gif)](https://www.instagram.com/reel/DOIo3QTEZs0/?utm_source=ig_web_button_share_sheet)
 
+
+---
+
+## Hardware (KiCad)
+
+- PCB projects live under `hardware/`. See: [hardware/README.md](hardware/README.md)
+- Current folders (subject to change):
+	- `hardware/7seg-led` — LED panel PCB
+	- `hardware/7seg-control` — main controller PCB
+	- `hardware/7seg-hat` — Raspberry Pi HAT
+	- `hardware/7seg-power` — power board
+	- Shared libs: `hardware/lib`
+	- Legacy/migration folders may also exist (e.g., `hardware/led-panel`, `controller`, `rpi-hat`, `power`).
+
+---
 ## Build
 
 Prerequisites
@@ -78,4 +93,6 @@ Tip
 	- [README.tetris.en.md](README.tetris.en.md)
 	- [README.tetris.md](README.tetris.md)（日本語）
 	- [README.tetris.zh-TW.md](README.tetris.zh-TW.md)
+
+
 
