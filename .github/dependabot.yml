@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Keep GitHub Actions up to date (effective once workflows exist)
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # Keep git submodules up to date (only applies if submodules are added)
+  - package-ecosystem: gitsubmodule
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # If you later add Python dependency files (requirements.txt/pyproject/poetry.lock),
+  # uncomment this block to enable automated updates for them.
+  # - package-ecosystem: pip
+  #   directory: "/"
+  #   schedule:
+  #     interval: weekly
