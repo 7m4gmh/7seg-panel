@@ -1,0 +1,12 @@
+Comment,Designator,Footprint,LCSC,Quantity
+USB_C_Receptacle_USB2.0_16P,J101,USB_C_Receptacle_G-Switch_GT-USB-7010ASV,,1
+K7805M-2000,U101,TO-220-3_Vertical,,1
+4700pF (472),C106,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,,1
+10kR,R102,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,,1
+CH224K,U102,SSOP-10-1EP_3.9x4.9mm_P1mm_EP2.1x3.3mm,,1
+22uF 6V,C104,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,,1
+22uF,C101,CP_EIA-3528-21_Kemet-B,,1
+1kR,R101,R_1210_3225Metric_Pad1.30x2.65mm_HandSolder,,1
+1MR,R103,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,,1
+Polyfuse 4A,F101,Fuse_2920_7451Metric_Pad2.10x5.45mm_HandSolder,,1
+1uF,C107,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,,1

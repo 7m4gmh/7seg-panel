@@ -1,0 +1,16 @@
+Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
+C101,22uF,CP_EIA-3528-21_Kemet-B,116.9875,-87.9,0.0,bottom
+C102,4700pF (472),C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,147.05,-87.9,180.0,bottom
+C103,22uF 25V,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,116.75,-83.8,0.0,bottom
+C104,22uF 6V,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,111.55,-83.7,180.0,bottom
+C105,22uF,CP_EIA-3528-21_Kemet-B,111.45,-87.9,180.0,bottom
+C108,1uF,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,135.0875,-75.9,180.0,bottom
+F102,Polyfuse 4A,Fuse_2920_7451Metric_Pad2.10x5.45mm_HandSolder,143.3,-68.65,90.0,bottom
+J102,USB_C_Receptacle_PowerOnly_6P,USB_C_Receptacle_HRO_TYPE-C-31-M-17,143.98,-95.735,0.0,bottom
+R104,1MR,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,147.05,-84.4,180.0,bottom
+R105,5k1R,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,147.05,-80.15,180.0,bottom
+R106,5k1R,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,147.05,-76.15,180.0,bottom
+R107,200kR,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,135.8,-89.9,180.0,bottom
+R108,1kR,R_1210_3225Metric_Pad1.30x2.65mm_HandSolder,123.1,-63.9,0.0,bottom
+U101,K7805M-2000,TO-220-3_Vertical,113.35,-72.9,180.0,top
+U103,CH221K,TSOT-23-6_HandSoldering,136.05,-83.4,270.0,bottom

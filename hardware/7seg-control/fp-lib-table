@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "7seg-panel")(type "KiCad")(uri "${KIPRJMOD}/7seg-panel.pretty")(options "")(descr ""))
+)

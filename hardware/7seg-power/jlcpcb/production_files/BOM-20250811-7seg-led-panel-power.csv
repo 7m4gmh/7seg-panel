@@ -1,0 +1,14 @@
+Comment,Designator,Footprint,LCSC,Quantity
+K7805M-2000,U101,TO-220-3_Vertical,,1
+22uF 6V,C104,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,,1
+22uF,C101,CP_EIA-3528-21_Kemet-B,,1
+USB_C_Receptacle_PowerOnly_6P,J102,USB_C_Receptacle_HRO_TYPE-C-31-M-17,,1
+CH221K,U103,TSOT-23-6_HandSoldering,,1
+1kR,R108,R_1210_3225Metric_Pad1.30x2.65mm_HandSolder,,1
+200kR,R107,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,,1
+5k1R,R106,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,,1
+5k1R,R105,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,,1
+1MR,R104,R_0805_2012Metric_Pad1.20x1.40mm_HandSolder,,1
+Polyfuse 4A,F102,Fuse_2920_7451Metric_Pad2.10x5.45mm_HandSolder,,1
+1uF,C108,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,,1
+4700pF (472),C102,C_0805_2012Metric_Pad1.18x1.45mm_HandSolder,,1
