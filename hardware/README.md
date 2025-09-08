@@ -10,5 +10,4 @@ This folder hosts independent KiCad projects per board.
     - `hardware/7seg-control` — main controller PCB
     - `hardware/7seg-hat` — Raspberry Pi HAT
     - `hardware/7seg-power` — power board
-    - Shared libs: `hardware/lib`
-    - Legacy/migration folders may also exist (e.g., `hardware/led-panel`, `controller`, `rpi-hat`, `power`).
+    
