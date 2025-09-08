@@ -6,6 +6,8 @@
 
 專案內建了穩健的錯誤偵測與恢復機制，當 I2C 通訊不穩定時，程式會自動嘗試恢復，以實現穩定且長時間的運作。
 
+平台備註：本專案主要在 Radxa ROCK 5B 上開發與測試。若啟用 I2C 並安裝相依套件，也有可能在 Raspberry Pi 4/5 上運作（匯流排編號與裝置節點可能不同）。
+
 ## 目錄
 
 - [專案簡介](#專案簡介)
@@ -161,6 +163,26 @@ gst-launch-1.0 -e -v \
 ./7seg-udp-player <連接埠號碼> [設定名稱]
 ```
 範例: `./7seg-udp-player 12345 16x16_expanded`
+
+### 從 OBS 直接傳送（FLV/TCP）
+
+透過 OBS 以 FLV over TCP 傳送，播放器端直接接收並顯示。
+
+1) 啟動接收端（FLV/TCP）
+```bash
+./7seg-net-player flv 16x12 5004
+```
+
+2) OBS 設定（錄製分頁 → 自訂輸出（FFmpeg））
+- 容器：flv
+- 視訊：H.264（x264 等）
+- 音訊：AAC
+- 輸出 URL：`tcp://<接收端IP>:5004`
+
+注意：
+- 請使用「自訂輸出（FFmpeg）」，不是 RTMP。
+- 串流結束時接收端預設會在 EOF 時結束（若以 systemd 管理會自動重啟）。
+- 作為服務運行時請設定 `MODE=flv`、`PORT=5004`（詳見 `README.systemd-ja.md`）。
 
 ## 問題排解
 

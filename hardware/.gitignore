@@ -1,0 +1,19 @@
+# KiCad project ignores
+*.bak
+*.bck
+*.kicad_prl
+*.tmp
+*-backups/
+*autosave*
+__pycache__/
+*.zip
+*.7z
+*.tar.gz
+# Large 3D models (consider LFS)
+*.step
+*.stp
+*.igs
+*.wrl
+*.3dshapes/
+# Generated manufacturing data (prefer Releases)
+**/outputs/**

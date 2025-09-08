@@ -5,7 +5,7 @@
 ## 前提
 - 本リポジトリを /home/radxa/7seg-panel に配置
 - バイナリをビルド済み
-  - `make net -j8`
+  - `make net`
 - 受信モード:
   - FLV/TCP: `./7seg-net-player flv <config> <port>`
   - TS/UDP : `./7seg-net-player ts  <config> <port>`

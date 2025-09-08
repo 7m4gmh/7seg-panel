@@ -6,6 +6,8 @@ This project is a comprehensive suite of tools designed to play videos on a cust
 
 It features a robust error detection and recovery mechanism, allowing for stable, long-term operation by automatically attempting to recover from unstable I2C communication.
 
+Platform note: The project is primarily developed and tested on Radxa ROCK 5B. It may also work on Raspberry Pi 4/5 provided I2C is enabled and dependencies are installed (bus numbers and device nodes may differ).
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -159,6 +161,26 @@ Listens for a UDP stream on a specified port.
 ./7seg-udp-player <port_number> [config_name]
 ```
 Example: `./7seg-udp-player 12345 16x16_expanded`
+
+### Send directly from OBS (FLV/TCP)
+
+Send from OBS via FLV over TCP and let the player receive and display it.
+
+1) Start the receiver (FLV/TCP)
+```bash
+./7seg-net-player flv 16x12 5004
+```
+
+2) OBS settings (Recording tab → Custom Output (FFmpeg))
+- Container: flv
+- Video: H.264 (x264 or similar)
+- Audio: AAC
+- Output URL: `tcp://<receiver_ip>:5004`
+
+Notes:
+- Use “Custom Output (FFmpeg)”, not RTMP.
+- On stream end, the receiver exits on EOF by default (with systemd it will auto-restart).
+- For service usage, set `MODE=flv` and `PORT=5004` (see `README.systemd-ja.md` for details).
 
 ## Troubleshooting
 
