@@ -144,8 +144,9 @@ static gboolean on_bus_message(GstBus* bus, GstMessage* msg, gpointer loop_ptr) 
 int main(int argc, char* argv[]) {
     // 使い方:
     // ./7seg-net-player [mode] [config_name] [port]
-    // mode: ts (デフォルト/MPEG-TS), raw (rawvideo/gray), stdin (標準入力raw)
+    // mode: ts (デフォルト/MPEG-TS), flv (FLV over TCP), raw (rawvideo/gray), stdin (標準入力raw)
     // 例: ./7seg-net-player ts 16x16_expanded 5004
+    //     ./7seg-net-player flv 24x4 5004
     //     ./7seg-net-player raw 24x4 5004
     //     ./7seg-net-player stdin 24x4
 
@@ -195,6 +196,21 @@ int main(int argc, char* argv[]) {
             "appsink name=vsink emit-signals=true sync=false max-buffers=8 drop=true "
             // 音声ブランチ
             "demux. ! queue2 use-buffering=true max-size-time=1500000000 max-size-buffers=0 max-size-bytes=0 ! "
+            "aacparse ! avdec_aac ! audioconvert ! audioresample ! audio/x-raw,format=S16LE,rate=" + std::to_string(SAMPLE_RATE) + ",channels=" + std::to_string(CHANNELS) + " ! "
+            "appsink name=asink emit-signals=true sync=false max-buffers=100 drop=false";
+    } else if (mode == "flv") {
+        // FLV over TCP サーバ（受信側が待ち受け）: ffmpeg から "-f flv tcp://<host>:<port>" で接続
+        // H.264 + AAC 前提（Opus回避）
+        pipeline_desc =
+            "tcpserversrc host=0.0.0.0 port=" + std::to_string(port) + " ! "
+            "queue2 use-buffering=true max-size-time=1500000000 max-size-buffers=0 max-size-bytes=0 ! "
+            "flvdemux name=demux "
+            // 映像ブランチ
+            "demux.video ! queue2 use-buffering=true max-size-time=1000000000 max-size-buffers=0 max-size-bytes=0 ! "
+            "h264parse config-interval=-1 disable-passthrough=true ! avdec_h264 ! videoconvert ! video/x-raw,format=BGR ! "
+            "appsink name=vsink emit-signals=true sync=false max-buffers=8 drop=true "
+            // 音声ブランチ
+            "demux.audio ! queue2 use-buffering=true max-size-time=1500000000 max-size-buffers=0 max-size-bytes=0 ! "
             "aacparse ! avdec_aac ! audioconvert ! audioresample ! audio/x-raw,format=S16LE,rate=" + std::to_string(SAMPLE_RATE) + ",channels=" + std::to_string(CHANNELS) + " ! "
             "appsink name=asink emit-signals=true sync=false max-buffers=100 drop=false";
     } else if (mode == "raw") {
