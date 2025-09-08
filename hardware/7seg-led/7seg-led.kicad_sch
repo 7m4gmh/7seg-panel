@@ -1,7 +1,7 @@
 (kicad_sch
-	(version 20231120)
+	(version 20250114)
 	(generator "eeschema")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(uuid "f15a2eb9-fdcc-4981-acd3-42a966d94cc8")
 	(paper "A3")
 	(title_block
@@ -14,7 +14,9 @@
 	(lib_symbols
 		(symbol "Connector_Generic:Conn_02x04_Odd_Even"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -81,19 +83,19 @@
 			)
 			(symbol "Conn_02x04_Odd_Even_1_1"
 				(rectangle
-					(start -1.27 -4.953)
-					(end 0 -5.207)
+					(start -1.27 3.81)
+					(end 3.81 -6.35)
 					(stroke
-						(width 0.1524)
+						(width 0.254)
 						(type default)
 					)
 					(fill
-						(type none)
+						(type background)
 					)
 				)
 				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
+					(start -1.27 2.667)
+					(end 0 2.413)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -114,8 +116,8 @@
 					)
 				)
 				(rectangle
-					(start -1.27 2.667)
-					(end 0 2.413)
+					(start -1.27 -2.413)
+					(end 0 -2.667)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -125,19 +127,8 @@
 					)
 				)
 				(rectangle
-					(start -1.27 3.81)
-					(end 3.81 -6.35)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(rectangle
-					(start 3.81 -4.953)
-					(end 2.54 -5.207)
+					(start -1.27 -4.953)
+					(end 0 -5.207)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -147,8 +138,8 @@
 					)
 				)
 				(rectangle
-					(start 3.81 -2.413)
-					(end 2.54 -2.667)
+					(start 3.81 2.667)
+					(end 2.54 2.413)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -169,8 +160,19 @@
 					)
 				)
 				(rectangle
-					(start 3.81 2.667)
-					(end 2.54 2.413)
+					(start 3.81 -2.413)
+					(end 2.54 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 3.81 -4.953)
+					(end 2.54 -5.207)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -198,24 +200,6 @@
 					)
 				)
 				(pin passive line
-					(at 7.62 2.54 180)
-					(length 3.81)
-					(name "Pin_2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
 					(at -5.08 0 0)
 					(length 3.81)
 					(name "Pin_3"
@@ -226,24 +210,6 @@
 						)
 					)
 					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 0 180)
-					(length 3.81)
-					(name "Pin_4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -270,24 +236,6 @@
 					)
 				)
 				(pin passive line
-					(at 7.62 -2.54 180)
-					(length 3.81)
-					(name "Pin_6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
 					(at -5.08 -5.08 0)
 					(length 3.81)
 					(name "Pin_7"
@@ -298,6 +246,60 @@
 						)
 					)
 					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 7.62 2.54 180)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 7.62 0 180)
+					(length 3.81)
+					(name "Pin_4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 7.62 -2.54 180)
+					(length 3.81)
+					(name "Pin_6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -324,6 +326,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Display_Character:DA56-11EWA"
 			(exclude_from_sim no)
@@ -392,14 +395,6 @@
 				)
 			)
 			(symbol "DA56-11EWA_0_0"
-				(text "8.8."
-					(at 0 8.636 0)
-					(effects
-						(font
-							(size 2.54 2.54)
-						)
-					)
-				)
 				(text "DIG1"
 					(at -2.286 10.922 0)
 					(effects
@@ -408,16 +403,24 @@
 						)
 					)
 				)
-				(text "DIG2"
-					(at 1.27 10.922 0)
+				(text "DP1"
+					(at -0.762 6.604 0)
 					(effects
 						(font
 							(size 0.635 0.635)
 						)
 					)
 				)
-				(text "DP1"
-					(at -0.762 6.604 0)
+				(text "8.8."
+					(at 0 8.636 0)
+					(effects
+						(font
+							(size 2.54 2.54)
+						)
+					)
+				)
+				(text "DIG2"
+					(at 1.27 10.922 0)
 					(effects
 						(font
 							(size 0.635 0.635)
@@ -448,106 +451,16 @@
 			)
 			(symbol "DA56-11EWA_1_1"
 				(pin input line
-					(at -15.24 0 0)
+					(at -15.24 10.16 0)
 					(length 2.54)
-					(name "DIG1_E"
+					(name "DIG1_A"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 15.24 7.62 180)
-					(length 2.54)
-					(name "DIG2_B"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 15.24 10.16 180)
-					(length 2.54)
-					(name "DIG2_A"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "11"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 15.24 -2.54 180)
-					(length 2.54)
-					(name "DIG2_F"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "12"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at 15.24 -10.16 180)
-					(length 2.54)
-					(name "DIG2_CA"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "13"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -15.24 -10.16 0)
-					(length 2.54)
-					(name "DIG1_CA"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "14"
+					(number "16"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -574,52 +487,16 @@
 					)
 				)
 				(pin input line
-					(at -15.24 10.16 0)
+					(at -15.24 5.08 0)
 					(length 2.54)
-					(name "DIG1_A"
+					(name "DIG1_C"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "16"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -15.24 -5.08 0)
-					(length 2.54)
-					(name "DIG1_G"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "17"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -15.24 -2.54 0)
-					(length 2.54)
-					(name "DIG1_F"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "18"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -646,16 +523,52 @@
 					)
 				)
 				(pin input line
-					(at -15.24 5.08 0)
+					(at -15.24 0 0)
 					(length 2.54)
-					(name "DIG1_C"
+					(name "DIG1_E"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "3"
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -15.24 -2.54 0)
+					(length 2.54)
+					(name "DIG1_F"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "18"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -15.24 -5.08 0)
+					(length 2.54)
+					(name "DIG1_G"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "17"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -682,16 +595,16 @@
 					)
 				)
 				(pin input line
-					(at 15.24 0 180)
+					(at -15.24 -10.16 0)
 					(length 2.54)
-					(name "DIG2_E"
+					(name "DIG1_CA"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "5"
+					(number "14"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -700,16 +613,16 @@
 					)
 				)
 				(pin input line
-					(at 15.24 2.54 180)
+					(at 15.24 10.16 180)
 					(length 2.54)
-					(name "DIG2_D"
+					(name "DIG2_A"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "6"
+					(number "11"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -718,16 +631,16 @@
 					)
 				)
 				(pin input line
-					(at 15.24 -5.08 180)
+					(at 15.24 7.62 180)
 					(length 2.54)
-					(name "DIG2_G"
+					(name "DIG2_B"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "7"
+					(number "10"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -754,6 +667,78 @@
 					)
 				)
 				(pin input line
+					(at 15.24 2.54 180)
+					(length 2.54)
+					(name "DIG2_D"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 15.24 0 180)
+					(length 2.54)
+					(name "DIG2_E"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 15.24 -2.54 180)
+					(length 2.54)
+					(name "DIG2_F"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "12"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 15.24 -5.08 180)
+					(length 2.54)
+					(name "DIG2_G"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
 					(at 15.24 -7.62 180)
 					(length 2.54)
 					(name "DP2"
@@ -771,7 +756,26 @@
 						)
 					)
 				)
+				(pin input line
+					(at 15.24 -10.16 180)
+					(length 2.54)
+					(name "DIG2_CA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "13"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Mechanical:MountingHole"
 			(pin_names
@@ -854,7 +858,18 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
+	)
+	(text "Wiring for Com-Anode."
+		(exclude_from_sim no)
+		(at 72.136 144.78 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "01558ea3-d119-495f-ba78-5b525fb21d5f")
 	)
 	(wire
 		(pts
@@ -2535,16 +2550,6 @@
 			(type default)
 		)
 		(uuid "fd929ac7-ca90-4e46-81ed-8df987496561")
-	)
-	(text "Wiring for Com-Anode."
-		(exclude_from_sim no)
-		(at 72.136 144.78 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "01558ea3-d119-495f-ba78-5b525fb21d5f")
 	)
 	(global_label "ROW15"
 		(shape input)
@@ -7624,4 +7629,5 @@
 			(page "1")
 		)
 	)
+	(embedded_fonts no)
 )
