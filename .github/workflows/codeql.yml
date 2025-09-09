@@ -37,14 +37,19 @@ jobs:
       - name: Install build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            build-essential pkg-config \
-            libsdl2-dev libopencv-dev \
-            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+          sudo apt-get install -y build-essential
 
+      # もしMakefileがsrc/にある場合は、ここを修正
       - name: Build with Make
         run: |
-          make -j"$(nproc)"
+          if [ -f Makefile ]; then
+            make -j"$(nproc)"
+          elif [ -f src/Makefile ]; then
+            cd src && make -j"$(nproc)"
+          else
+            echo "No Makefile found!"
+            exit 1
+          fi
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
