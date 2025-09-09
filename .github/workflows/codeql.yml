@@ -39,17 +39,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential
 
-      # もしMakefileがsrc/にある場合は、ここを修正
       - name: Build with Make
         run: |
-          if [ -f Makefile ]; then
-            make -j"$(nproc)"
-          elif [ -f src/Makefile ]; then
-            cd src && make -j"$(nproc)"
-          else
-            echo "No Makefile found!"
-            exit 1
-          fi
+          make -j"$(nproc)"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
