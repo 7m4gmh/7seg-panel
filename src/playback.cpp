@@ -6,6 +6,7 @@
 #include "file_audio_gst.h"
 #include "audio.h"
 #include <opencv2/opencv.hpp> // ★★★ 'cv::' 関連 ★★★
+#include <opencv2/core/ocl.hpp> // ★★★ GPU/OpenCLサポート用 ★★★
 #include <iostream>
 #include <chrono>             // ★★★ 'std::chrono' のために必要 ★★★
 #include <thread>             // ★★★ 'std::this_thread' のために必要 ★★★
@@ -375,6 +376,21 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
 int play_video_stream_emulator(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
     g_current_stop_flag = &stop_flag;
     stop_flag = false;
+
+    // GPU/OpenCLを有効化
+    cv::ocl::setUseOpenCL(true);
+    std::cout << "OpenCV GPU acceleration: " 
+              << (cv::ocl::haveOpenCL() ? "ENABLED" : "DISABLED") << std::endl;
+    
+    if (cv::ocl::haveOpenCL()) {
+        cv::ocl::Context context = cv::ocl::Context::getDefault();
+        if (!context.empty()) {
+            cv::ocl::Device device = context.device(0);
+            std::cout << "GPU Device: " << device.name() 
+                      << " (" << (device.type() == cv::ocl::Device::TYPE_GPU ? "GPU" : "CPU") << ")" 
+                      << std::endl;
+        }
+    }
 
     // 起動時に全桁分のセグメントレイアウトを計算してキャッシュ
     CachedDisplayLayout cache = create_cached_layout(config);
