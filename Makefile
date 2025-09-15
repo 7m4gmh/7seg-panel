@@ -2,7 +2,32 @@
 # プロジェクト設定
 # ----------------------------------------
 PROJECT_NAME = 7seg-panel
-VERSION      = 1.0.0
+VERSION = 1.0.0
+
+
+# --- リンク（emulator_test専用） ---
+$(EMULATOR_TEST_BIN): $(OBJDIR)/emulator_test.o $(OBJDIR)/emulator_display.o
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
+	@echo "Successfully built -> $@"
+
+$(UDP_PLAYER_BIN): $(OBJS_COMMON) $(UDP_PLAYER_OBJS)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
+	@echo "Successfully built -> $@"
+
+$(FILE_PLAYER_BIN): $(OBJS_COMMON) $(FILE_PLAYER_OBJS)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
+	@echo "Successfully built -> $@"
+
+$(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
+	@echo "Successfully built -> $@"  = 1.0.0
+
+# OS検出
+UNAME_S := $(shell uname -s)
 
 NUM_CORES := $(shell nproc 2>/dev/null || echo 4)
 MAKEFLAGS += -j$(NUM_CORES)
@@ -16,13 +41,18 @@ MAKEFLAGS += -j$(NUM_CORES)
 CXX = g++
 INCLUDES = -Iinclude -I../cpp-httplib
 BASE_CXXFLAGS = -std=c++17 -Wall -O2 $(INCLUDES)
-BASE_LDFLAGS = -pthread
+ifeq ($(UNAME_S),Darwin)
+    BASE_CXXFLAGS += -D__APPLE__
+    BASE_LDFLAGS = 
+else
+    BASE_LDFLAGS = -pthread
+endif
 
 # ----------------------------------------
 # 依存ライブラリごとの設定
 # ----------------------------------------
-CV_SDL_CFLAGS = $(shell pkg-config --cflags opencv4)
-CV_SDL_LIBS   = -lSDL2 $(shell pkg-config --libs opencv4)
+CV_SDL_CFLAGS = -I/opt/homebrew/include/SDL2 -I/opt/homebrew/include/opencv4
+CV_SDL_LIBS = -L/opt/homebrew/lib -lSDL2 -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio
 # GStreamer: core + app (appsink/src) + video (gst/video/video.h)
 # pkg-config のモジュール名は distro により同じ: gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0
 GST_CFLAGS = $(shell pkg-config --cflags gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
@@ -39,7 +69,11 @@ SRCS_COMMON        = $(wildcard $(SRCDIR)/common.cpp $(SRCDIR)/led.cpp $(SRCDIR)
 SRCS_COMMON       += $(SRCDIR)/file_audio_stub.cpp
 UDP_PLAYER_SRCS    = $(wildcard $(SRCDIR)/udp_player.cpp $(SRCDIR)/udp.cpp)
 FILE_PLAYER_SRCS   = $(wildcard $(SRCDIR)/file_player.cpp)
-FILE_PLAYER_SRCS  += $(SRCDIR)/file_audio_gst.cpp
+ifeq ($(UNAME_S),Linux)
+    FILE_PLAYER_SRCS  += $(SRCDIR)/file_audio_gst.cpp
+else
+    FILE_PLAYER_SRCS  += $(SRCDIR)/file_audio_stub.cpp
+endif
 HTTP_PLAYER_SRCS   = $(wildcard $(SRCDIR)/http_player.cpp)
 RTP_PLAYER_SRCS    = $(wildcard $(SRCDIR)/rtp_player.cpp)
 NET_PLAYER_SRCS    = $(wildcard $(SRCDIR)/net_player.cpp)
@@ -62,13 +96,17 @@ DEPS     = $(patsubst $(OBJDIR)/%.o,$(DEPDIR)/%.d,$(ALL_OBJS))
 UDP_PLAYER_BIN    = 7seg-udp-player
 FILE_PLAYER_BIN   = 7seg-file-player
 HTTP_PLAYER_BIN   = 7seg-http-player
- 
+EMULATOR_TEST_BIN = emulator_test
 RTP_PLAYER_BIN    = 7seg-rtp-player
 NET_PLAYER_BIN    = 7seg-net-player
 TEST_I2C_BIN      = 7seg-test-i2c
 
 # ターゲットのグループ
-CORE_TARGETS = $(UDP_PLAYER_BIN) $(FILE_PLAYER_BIN) $(HTTP_PLAYER_BIN)
+ifeq ($(UNAME_S),Linux)
+    CORE_TARGETS = $(UDP_PLAYER_BIN) $(FILE_PLAYER_BIN) $(HTTP_PLAYER_BIN)
+else
+    CORE_TARGETS = $(UDP_PLAYER_BIN) $(FILE_PLAYER_BIN)
+endif
 GST_TARGETS  = $(RTP_PLAYER_BIN) $(NET_PLAYER_BIN)
 TARGETS      = $(CORE_TARGETS) $(GST_TARGETS) $(TEST_I2C_BIN)
 
@@ -89,7 +127,7 @@ $(OBJDIR)/file_audio_gst.o: CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) $(GST_C
 # ----------------------------------------
 # ビルドルール
 # ----------------------------------------
-.PHONY: all core gst rtp net clean package deb help
+.PHONY: all core gst rtp net clean package deb help emulator_test emulator
 
 # すべて（core + gst）
 all: $(TARGETS)
@@ -103,6 +141,8 @@ gst: $(GST_TARGETS)
 # 個別ターゲット
 rtp: $(RTP_PLAYER_BIN)
 net: $(NET_PLAYER_BIN)
+file: $(FILE_PLAYER_BIN)
+http: $(HTTP_PLAYER_BIN)
 test: $(TEST_I2C_BIN)
 
 # --- 実行ファイルのリンク ---
@@ -113,8 +153,14 @@ $(UDP_PLAYER_BIN): $(OBJS_COMMON) $(UDP_PLAYER_OBJS)
 
 $(FILE_PLAYER_BIN): $(OBJS_COMMON) $(FILE_PLAYER_OBJS)
 	@echo "Linking $@..."
-	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
 	@echo "Successfully built -> $@"
+
+
+# --- オブジェクトファイルのコンパイル（emulator_test専用） ---
+$(OBJDIR)/emulator_test.o: $(SRCDIR)/emulator_test.cpp | $(DEPDIR)
+	@echo "Compiling $<..."
+	$(CXX) $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) -MMD -MP -c $< -o $@
 
 $(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
 	@echo "Linking $@..."
@@ -122,9 +168,10 @@ $(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
 	@echo "Successfully built -> $@"
 
 
-$(RTP_PLAYER_BIN): $(OBJS_COMMON) $(RTP_PLAYER_OBJS)
+# --- リンク（emulator_test専用） ---
+$(EMULATOR_TEST_BIN): $(OBJDIR)/emulator_test.o $(OBJDIR)/emulator_display.o
 	@echo "Linking $@..."
-	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
 	@echo "Successfully built -> $@"
 
 $(NET_PLAYER_BIN): $(OBJS_COMMON) $(NET_PLAYER_OBJS)
@@ -203,11 +250,13 @@ $(DEB_NAME): all
 # クリーンアップ
 # ----------------------------------------
 clean:
-	rm -rf $(OBJDIR) $(TARGETS) $(PROJECT_NAME)-*.tar.gz
+	rm -rf $(OBJDIR) $(TARGETS) emulator_test $(PROJECT_NAME)-*.tar.gz
 
 # ----------------------------------------
 # ヘルプ
 # ----------------------------------------
+
+
 help:
 	@echo ""
 	@echo "Usage:"
@@ -220,3 +269,11 @@ help:
 	@echo "  make package    - Create source tarball"
 	@echo "  make deb        - Create Debian package"
 	@echo ""
+
+emulator: obj/emulator_test.o obj/emulator_display.o
+	$(CXX) -o emulator_test obj/emulator_test.o obj/emulator_display.o $(BASE_LDFLAGS) $(CV_SDL_LIBS)
+	@echo "Successfully linked -> emulator_test"
+
+$(OBJDIR)/emulator_display.o: $(SRCDIR)/emulator_display.cpp | $(DEPDIR)
+	@echo "Compiling $<..."
+	$(CXX) $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) -MMD -MP -c $< -o $@

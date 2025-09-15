@@ -6,7 +6,9 @@
 #include <cstring>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#ifndef __APPLE__
 #include <linux/i2c-dev.h>
+#endif
 #include <cstdio>
 #include <cstdint>
 #include <iostream>
@@ -22,6 +24,14 @@ void reset_i2c_channel_cache() {
 
 // ★変更★ 戻り値の型を void から bool に変更
 bool select_i2c_channel(int i2c_fd, int expander_addr, int channel, I2CErrorInfo& error_info_out) {
+#ifdef __APPLE__
+    // MacではI2Cがないので、スタブ
+    (void)i2c_fd;
+    (void)expander_addr;
+    (void)channel;
+    (void)error_info_out;
+    return true;
+#else
     if (expander_addr < 0) {
         g_current_channel = -1;
         return true; // TCAがない場合は常に成功
@@ -51,10 +61,18 @@ bool select_i2c_channel(int i2c_fd, int expander_addr, int channel, I2CErrorInfo
     g_current_channel = channel;
     usleep(1000); 
     return true; // ★変更★ 成功時に true を返す
+#endif
 }
 
 
 bool initialize_displays(int i2c_fd, const DisplayConfig& config) {
+#ifdef __APPLE__
+    // MacではI2Cがないので、スタブ
+    (void)i2c_fd;
+    (void)config;
+    std::cout << "Initialization skipped on macOS (no I2C)" << std::endl;
+    return true;
+#else
     std::cout << "Initializing modules..." << std::endl;
     I2CErrorInfo dummy_error_info; // ★★★ ダミーの変数を定義 ★★★
 
@@ -99,10 +117,19 @@ bool initialize_displays(int i2c_fd, const DisplayConfig& config) {
     
     std::cout << "Initialization complete." << std::endl;
     return true; 
+#endif
 }
 
 
 bool update_module_from_grid(int i2c_bus_fd, int addr, const std::vector<uint8_t>& grid16, I2CErrorInfo& error_info_out) {
+#ifdef __APPLE__
+    // MacではI2Cがないので、スタブ
+    (void)i2c_bus_fd;
+    (void)addr;
+    (void)grid16;
+    (void)error_info_out;
+    return true;
+#else
     // ... バッファ作成のロジック...
     uint8_t display_buffer[16] = {0};
     const int DIGITS_PER_MODULE = 16; 
@@ -142,6 +169,7 @@ bool update_module_from_grid(int i2c_bus_fd, int addr, const std::vector<uint8_t
         return false; // ★変更★ エラー時に false を返す
     }
     return true; // ★変更★ 成功時に true を返す
+#endif
 }
 
 
@@ -155,6 +183,14 @@ bool update_module_from_grid(int i2c_bus_fd, int addr, const std::vector<uint8_t
 
 
 bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std::vector<uint8_t>& grid, I2CErrorInfo& error_info_out) {
+#ifdef __APPLE__
+    // MacではI2Cがないので、スタブ
+    (void)i2c_fd;
+    (void)config;
+    (void)grid;
+    (void)error_info_out;
+    return true;
+#else
     bool use_tca = (config.tca9548a_address != -1);
     const int digits_per_module = config.module_digits_width * config.module_digits_height;
     std::vector<uint8_t> module_data_buffer(digits_per_module);
@@ -211,4 +247,6 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
         }
     }
     return true; // ★変更★ すべて成功したら true を返す
+#endif
 }
+

@@ -5,8 +5,10 @@
 #include <thread>
 #include <chrono>
 #include <map>
+#ifndef __APPLE__
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgcodecs.hpp> // imdecode 用を明示
+#endif
 #include <fcntl.h>  // open() と O_RDWR のために必要
 #include <unistd.h> // close(), usleep() のために必要
 
@@ -78,6 +80,16 @@ void frame_to_grid(const cv::Mat& bw, const DisplayConfig& config, std::vector<u
 // ★修正1★ 引数を「値渡し」から「参照渡し」に変更 (int -> int&)
 // これにより、関数内で i2c_fd を再オープンした結果が呼び出し元に反映される
 void video_thread(int& i2c_fd, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
+#ifdef __APPLE__
+    // MacではOpenCVがないので、スタブ
+    (void)i2c_fd;
+    (void)config;
+    (void)stop_flag;
+    std::cout << "Video thread disabled on macOS (no OpenCV)" << std::endl;
+    while (!stop_flag) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+#else
     std::vector<uint8_t> grid(config.total_digits(), 0);
     auto frame_duration = std::chrono::milliseconds(1000 / FPS);
 
@@ -126,6 +138,7 @@ void video_thread(int& i2c_fd, const DisplayConfig& config, std::atomic<bool>& s
             std::this_thread::sleep_for(wait_time);
         }
     }
+#endif
 }
 
 /* 

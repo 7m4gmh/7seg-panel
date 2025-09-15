@@ -31,24 +31,31 @@ DisplayConfig load_config_from_json(const std::string& config_name, const std::s
     DisplayConfig config;
 
     config.name = conf_json["name"];
-    
-    if (conf_json["tca9548a_address"].is_null()) {
-        config.tca9548a_address = -1;
+    if (conf_json.contains("type")) {
+        config.type = conf_json["type"];
     } else {
+        config.type = "physical";
+    }
+    
+    if (conf_json.contains("tca9548a_address") && !conf_json["tca9548a_address"].is_null()) {
         config.tca9548a_address = hex_str_to_int(conf_json["tca9548a_address"]);
+    } else {
+        config.tca9548a_address = -1;
     }
 
-    for (auto const& [ch_str, grid_json] : conf_json["channel_grids"].items()) {
-        int channel = std::stoi(ch_str);
-        std::vector<std::vector<int>> grid;
-        for (const auto& row_json : grid_json) {
-            std::vector<int> row;
-            for (const auto& addr_str : row_json) {
-                row.push_back(hex_str_to_int(addr_str));
+    if (conf_json.contains("channel_grids")) {
+        for (auto const& [ch_str, grid_json] : conf_json["channel_grids"].items()) {
+            int channel = std::stoi(ch_str);
+            std::vector<std::vector<int>> grid;
+            for (const auto& row_json : grid_json) {
+                std::vector<int> row;
+                for (const auto& addr_str : row_json) {
+                    row.push_back(hex_str_to_int(addr_str));
+                }
+                grid.push_back(row);
             }
-            grid.push_back(row);
+            config.channel_grids[channel] = grid;
         }
-        config.channel_grids[channel] = grid;
     }
 
     config.module_digits_width = conf_json["module_digits_width"];

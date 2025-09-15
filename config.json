@@ -98,6 +98,50 @@
       "module_digits_height": 4,
       "total_width": 12,
       "total_height": 8
+    },
+    "emulator-24x4": {
+      "name": "24x4 Emulator",
+      "type": "emulator",
+      "tca9548a_address": null,
+      "channel_grids": {},
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 24,
+      "total_height": 4
+    },
+    "emulator-12x8": {
+      "name": "12x8 Emulator",
+      "type": "emulator",
+      "tca9548a_address": null,
+      "channel_grids": {},
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 12,
+      "total_height": 8
+    },
+      "emulator-20x20": {
+      "name": "20x20 Emulator",
+      "type": "emulator",
+      "module_digits_width": 10,
+      "module_digits_height": 10,
+      "total_width": 20,
+      "total_height": 20
+    },
+      "emulator-40x20": {
+      "name": "40x20 Emulator",
+      "type": "emulator",
+      "module_digits_width": 20,
+      "module_digits_height": 10,
+      "total_width": 40,
+      "total_height": 20
+    },
+      "emulator-40x40": {
+      "name": "40x40 Emulator",
+      "type": "emulator",
+      "module_digits_width": 10,
+      "module_digits_height": 10,
+      "total_width": 40,
+      "total_height": 40
     }
   }
 }

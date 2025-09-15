@@ -44,7 +44,9 @@ void udp_loop(int i2c_fd, int sockfd, const DisplayConfig& config, std::atomic<b
             start_time = (double)clock() / CLOCKS_PER_SEC;
             audio_bytes_received = 0;
             // video.h と引数を完全に一致させます
+#ifndef __APPLE__
             std::thread(video_thread, std::ref(i2c_fd), std::ref(config), std::ref(stop_flag)).detach();
+#endif
         } else if (type == 'A') {
             std::vector<char> chunk(buf + 21, buf + n);
             audio_queue(chunk.data(), chunk.size());

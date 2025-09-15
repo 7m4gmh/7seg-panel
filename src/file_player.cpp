@@ -20,7 +20,11 @@ int main(int argc, char* argv[]) {
                 stop_flag = true;
             });
             
-            play_video_stream(video_path, config, stop_flag);
+            if (config.type == "emulator") {
+                play_video_stream_emulator(video_path, config, stop_flag);
+            } else {
+                play_video_stream(video_path, config, stop_flag);
+            }
             
             if(watch_dog.joinable()) {
                 watch_dog.join();

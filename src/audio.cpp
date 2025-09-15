@@ -1,20 +1,37 @@
 #include "audio.h"
+#ifdef __APPLE__
+#include <iostream>
+#include <vector>
+#include <cstring>
+#include <chrono>
+#include <thread>
+#else
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <vector>
 #include <cstring>
 #include <chrono>
 #include <thread>
+#endif
 
-static SDL_AudioDeviceID dev = 0;
-static SDL_AudioSpec obtained;
-static int g_frame_bytes = 0;              // 1フレーム(全ch)のバイト数
-static int g_fadein_frames_remaining = 0;  // フェードイン残りフレーム数
+#ifdef __APPLE__
+// MacではSDL2がないので、スタブ
+static int g_frame_bytes = 0;
+static int g_fadein_frames_remaining = 0;
 static int g_bytes_per_sec = 0;
-// DCブロッカー用（一次ハイパス）
-static float hp_R = 0.995f; // 時定数係数（0.99〜0.999の範囲で調整）
+static float hp_R = 0.995f;
 static float hp_xL_prev = 0.0f, hp_yL_prev = 0.0f;
 static float hp_xR_prev = 0.0f, hp_yR_prev = 0.0f;
+#else
+static SDL_AudioDeviceID dev = 0;
+static SDL_AudioSpec obtained;
+static int g_frame_bytes = 0;
+static int g_fadein_frames_remaining = 0;
+static int g_bytes_per_sec = 0;
+static float hp_R = 0.995f;
+static float hp_xL_prev = 0.0f, hp_yL_prev = 0.0f;
+static float hp_xR_prev = 0.0f, hp_yR_prev = 0.0f;
+#endif
 
 static inline void dc_blocker_s16(int16_t* samples, size_t frames, int channels) {
     for (size_t f = 0; f < frames; ++f) {
@@ -37,6 +54,11 @@ static inline void dc_blocker_s16(int16_t* samples, size_t frames, int channels)
 }
 
 bool audio_init(int samplerate, int channels) {
+#ifdef __APPLE__
+    // Macではオーディオを無効化
+    std::cout << "Audio disabled on macOS (no SDL2)" << std::endl;
+    return true;
+#else
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         return false;
@@ -80,9 +102,15 @@ bool audio_init(int samplerate, int channels) {
               << (int)obtained.channels << " ch"
               << std::endl;
     return true;
+#endif
 }
 
 void audio_queue(const char* data, size_t len) {
+#ifdef __APPLE__
+    // Macではオーディオを無効化
+    (void)data;
+    (void)len;
+#else
     if (dev) {
         if (g_fadein_frames_remaining > 0 && g_frame_bytes > 0 && len >= (size_t)g_frame_bytes) {
             // 3) 最初の数十msだけフェードインを適用
@@ -131,9 +159,13 @@ void audio_queue(const char* data, size_t len) {
             }
         }
     }
+#endif
 }
 
 void audio_cleanup() {
+#ifdef __APPLE__
+    // Macではオーディオを無効化
+#else
     if (dev) {
         // 残りキューを滑らかにドレインしてから停止
         const Uint32 queued = SDL_GetQueuedAudioSize(dev);
@@ -162,5 +194,6 @@ void audio_cleanup() {
         dev = 0;
     }
     SDL_Quit();
+#endif
 }
 

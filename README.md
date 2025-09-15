@@ -8,7 +8,11 @@ i2cで駆動する自作の7セグメントLEDパネルで、動画を再生す�
 
 Note (platform): Developed and tested primarily on Radxa ROCK 5B. It may also work on Raspberry Pi 4/5 if I2C is enabled and dependencies are installed (bus numbers/device names may differ).
 
+**macOS Support**: The project includes emulator mode for macOS development and testing. Physical LED panels are automatically simulated with accurate segment rendering and audio synchronization.
+
 注記（プラットフォーム）: 本プロジェクトは主に Radxa ROCK 5B 向けに作成・検証しています。I2C を有効化し依存関係を整えれば Raspberry Pi 4/5 でも動作する可能性があります（バス番号やデバイス名が異なる場合があります）。
+
+**macOS対応**: 本プロジェクトはmacOSでの開発・テスト用にエミュレータモードを搭載しています。物理的なLEDパネルを自動的にシミュレートし、正確なセグメント描画と音声同期を実現します。
 
 ---
 
@@ -70,6 +74,25 @@ make all
 make clean
 ```
 
+### macOS Emulator Support
+The project includes macOS emulator support for development and testing without physical hardware:
+- Automatically detects macOS and uses emulator mode
+- Physical LED panel simulation with accurate segment shapes
+- Optimized performance with pre-cached layouts
+- Audio synchronization for smooth playback
+
+**macOSでのビルド:**
+```bash
+# OpenCVのインストール
+brew install opencv
+
+# ビルド
+make core
+
+# エミュレータでのテスト
+./7seg-file-player test.mp4 emulator-24x4
+```
+
 Tip
 - For streaming, we recommend the net player with OBS via FLV/TCP:
 	- [README.en.md](README.en.md) → "Send directly from OBS (FLV/TCP)"
@@ -88,6 +111,11 @@ Tip
 	 - [README.en.md](README.en.md) → "File Player"
 	 - [README.ja.md](README.ja.md) → 「ファイルプレイヤー」
 	 - [README.zh-TW.md](README.zh-TW.md) → 「檔案播放器」
+
+- **macOS Emulator**: For testing and development on macOS without physical hardware. See:
+	 - [README.emulator.md](README.emulator.md) → "7-Segment LED Panel Emulator"
+	 - 物理的なLEDパネルの正確なシミュレーション
+	 - 動画ファイルからの再生と音声同期
 
 - Tetris on the LED panel (Python):
 	- [README.tetris.en.md](README.tetris.en.md)

@@ -1,7 +1,7 @@
 #include "common.h"
 #include "playback.h"
 #include "main_common.hpp" // ★★★ 共通ヘッダーをインクルード
-#include "../cpp-httplib/httplib.h"
+#include "httplib.h"
 
 #include <vector>
 #include <deque>

@@ -13,6 +13,7 @@ extern double CHAR_HEIGHT_MM;
 // パネルの物理構成を定義する構造体
 struct DisplayConfig {
     std::string name;
+    std::string type; // "physical" or "emulator"
     int tca9548a_address; // エクスパンダのアドレス (使わない場合は-1)
     std::map<int, std::vector<std::vector<int>>> channel_grids;
     int module_digits_width;
