@@ -36,25 +36,37 @@ DisplayConfig load_config_from_json(const std::string& config_name, const std::s
     } else {
         config.type = "physical";
     }
-    
-    if (conf_json.contains("tca9548a_address") && !conf_json["tca9548a_address"].is_null()) {
-        config.tca9548a_address = hex_str_to_int(conf_json["tca9548a_address"]);
-    } else {
-        config.tca9548a_address = -1;
-    }
 
-    if (conf_json.contains("channel_grids")) {
-        for (auto const& [ch_str, grid_json] : conf_json["channel_grids"].items()) {
-            int channel = std::stoi(ch_str);
-            std::vector<std::vector<int>> grid;
-            for (const auto& row_json : grid_json) {
-                std::vector<int> row;
-                for (const auto& addr_str : row_json) {
-                    row.push_back(hex_str_to_int(addr_str));
+    if (conf_json.contains("buses")) {
+        for (const auto& [bus_str, bus_json] : conf_json["buses"].items()) {
+            int bus_id = std::stoi(bus_str);
+            BusConfig bus_config;
+            if (bus_json.contains("tca9548as")) {
+                for (const auto& tca_json : bus_json["tca9548as"]) {
+                    TCA9548AConfig tca;
+                    if (tca_json.contains("address") && !tca_json["address"].is_null()) {
+                        tca.address = hex_str_to_int(tca_json["address"]);
+                    } else {
+                        tca.address = -1;
+                    }
+                    if (tca_json.contains("channels")) {
+                        for (const auto& [ch_str, grid_json] : tca_json["channels"].items()) {
+                            int channel = std::stoi(ch_str);
+                            std::vector<std::vector<int>> grid;
+                            for (const auto& row_json : grid_json) {
+                                std::vector<int> row;
+                                for (const auto& addr_str : row_json) {
+                                    row.push_back(hex_str_to_int(addr_str));
+                                }
+                                grid.push_back(row);
+                            }
+                            tca.channels[channel] = grid;
+                        }
+                    }
+                    bus_config.tca9548as.push_back(tca);
                 }
-                grid.push_back(row);
             }
-            config.channel_grids[channel] = grid;
+            config.buses[bus_id] = bus_config;
         }
     }
 

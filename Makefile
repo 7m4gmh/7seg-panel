@@ -28,6 +28,7 @@ $(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
 
 # OS検出
 UNAME_S := $(shell uname -s)
+IS_RASPBERRY_PI := $(shell grep -q "Raspberry Pi" /proc/device-tree/model 2>/dev/null && echo "yes" || echo "no")
 
 NUM_CORES := $(shell nproc 2>/dev/null || echo 4)
 MAKEFLAGS += -j$(NUM_CORES)
@@ -51,8 +52,19 @@ endif
 # ----------------------------------------
 # 依存ライブラリごとの設定
 # ----------------------------------------
-CV_SDL_CFLAGS = -I/opt/homebrew/include/SDL2 -I/opt/homebrew/include/opencv4
-CV_SDL_LIBS = -L/opt/homebrew/lib -lSDL2 -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio
+ifeq ($(IS_RASPBERRY_PI),yes)
+    # Raspberry Pi 5
+    CV_SDL_CFLAGS = -I/usr/include/SDL2 -I/usr/include/opencv4
+    CV_SDL_LIBS = -lSDL2 -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs
+else ifeq ($(UNAME_S),Darwin)
+    # macOS
+    CV_SDL_CFLAGS = -I/opt/homebrew/include/SDL2 -I/opt/homebrew/include/opencv4
+    CV_SDL_LIBS = -L/opt/homebrew/lib -lSDL2 -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs
+else
+    # ROCK5B (Debian-based Linux, no Homebrew)
+    CV_SDL_CFLAGS = -I/usr/include/SDL2 -I/usr/include/opencv4
+    CV_SDL_LIBS = -lSDL2 -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs
+endif
 # GStreamer: core + app (appsink/src) + video (gst/video/video.h)
 # pkg-config のモジュール名は distro により同じ: gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0
 GST_CFLAGS = $(shell pkg-config --cflags gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
@@ -153,7 +165,7 @@ $(UDP_PLAYER_BIN): $(OBJS_COMMON) $(UDP_PLAYER_OBJS)
 
 $(FILE_PLAYER_BIN): $(OBJS_COMMON) $(FILE_PLAYER_OBJS)
 	@echo "Linking $@..."
-	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS)
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
 	@echo "Successfully built -> $@"
 
 
@@ -175,6 +187,11 @@ $(EMULATOR_TEST_BIN): $(OBJDIR)/emulator_test.o $(OBJDIR)/emulator_display.o
 	@echo "Successfully built -> $@"
 
 $(NET_PLAYER_BIN): $(OBJS_COMMON) $(NET_PLAYER_OBJS)
+	@echo "Linking $@..."
+	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
+	@echo "Successfully built -> $@"
+
+$(RTP_PLAYER_BIN): $(OBJS_COMMON) $(RTP_PLAYER_OBJS)
 	@echo "Linking $@..."
 	$(CXX) -o $@ $^ $(BASE_LDFLAGS) $(CV_SDL_LIBS) $(GST_LIBS)
 	@echo "Successfully built -> $@"

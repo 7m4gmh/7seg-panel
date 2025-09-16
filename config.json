@@ -7,11 +7,19 @@
   "configurations": {
     "24x4": {
       "name": "24x4 Horizontal",
-      "tca9548a_address": "0x77",
-      "channel_grids": {
-        "0": [
-          ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
-        ]
+      "buses": {
+        "0": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ]
+              }
+            }
+          ]
+        }
       },
       "module_digits_width": 4,
       "module_digits_height": 4,
@@ -20,30 +28,85 @@
     },
     "12x8": {
       "name": "12x8 Expanded (2x 12x4 via TCA9548a)",
-      "tca9548a_address": "0x77",
-      "channel_grids": {
-        "0": [
-          ["0x70", "0x71", "0x72"]
-        ],
-        "1": [
-          ["0x70", "0x71", "0x72"]
-        ]
+      "buses": {
+        "0": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72"]
+                ]
+              }
+            }
+          ]
+        },
+        "1": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72"]
+                ]
+              }
+            }
+          ]
+        }
       },
       "module_digits_width": 4,
       "module_digits_height": 4,
       "total_width": 12,
       "total_height": 8
     },
+    "1x1_exp": {
+      "name": "1x1 Expanded (Bus 1, 1x1 via TCA9548a)",
+      "buses": {
+        "0": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x73"]
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 4,
+      "total_height": 4
+    },
     "16x8": {
       "name": "16x8 Expanded (2x 12x4 via TCA9548a)",
-      "tca9548a_address": "0x77",
-      "channel_grids": {
-        "0": [
-          ["0x70", "0x71", "0x72", "0x73"]
-        ],
-        "1": [
-          ["0x70", "0x71", "0x72", "0x73"]
-        ]
+      "buses": {
+        "0": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73"]
+                ]
+              }
+            }
+          ]
+        },
+        "1": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73"]
+                ]
+              }
+            }
+          ]
+        }
       },
       "module_digits_width": 4,
       "module_digits_height": 4,
@@ -52,17 +115,43 @@
     },
     "16x12": {
       "name": "16x12 Expanded (3x 16x4 via TCA9548a)",
-      "tca9548a_address": "0x77",
-      "channel_grids": {
-        "0": [
-          ["0x70", "0x71", "0x72", "0x73"]
-        ],
-        "1": [
-          ["0x70", "0x71", "0x72", "0x73"]
-        ],
-        "2": [
-          ["0x70", "0x71", "0x72", "0x73"]
-        ]
+      "buses": {
+        "0": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73"]
+                ]
+              }
+            }
+          ]
+        },
+        "1": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73"]
+                ]
+              }
+            }
+          ]
+        },
+        "2": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73"]
+                ]
+              }
+            }
+          ]
+        }
       },
       "module_digits_width": 4,
       "module_digits_height": 4,
@@ -71,14 +160,31 @@
     },
     "48x4": {
       "name": "48x4 Expanded (2x 24x4 via TCA9548a)",
-      "tca9548a_address": "0x77",
-      "channel_grids": {
-        "0": [
-          ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
-        ],
-        "1": [
-          ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
-        ]
+      "buses": {
+        "0": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ]
+              }
+            }
+          ]
+        },
+        "1": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ]
+              }
+            }
+          ]
+        }
       },
       "module_digits_width": 4,
       "module_digits_height": 4,
@@ -87,12 +193,20 @@
     },
     "12x8-direct": {
       "name": "12x8 Grid (Direct Connection)",
-      "tca9548a_address": null,
-      "channel_grids": {
-        "-1": [
-          ["0x70", "0x71", "0x72"],
-          ["0x73", "0x74", "0x75"]
-        ]
+      "buses": {
+        "0": {
+          "tca9548as": [
+            {
+              "address": null,
+              "channels": {
+                "-1": [
+                  ["0x70", "0x71", "0x72"],
+                  ["0x73", "0x74", "0x75"]
+                ]
+              }
+            }
+          ]
+        }
       },
       "module_digits_width": 4,
       "module_digits_height": 4,
@@ -102,8 +216,7 @@
     "emulator-24x4": {
       "name": "24x4 Emulator",
       "type": "emulator",
-      "tca9548a_address": null,
-      "channel_grids": {},
+      "buses": {},
       "module_digits_width": 4,
       "module_digits_height": 4,
       "total_width": 24,
@@ -112,14 +225,13 @@
     "emulator-12x8": {
       "name": "12x8 Emulator",
       "type": "emulator",
-      "tca9548a_address": null,
-      "channel_grids": {},
+      "buses": {},
       "module_digits_width": 4,
       "module_digits_height": 4,
       "total_width": 12,
       "total_height": 8
     },
-      "emulator-20x20": {
+    "emulator-20x20": {
       "name": "20x20 Emulator",
       "type": "emulator",
       "module_digits_width": 10,
@@ -127,7 +239,7 @@
       "total_width": 20,
       "total_height": 20
     },
-      "emulator-40x20": {
+    "emulator-40x20": {
       "name": "40x20 Emulator",
       "type": "emulator",
       "module_digits_width": 20,
@@ -135,7 +247,7 @@
       "total_width": 40,
       "total_height": 20
     },
-      "emulator-40x40": {
+    "emulator-40x40": {
       "name": "40x40 Emulator",
       "type": "emulator",
       "module_digits_width": 10,

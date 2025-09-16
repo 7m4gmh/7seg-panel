@@ -76,42 +76,45 @@ bool initialize_displays(int i2c_fd, const DisplayConfig& config) {
     std::cout << "Initializing modules..." << std::endl;
     I2CErrorInfo dummy_error_info; // ★★★ ダミーの変数を定義 ★★★
 
-    if (config.tca9548a_address < 0) {
-        // TCAなしの場合 (省略)
-        // ... こちらもエラー時に return false; が必要
-    } else {
-        // TCAありの場合
-        for (auto const& [channel, grid] : config.channel_grids) {
-            // チャンネル切り替えに失敗したら、即座に中断
-            if (!select_i2c_channel(i2c_fd, config.tca9548a_address, channel, dummy_error_info)) {
-                fprintf(stderr, "ERROR [Init]: Failed to select channel %d\n", channel);
-                return false;
-            }
-            usleep(5000);
-
-            for (const auto& row : grid) {
-                for (int addr : row) {
-                    if (ioctl(i2c_fd, I2C_SLAVE, addr) < 0) {
-                        perror("ioctl I2C_SLAVE failed during initialization");
+    for (const auto& [bus_id, bus_config] : config.buses) {
+        for (const auto& tca : bus_config.tca9548as) {
+            bool use_tca = (tca.address != -1);
+            for (const auto& [channel, grid] : tca.channels) {
+                if (use_tca) {
+                    // チャンネル切り替えに失敗したら、即座に中断
+                    if (!select_i2c_channel(i2c_fd, tca.address, channel, dummy_error_info)) {
+                        fprintf(stderr, "ERROR [Init]: Failed to select channel %d on TCA 0x%02X\n", channel, tca.address);
                         return false;
                     }
-                    uint8_t commands[] = { 0x21, 0x81, 0xEF };
-                    for (uint8_t cmd : commands) {
-                        if (write(i2c_fd, &cmd, 1) != 1) {
-                            fprintf(stderr, "ERROR [Init]: Failed to write command 0x%02X to CH%d addr 0x%02X\n", cmd, channel, addr);
-                            perror(" -> i2c write command");
-                            // エラー発生時に即座に false を返す
-                            return false; 
+                    usleep(5000);
+                }
+
+                for (const auto& row : grid) {
+                    for (int addr : row) {
+                        if (ioctl(i2c_fd, I2C_SLAVE, addr) < 0) {
+                            perror("ioctl I2C_SLAVE failed during initialization");
+                            return false;
                         }
-                        usleep(1000);
+                        uint8_t commands[] = { 0x21, 0x81, 0xEF };
+                        for (uint8_t cmd : commands) {
+                            if (write(i2c_fd, &cmd, 1) != 1) {
+                                fprintf(stderr, "ERROR [Init]: Failed to write command 0x%02X to CH%d addr 0x%02X\n", cmd, channel, addr);
+                                perror(" -> i2c write command");
+                                // エラー発生時に即座に false を返す
+                                return false; 
+                            }
+                            usleep(1000);
+                        }
                     }
                 }
             }
-        }
-        // 全チャンネルを無効化
-        if (!select_i2c_channel(i2c_fd, config.tca9548a_address, -1, dummy_error_info)) {
-            fprintf(stderr, "ERROR [Init]: Failed to disable all channels on TCA9548A\n");
-            return false;
+            if (use_tca) {
+                // 全チャンネルを無効化
+                if (!select_i2c_channel(i2c_fd, tca.address, -1, dummy_error_info)) {
+                    fprintf(stderr, "ERROR [Init]: Failed to disable all channels on TCA9548A 0x%02X\n", tca.address);
+                    return false;
+                }
+            }
         }
     }
     
@@ -191,59 +194,73 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
     (void)error_info_out;
     return true;
 #else
-    bool use_tca = (config.tca9548a_address != -1);
     const int digits_per_module = config.module_digits_width * config.module_digits_height;
     std::vector<uint8_t> module_data_buffer(digits_per_module);
     int global_row_offset = 0;
     int global_col_offset = 0;
 
-    for (const auto& [channel, address_grid] : config.channel_grids) {
-        if (use_tca) {
-            // ★変更★ select_i2c_channel の戻り値を確認
-            if (!select_i2c_channel(i2c_fd, config.tca9548a_address, channel, error_info_out)) {
-                return false;
-            }
-        }
-        if (address_grid.empty()) continue;
-        const int channel_grid_height = address_grid.size();
-        const int channel_grid_width = address_grid[0].size();
+    for (const auto& [bus_id, bus_config] : config.buses) {
+        // Bus ごとにオフセットをリセット
+        int bus_row_offset = 0;
+        int bus_col_offset = 0;
+        for (const auto& tca : bus_config.tca9548as) {
+            bool use_tca = (tca.address != -1);
+            for (const auto& [channel, address_grid] : tca.channels) {
+                if (use_tca) {
+                    // ★変更★ select_i2c_channel の戻り値を確認
+                    if (!select_i2c_channel(i2c_fd, tca.address, channel, error_info_out)) {
+                        return false;
+                    }
+                }
+                if (address_grid.empty()) continue;
+                const int channel_grid_height = address_grid.size();
+                const int channel_grid_width = address_grid[0].size();
 
-        for (int grid_r = 0; grid_r < channel_grid_height; ++grid_r) {
-            for (int grid_c = 0; grid_c < channel_grid_width; ++grid_c) {
-                //  データ準備のロジック  
-                int module_addr = address_grid[grid_r][grid_c];
-                int module_start_col = global_col_offset + (grid_c * config.module_digits_width);
-                int module_start_row = global_row_offset + (grid_r * config.module_digits_height);
+                for (int grid_r = 0; grid_r < channel_grid_height; ++grid_r) {
+                    for (int grid_c = 0; grid_c < channel_grid_width; ++grid_c) {
+                        //  データ準備のロジック  
+                        int module_addr = address_grid[grid_r][grid_c];
+                        int module_start_col = bus_col_offset + (grid_c * config.module_digits_width);
+                        int module_start_row = bus_row_offset + (grid_r * config.module_digits_height);
 
-                for (int r_in_mod = 0; r_in_mod < config.module_digits_height; ++r_in_mod) {
-                    for (int c_in_mod = 0; c_in_mod < config.module_digits_width; ++c_in_mod) {
-                        int total_grid_col = module_start_col + c_in_mod;
-                        int total_grid_row = module_start_row + r_in_mod;
-                        int grid_index = total_grid_row * config.total_width + total_grid_col;
-                        int module_buffer_index = r_in_mod * config.module_digits_width + c_in_mod;
-                        if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < module_data_buffer.size()) {
-                            module_data_buffer[module_buffer_index] = grid[grid_index];
+                        for (int r_in_mod = 0; r_in_mod < config.module_digits_height; ++r_in_mod) {
+                            for (int c_in_mod = 0; c_in_mod < config.module_digits_width; ++c_in_mod) {
+                                int total_grid_col = global_row_offset + module_start_col + c_in_mod;
+                                int total_grid_row = global_col_offset + module_start_row + r_in_mod;
+                                int grid_index = total_grid_row * config.total_width + total_grid_col;
+                                int module_buffer_index = r_in_mod * config.module_digits_width + c_in_mod;
+                                if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < module_data_buffer.size()) {
+                                    module_data_buffer[module_buffer_index] = grid[grid_index];
+                                }
+                            }
+                        }
+
+                        // ★変更★ update_module_from_grid の戻り値を確認
+                        if (!update_module_from_grid(i2c_fd, module_addr, module_data_buffer, error_info_out)) {
+                            fprintf(stderr, "Failed to update module at CH%d addr 0x%02X. Aborting update.\n", channel, module_addr);
+                            error_info_out.channel = channel; 
+                            return false; // エラーを伝播
                         }
                     }
                 }
-
-                // ★変更★ update_module_from_grid の戻り値を確認
-                if (!update_module_from_grid(i2c_fd, module_addr, module_data_buffer, error_info_out)) {
-                    fprintf(stderr, "Failed to update module at CH%d addr 0x%02X. Aborting update.\n", channel, module_addr);
-                    error_info_out.channel = channel; 
-                    return false; // エラーを伝播
+                
+                // ... (オフセット計算のロジックは変更なし) ...
+                int channel_width_in_digits = channel_grid_width * config.module_digits_width;
+                int channel_height_in_digits = channel_grid_height * config.module_digits_height;
+                if ((bus_col_offset + channel_width_in_digits) < config.total_width) {
+                    bus_col_offset += channel_width_in_digits;
+                } else {
+                    bus_col_offset = 0;
+                    bus_row_offset += channel_height_in_digits;
                 }
             }
         }
-        
-        // ... (オフセット計算のロジックは変更なし) ...
-        int channel_width_in_digits = channel_grid_width * config.module_digits_width;
-        int channel_height_in_digits = channel_grid_height * config.module_digits_height;
-        if ((global_col_offset + channel_width_in_digits) < config.total_width) {
-            global_col_offset += channel_width_in_digits;
+        // Bus のオフセットをグローバルに反映
+        if ((global_col_offset + bus_col_offset) < config.total_width) {
+            global_col_offset += bus_col_offset;
         } else {
             global_col_offset = 0;
-            global_row_offset += channel_height_in_digits;
+            global_row_offset += bus_row_offset;
         }
     }
     return true; // ★変更★ すべて成功したら true を返す

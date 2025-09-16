@@ -29,7 +29,15 @@ int main(int argc, char* argv[]) {
     DisplayConfig dc;
     try {
         dc = load_config_from_json(cfg);
-        std::cout << "Config: " << dc.name << " (tca9548a_address=" << dc.tca9548a_address << ")\n";
+        std::cout << "Config: " << dc.name << " (TCA addresses: ";
+        for (const auto& [bus_id, bus_config] : dc.buses) {
+            for (const auto& tca : bus_config.tca9548as) {
+                if (tca.address != -1) {
+                    std::cout << "0x" << std::hex << tca.address << std::dec << " ";
+                }
+            }
+        }
+        std::cout << ")\n";
         std::cout << "Addresses: ";
         auto addrs = dc.all_addresses();
         for (size_t i = 0; i < addrs.size(); ++i) {

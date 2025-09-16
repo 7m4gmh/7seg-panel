@@ -10,12 +10,22 @@
 extern double CHAR_WIDTH_MM;
 extern double CHAR_HEIGHT_MM;
 
+// TCA9548A の構成を定義する構造体
+struct TCA9548AConfig {
+    int address; // TCA9548A のアドレス (-1 で直接接続)
+    std::map<int, std::vector<std::vector<int>>> channels; // channel -> slave address grid
+};
+
+// Bus の構成を定義する構造体
+struct BusConfig {
+    std::vector<TCA9548AConfig> tca9548as;
+};
+
 // パネルの物理構成を定義する構造体
 struct DisplayConfig {
     std::string name;
     std::string type; // "physical" or "emulator"
-    int tca9548a_address; // エクスパンダのアドレス (使わない場合は-1)
-    std::map<int, std::vector<std::vector<int>>> channel_grids;
+    std::map<int, BusConfig> buses;
     int module_digits_width;
     int module_digits_height;
     int total_width;
@@ -25,9 +35,13 @@ struct DisplayConfig {
 
     std::vector<int> all_addresses() const {
         std::vector<int> addrs;
-        for (auto const& [channel, grid] : channel_grids) {
-            for (const auto& row : grid) {
-                addrs.insert(addrs.end(), row.begin(), row.end());
+        for (const auto& [bus_id, bus_config] : buses) {
+            for (const auto& tca : bus_config.tca9548as) {
+                for (const auto& [channel, grid] : tca.channels) {
+                    for (const auto& row : grid) {
+                        addrs.insert(addrs.end(), row.begin(), row.end());
+                    }
+                }
             }
         }
         std::sort(addrs.begin(), addrs.end());
