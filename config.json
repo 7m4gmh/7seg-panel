@@ -80,8 +80,8 @@
       "total_width": 4,
       "total_height": 4
     },
-    "12x8_exp": {
-      "name": "12x8 Expanded (Bus 1, 12x8 via TCA9548a)",
+    "24x8": {
+      "name": "24x8 Expanded (Bus 1, 12x8 via TCA9548a)",
       "buses": {
         "1": {
           "tca9548as": [
@@ -89,6 +89,10 @@
               "address": "0x77",
               "channels": {
                 "0": [
+                  ["0x70", "0x71", "0x72"], 
+                  ["0x73", "0x74", "0x75"]
+                ],
+                   "1": [
                   ["0x70", "0x71", "0x72"], 
                   ["0x73", "0x74", "0x75"]
                 ]
@@ -99,7 +103,7 @@
       },
       "module_digits_width": 4,
       "module_digits_height": 4,
-      "total_width": 12,
+      "total_width": 24,
       "total_height": 8
     },
     "16x8": {
@@ -253,13 +257,13 @@
       "total_width": 12,
       "total_height": 8
     },
-    "emulator-20x20": {
-      "name": "20x20 Emulator",
+    "emulator-24x8": {
+      "name": "24x8 Emulator",
       "type": "emulator",
-      "module_digits_width": 10,
-      "module_digits_height": 10,
-      "total_width": 20,
-      "total_height": 20
+      "module_digits_width": 24,
+      "module_digits_height": 8,
+      "total_width": 24,
+      "total_height": 8
     },
     "emulator-40x20": {
       "name": "40x20 Emulator",
