@@ -31,12 +31,12 @@ void frame_to_grid(const cv::Mat& bw, const DisplayConfig& config, std::vector<u
     cv::Rect roi; // サンプリング領域 (x, y, width, height)
     if (frame_aspect_ratio > display_aspect_ratio) {
         // 映像がディスプレイより「横長」の場合 -> 左右をクロップ
-        int new_width = static_cast<int>(bw.rows * display_aspect_ratio);
-        roi = cv::Rect((bw.cols - new_width) / 2, 0, new_width, bw.rows);
+        int new_width = std::min(bw.cols - 1, static_cast<int>(bw.rows * display_aspect_ratio));
+        roi = cv::Rect((bw.cols - new_width) / 2, 0, new_width, bw.rows - 1);
     } else {
         // 映像がディスプレイより「縦長」の場合 -> 上下をクロップ
-        int new_height = static_cast<int>(bw.cols / display_aspect_ratio);
-        roi = cv::Rect(0, (bw.rows - new_height) / 2, bw.cols, new_height);
+        int new_height = std::min(bw.rows - 1, static_cast<int>(bw.cols / display_aspect_ratio));
+        roi = cv::Rect(0, (bw.rows - new_height) / 2, bw.cols - 1, new_height);
     }
 
     // --- ステップ2: 算出したROIを基準に、各文字・各セグメントのサンプリング座標を計算 ---
