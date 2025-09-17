@@ -94,7 +94,43 @@ void playback_thread_worker(const DisplayConfig& config) { // ★★★ config�
         }
 
         if (!path_to_play.empty()) {
-            play_video_stream(path_to_play, config, g_stop_current_video);
+            if (config.type == "emulator") {
+                play_video_stream_emulator(path_to_play, config, g_stop_current_video);
+            } else {
+                play_video_stream(path_to_play, config, g_stop_current_video);
+            }
+            g_stop_current_video = false; // 次の再生のためにリセット
+            {
+                std::lock_guard<std::mutex> lock(queue_mutex);
+                g_currently_playing = "";
+            }
+        }
+    }
+}
+
+// メインスレッドで実行する動画再生ワーカー（GUI表示のため）
+void playback_thread_worker_main(const DisplayConfig& config) {
+    while (!g_should_exit) {
+        std::string path_to_play;
+        {
+            std::unique_lock<std::mutex> lock(queue_mutex);
+            queue_cond.wait(lock, [&]{ return !video_queue.empty() || !g_default_videos.empty() || g_should_exit; });
+            if (g_should_exit) break;
+            if (!video_queue.empty()) {
+                path_to_play = video_queue.front(); video_queue.pop_front();
+            } else if (!g_default_videos.empty()) {
+                path_to_play = g_default_videos[g_next_default_video_index];
+                g_next_default_video_index = (g_next_default_video_index + 1) % g_default_videos.size();
+            }
+            if (!path_to_play.empty()) g_currently_playing = path_to_play;
+        }
+
+        if (!path_to_play.empty()) {
+            if (config.type == "emulator") {
+                play_video_stream_emulator(path_to_play, config, g_stop_current_video);
+            } else {
+                play_video_stream(path_to_play, config, g_stop_current_video);
+            }
             g_stop_current_video = false; // 次の再生のためにリセット
             {
                 std::lock_guard<std::mutex> lock(queue_mutex);
@@ -183,16 +219,15 @@ int main(int argc, char* argv[]) {
             // --- ▲▲▲ ここまで ▲▲▲ ---
 
             std::cout << "Starting playback queue thread..." << std::endl;
-            std::thread playback_thread(playback_thread_worker, std::ref(config));
+            // std::thread playback_thread(playback_thread_worker, std::ref(config));
 
             std::thread server_thread([&]() {
                 std::cout << "HTTP server starting at http://<your-ip-address>:8080" << std::endl;
                 svr.listen("0.0.0.0", 8080);
             });
             
-            while (!g_should_exit) { 
-                std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
-            }
+            // メインスレッドで動画再生を実行（GUI表示のため）
+            playback_thread_worker_main(config);
             
             std::cout << "\nStopping server..." << std::endl;
             svr.stop();
@@ -200,7 +235,7 @@ int main(int argc, char* argv[]) {
             queue_cond.notify_all();
             
             if (server_thread.joinable()) server_thread.join();
-            if (playback_thread.joinable()) playback_thread.join();
+            // if (playback_thread.joinable()) playback_thread.join();
 
             system("killall ffplay > /dev/null 2>&1");
             std::cout << "All processes have been completed." << std::endl;

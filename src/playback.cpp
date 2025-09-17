@@ -230,22 +230,23 @@ void handle_signal(int signal) {
 }
 */
 
+// テキストベースの7セグメントエミュレータ表示関数
+void display_text_emulator(const std::vector<uint8_t>& grid, const DisplayConfig& config) {
+    // この関数は削除されました
+}
+
 // 共通の動画再生ロジック
 int play_video_stream(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
-#ifdef __APPLE__
-    // MacではOpenCVがないので、スタブ
-    (void)video_path;
-    (void)config;
-    (void)stop_flag;
-    std::cout << "Video playback disabled on macOS (no OpenCV)" << std::endl;
-    return 0;
-#else
     g_current_stop_flag = &stop_flag;
     stop_flag = false;
-    
+
     int i2c_fd = open_i2c_auto();
     if (i2c_fd < 0) {
-        perror("open_i2c_auto に失敗");
+        std::cerr << "I2C communication failed: No I2C devices found or access denied." << std::endl;
+        std::cerr << "Please check:" << std::endl;
+        std::cerr << "  - I2C hardware is connected and powered" << std::endl;
+        std::cerr << "  - You have permission to access I2C devices" << std::endl;
+        std::cerr << "  - Use emulator mode if you don't have hardware: ./7seg-http-player <path> emulator-<width>x<height>" << std::endl;
         return -1;
     }
 
@@ -370,7 +371,6 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
     //handle_signal(SIGINT);
     g_current_stop_flag = nullptr;
     return 0;
-#endif
 }
 
 int play_video_stream_emulator(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
@@ -505,6 +505,7 @@ int play_video_stream_emulator(const std::string& video_path, const DisplayConfi
                 cv::circle(display_frame, cache.all_dp_centers[idx], cache.all_dp_radii[idx], cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
             }
         }
+        // エミュレータ表示 (macOSでもGUIウィンドウを表示)
         cv::imshow("7seg-emulator", display_frame);
         if (cv::waitKey(1) == 27) break; // ESCで終了
 
@@ -532,6 +533,8 @@ int play_video_stream_emulator(const std::string& video_path, const DisplayConfi
     }
     cap.release();
     cv::destroyAllWindows();
+
+    // テキストエミュレータの終了メッセージは削除
 
     if (stop_flag) {
         std::cout << "エミュレータ再生中止: " << video_path << std::endl;
