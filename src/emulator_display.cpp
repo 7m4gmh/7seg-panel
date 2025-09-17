@@ -2,7 +2,6 @@
 // 7セグメントLEDエミュレータ用出力クラス（OpenCV使用例）
 #include "emulator_display.h"
 #include <opencv2/opencv.hpp>
-#include <opencv2/core/ocl.hpp>  // OpenCL/GPUサポート用
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -175,22 +174,7 @@ SegmentLayout make_layout(int digit_idx, double package_center_x, double package
 class EmulatorDisplay : public IDisplayOutput {
 public:
     EmulatorDisplay(int rows, int cols) : rows_(rows), cols_(cols) {
-        // GPU/OpenCLを有効化
-        cv::ocl::setUseOpenCL(true);
-        std::cout << "OpenCV GPU acceleration: " 
-                  << (cv::ocl::haveOpenCL() ? "ENABLED" : "DISABLED") << std::endl;
-        
-        if (cv::ocl::haveOpenCL()) {
-            cv::ocl::Context context = cv::ocl::Context::getDefault();
-            if (!context.empty()) {
-                cv::ocl::Device device = context.device(0);
-                std::cout << "GPU Device: " << device.name() 
-                          << " (" << (device.type() == cv::ocl::Device::TYPE_GPU ? "GPU" : "CPU") << ")" 
-                          << std::endl;
-            }
-        }
-        
-        gpu_img_ = cv::UMat(1, 1, CV_8UC3); // GPU用画像の仮初期化
+        img_ = cv::Mat(1, 1, CV_8UC3); // 仮初期化
         // パッケージ中心座標を全桁分計算
         double digit_spacing_x = UNIT_W * SCALE;
         double digit_spacing_y = UNIT_H * SCALE;
@@ -207,10 +191,8 @@ public:
 
         int window_width = static_cast<int>(cols_ * UNIT_W * SCALE);
         int window_height = static_cast<int>(rows_ * UNIT_H * SCALE);
-        
-        // GPUアクセラレーションを使用（UMat）
-        gpu_img_ = cv::UMat::zeros(window_height, window_width, CV_8UC3);
-        
+        img_ = cv::Mat::zeros(window_height, window_width, CV_8UC3);
+
         for (int r = 0; r < rows_; ++r) {
             for (int c = 0; c < cols_; ++c) {
                 int idx = r * cols_ + c;
@@ -220,26 +202,21 @@ public:
                 uint8_t seg = grid[idx];
                 for (int s = 0; s < 7; ++s) {
                     cv::Scalar color = (seg & (1 << s)) ? cv::Scalar(0, 0, 255) : cv::Scalar(80, 80, 80);
-                    cv::fillConvexPoly(gpu_img_, layout.segs[s], color, cv::LINE_AA);
-                    cv::polylines(gpu_img_, layout.segs[s], true, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
+                    cv::fillConvexPoly(img_, layout.segs[s], color, cv::LINE_AA);
+                    cv::polylines(img_, layout.segs[s], true, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
                 }
                 cv::Scalar dp_color = (seg & 0x80) ? cv::Scalar(0, 0, 255) : cv::Scalar(80, 80, 80);
-                cv::circle(gpu_img_, layout.dp_center, layout.dp_radius, dp_color, -1, cv::LINE_AA);
-                cv::circle(gpu_img_, layout.dp_center, layout.dp_radius, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
+                cv::circle(img_, layout.dp_center, layout.dp_radius, dp_color, -1, cv::LINE_AA);
+                cv::circle(img_, layout.dp_center, layout.dp_radius, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
             }
         }
-        
-        // 表示用にCPUメモリにコピー（スコープを限定）
-        {
-            cv::Mat display_img = gpu_img_.getMat(cv::ACCESS_READ);
-            cv::imshow("7seg-emulator", display_img);
-        }
+        cv::imshow("7seg-emulator", img_);
         cv::waitKey(1);
     }
 private:
     int rows_;
     int cols_;
-    cv::UMat gpu_img_;  // GPU用画像（処理・表示用）
+    cv::Mat img_;
     std::mutex mtx_;
     std::vector<std::pair<double, double>> package_centers_;
 };
