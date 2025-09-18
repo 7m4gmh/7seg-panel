@@ -95,6 +95,9 @@ if [ -f "./emulator_benchmark" ]; then
     file ./emulator_benchmark
 
     echo "Running benchmark..."
+    echo "Setting Qt platform to offscreen mode for headless operation..."
+    export QT_QPA_PLATFORM=offscreen
+    export DISPLAY=:0  # Fallback display
     ./emulator_benchmark
     BENCHMARK_RESULT=$?
 else
@@ -135,6 +138,9 @@ else
     if [ -f "./bin/linux-arm64-rpi5/7seg-file-player" ]; then
         echo "Binary built successfully, testing..."
         file ./bin/linux-arm64-rpi5/7seg-file-player
+        echo "Setting Qt platform to offscreen mode for headless emulator test..."
+        export QT_QPA_PLATFORM=offscreen
+        export DISPLAY=:0
         timeout 10s ./bin/linux-arm64-rpi5/7seg-file-player test.mp4 emulator-4x8 || true
         TEST_RESULT=$?
         if [ $TEST_RESULT -eq 124 ]; then
