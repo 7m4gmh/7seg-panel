@@ -82,27 +82,40 @@ fi
 echo ""
 
 echo "=== Performance Test ==="
-echo "Running emulator benchmark..."
+echo "Building and running emulator benchmark for RPi5..."
+
+# RPi5上では必ずビルドする（macOSバイナリとの互換性なし）
+echo "Building benchmark executable..."
+make clean
+make benchmark
+
+# ビルドされたバイナリの確認
 if [ -f "./emulator_benchmark" ]; then
-    echo "Running existing benchmark..."
+    echo "Benchmark binary found, checking architecture..."
+    file ./emulator_benchmark
+
+    echo "Running benchmark..."
     ./emulator_benchmark
     BENCHMARK_RESULT=$?
 else
-    echo "Building and running benchmark..."
-    make benchmark
-    ./emulator_benchmark
-    BENCHMARK_RESULT=$?
+    echo "ERROR: emulator_benchmark binary not found after build"
+    echo "Checking build output..."
+    ls -la
+    BENCHMARK_RESULT=1
 fi
 
 if [ $BENCHMARK_RESULT -eq 0 ]; then
     echo "Benchmark test: SUCCESS"
 else
-    echo "Benchmark test: FAILED"
+    echo "Benchmark test: FAILED (exit code: $BENCHMARK_RESULT)"
+fi
 fi
 echo ""
 
 echo "=== Test file player with emulator ==="
 if [ -f "./bin/linux-arm64-rpi5/7seg-file-player" ]; then
+    echo "File player binary found, checking architecture..."
+    file ./bin/linux-arm64-rpi5/7seg-file-player
     echo "Testing file player with emulator mode..."
     timeout 10s ./bin/linux-arm64-rpi5/7seg-file-player test.mp4 emulator-4x8 || true
     TEST_RESULT=$?
@@ -114,8 +127,30 @@ if [ -f "./bin/linux-arm64-rpi5/7seg-file-player" ]; then
         echo "Emulator test: FAILED (exit code: $TEST_RESULT)"
     fi
 else
-    echo "File player binary not found"
-    echo "Emulator test: FAILED (binary missing)"
+    echo "File player binary not found, building project first..."
+    echo "Building main project..."
+    make clean
+    make -j$(nproc)
+
+    if [ -f "./bin/linux-arm64-rpi5/7seg-file-player" ]; then
+        echo "Binary built successfully, testing..."
+        file ./bin/linux-arm64-rpi5/7seg-file-player
+        timeout 10s ./bin/linux-arm64-rpi5/7seg-file-player test.mp4 emulator-4x8 || true
+        TEST_RESULT=$?
+        if [ $TEST_RESULT -eq 124 ]; then
+            echo "Emulator test: SUCCESS (timeout as expected)"
+        elif [ $TEST_RESULT -eq 0 ]; then
+            echo "Emulator test: SUCCESS (completed normally)"
+        else
+            echo "Emulator test: FAILED (exit code: $TEST_RESULT)"
+        fi
+    else
+        echo "ERROR: Failed to build file player binary"
+        echo "Checking build directory..."
+        ls -la bin/ 2>/dev/null || echo "bin/ directory not found"
+        TEST_RESULT=1
+        echo "Emulator test: FAILED (build failed)"
+    fi
 fi
 
 echo ""
