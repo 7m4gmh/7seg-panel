@@ -96,7 +96,7 @@ SegmentLayout make_layout(int digit_idx, double package_center_x, double package
     // --- まず座標・補正量をすべて宣言 ---
     double tilt_rad = TILT * CV_PI / 180.0;
     double vlen = SEG_L * SCALE; // 横セグメント長さを縦セグメント高さとみなす
-    int tilt_dx = static_cast<int>(vlen/2 * std::tan(tilt_rad) + 0.5);
+    // int tilt_dx = static_cast<int>(vlen/2 * std::tan(tilt_rad) + 0.5); // 未使用
     double digit_spacing = UNIT_W * SCALE;
     double dx = digit_idx * digit_spacing;
     double margin = 0.0; // 任意のマージン（mm単位）

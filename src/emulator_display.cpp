@@ -85,7 +85,7 @@ SegmentLayout make_layout(int digit_idx, double package_center_x, double package
     // --- まず座標・補正量をすべて宣言 ---
     double tilt_rad = TILT * CV_PI / 180.0;
     double vlen = SEG_L * SCALE; // 横セグメント長さを縦セグメント高さとみなす
-    int tilt_dx = static_cast<int>(vlen/2 * std::tan(tilt_rad) + 0.5);
+    // int tilt_dx = static_cast<int>(vlen/2 * std::tan(tilt_rad) + 0.5); // 未使用
     double digit_spacing = UNIT_W * SCALE;
     double dx = digit_idx * digit_spacing;
     double margin = 0.0; // 任意のマージン（mm単位）
@@ -102,9 +102,9 @@ SegmentLayout make_layout(int digit_idx, double package_center_x, double package
 
     // b_dx計算
     int b_top_idx = 0, b_bot_idx = 0;
-    for (int i = 1; i < seg_b_shape.size(); ++i) {
-        if (seg_b_shape[i].y < seg_b_shape[b_top_idx].y) b_top_idx = i;
-        if (seg_b_shape[i].y > seg_b_shape[b_bot_idx].y) b_bot_idx = i;
+    for (size_t i = 1; i < seg_b_shape.size(); ++i) {
+        if (seg_b_shape[i].y < seg_b_shape[b_top_idx].y) b_top_idx = static_cast<int>(i);
+        if (seg_b_shape[i].y > seg_b_shape[b_bot_idx].y) b_bot_idx = static_cast<int>(i);
     }
     int b_dx = seg_b_shape[b_bot_idx].x - seg_b_shape[b_top_idx].x;
 

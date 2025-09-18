@@ -2,6 +2,7 @@
 #pragma once
 #include <vector>
 #include <cstdint>
+#include <string>
 
 // 7segエミュレータ/物理LED共通の出力インターフェース
 class IDisplayOutput {

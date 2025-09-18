@@ -159,6 +159,9 @@ $(TEST_I2C_OBJS): CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS)
 # file_audio_gst は GStreamer ヘッダが必要
 $(OBJDIR)/file_audio_gst.o: CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) $(GST_CFLAGS)
 
+# emulator_benchmark は OpenCV と SDL ヘッダが必要
+$(OBJDIR)/emulator_benchmark.o: CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS)
+
 # ----------------------------------------
 # ビルドルール
 # ----------------------------------------
@@ -230,6 +233,7 @@ $(TEST_I2C_BIN): $(OBJDIR)/common.o $(OBJDIR)/led.o $(OBJDIR)/video.o $(OBJDIR)/
 # --- オブジェクトファイルのコンパイル ---
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(DEPDIR)
 	@echo "Compiling $<..."
+	@echo "CXXFLAGS: $(CXXFLAGS)"
 	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
 $(DEPDIR):
