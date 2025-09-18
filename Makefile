@@ -28,7 +28,34 @@ $(HTTP_PLAYER_BIN): $(OBJS_COMMON) $(HTTP_PLAYER_OBJS)
 
 # OS検出
 UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
 IS_RASPBERRY_PI := $(shell grep -q "Raspberry Pi" /proc/device-tree/model 2>/dev/null && echo "yes" || echo "no")
+
+# アーキテクチャディレクトリ決定
+ifeq ($(UNAME_S),Darwin)
+    ifeq ($(UNAME_M),arm64)
+        ARCH_DIR := darwin-arm64
+    else
+        ARCH_DIR := darwin-amd64
+    endif
+else ifeq ($(UNAME_S),Linux)
+    ifeq ($(UNAME_M),aarch64)
+        ifeq ($(IS_RASPBERRY_PI),yes)
+            ARCH_DIR := linux-arm64-rpi5
+        else
+            ARCH_DIR := linux-arm64-rock5b
+        endif
+    else ifeq ($(UNAME_M),x86_64)
+        ARCH_DIR := linux-amd64
+    else
+        ARCH_DIR := linux-$(UNAME_M)
+    endif
+else
+    ARCH_DIR := $(UNAME_S)-$(UNAME_M)
+endif
+
+# バイナリ出力ディレクトリ
+BINDIR := bin/$(ARCH_DIR)
 
 NUM_CORES := $(shell nproc 2>/dev/null || echo 4)
 MAKEFLAGS += -j$(NUM_CORES)
@@ -105,13 +132,13 @@ DEPS     = $(patsubst $(OBJDIR)/%.o,$(DEPDIR)/%.d,$(ALL_OBJS))
 # ----------------------------------------
 # 実行ファイル名
 # ----------------------------------------
-UDP_PLAYER_BIN    = 7seg-udp-player
-FILE_PLAYER_BIN   = 7seg-file-player
-HTTP_PLAYER_BIN   = 7seg-http-player
-EMULATOR_TEST_BIN = emulator_test
-RTP_PLAYER_BIN    = 7seg-rtp-player
-NET_PLAYER_BIN    = 7seg-net-player
-TEST_I2C_BIN      = 7seg-test-i2c
+UDP_PLAYER_BIN    = $(BINDIR)/7seg-udp-player
+FILE_PLAYER_BIN   = $(BINDIR)/7seg-file-player
+HTTP_PLAYER_BIN   = $(BINDIR)/7seg-http-player
+EMULATOR_TEST_BIN = $(BINDIR)/emulator_test
+RTP_PLAYER_BIN    = $(BINDIR)/7seg-rtp-player
+NET_PLAYER_BIN    = $(BINDIR)/7seg-net-player
+TEST_I2C_BIN      = $(BINDIR)/7seg-test-i2c
 
 # ターゲットのグループ
 CORE_TARGETS = $(UDP_PLAYER_BIN) $(FILE_PLAYER_BIN) $(HTTP_PLAYER_BIN)
@@ -138,20 +165,23 @@ $(OBJDIR)/file_audio_gst.o: CXXFLAGS = $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) $(GST_C
 .PHONY: all core gst rtp net clean package deb help emulator_test emulator
 
 # すべて（core + gst）
-all: $(TARGETS)
+all: $(BINDIR) $(TARGETS)
+
+$(BINDIR):
+	mkdir -p $(BINDIR)
 
 # GStreamer非依存のプレイヤーのみ
-core: $(CORE_TARGETS)
+core: $(BINDIR) $(CORE_TARGETS)
 
 # GStreamer依存ターゲットのみ
-gst: $(GST_TARGETS)
+gst: $(BINDIR) $(GST_TARGETS)
 
 # 個別ターゲット
-rtp: $(RTP_PLAYER_BIN)
-net: $(NET_PLAYER_BIN)
-file: $(FILE_PLAYER_BIN)
-http: $(HTTP_PLAYER_BIN)
-test: $(TEST_I2C_BIN)
+rtp: $(BINDIR) $(RTP_PLAYER_BIN)
+net: $(BINDIR) $(NET_PLAYER_BIN)
+file: $(BINDIR) $(FILE_PLAYER_BIN)
+http: $(BINDIR) $(HTTP_PLAYER_BIN)
+test: $(BINDIR) $(TEST_I2C_BIN)
 
 # --- 実行ファイルのリンク ---
 $(UDP_PLAYER_BIN): $(OBJS_COMMON) $(UDP_PLAYER_OBJS)
