@@ -317,6 +317,10 @@ emulator: obj/emulator_test.o obj/emulator_display.o
 	$(CXX) -o emulator_test obj/emulator_test.o obj/emulator_display.o $(BASE_LDFLAGS) $(CV_SDL_LIBS)
 	@echo "Successfully linked -> emulator_test"
 
+benchmark: obj/emulator_benchmark.o obj/emulator_display.o
+	$(CXX) -o emulator_benchmark obj/emulator_benchmark.o obj/emulator_display.o $(BASE_LDFLAGS) $(CV_SDL_LIBS)
+	@echo "Successfully linked -> emulator_benchmark"
+
 $(OBJDIR)/emulator_display.o: $(SRCDIR)/emulator_display.cpp | $(DEPDIR)
 	@echo "Compiling $<..."
 	$(CXX) $(BASE_CXXFLAGS) $(CV_SDL_CFLAGS) -MMD -MP -c $< -o $@

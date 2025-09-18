@@ -174,7 +174,14 @@ SegmentLayout make_layout(int digit_idx, double package_center_x, double package
 class EmulatorDisplay : public IDisplayOutput {
 public:
     EmulatorDisplay(int rows, int cols) : rows_(rows), cols_(cols) {
-        img_ = cv::Mat(1, 1, CV_8UC3); // 仮初期化
+        // 前のフレーム状態を初期化（全て消灯状態）
+        prev_grid_.assign(rows_ * cols_, 0);
+        
+        // ウィンドウサイズを計算
+        window_width_ = static_cast<int>(cols_ * UNIT_W * SCALE);
+        window_height_ = static_cast<int>(rows_ * UNIT_H * SCALE);
+        img_ = cv::Mat::zeros(window_height_, window_width_, CV_8UC3);
+        
         // パッケージ中心座標を全桁分計算
         double digit_spacing_x = UNIT_W * SCALE;
         double digit_spacing_y = UNIT_H * SCALE;
@@ -185,40 +192,96 @@ public:
                 package_centers_.emplace_back(package_center_x, package_center_y);
             }
         }
+        
+        // 初回描画：背景と全セグメント（灰色）を描画
+        initialize_display();
     }
-    void update(const std::vector<uint8_t>& grid) override {
-        std::lock_guard<std::mutex> lock(mtx_);
-
-        int window_width = static_cast<int>(cols_ * UNIT_W * SCALE);
-        int window_height = static_cast<int>(rows_ * UNIT_H * SCALE);
-        img_ = cv::Mat::zeros(window_height, window_width, CV_8UC3);
-
+    
+    void initialize_display() {
+        // 背景を黒で塗りつぶし
+        img_ = cv::Mat::zeros(window_height_, window_width_, CV_8UC3);
+        
+        // 全桁の全セグメントを灰色で描画（初期状態）
         for (int r = 0; r < rows_; ++r) {
             for (int c = 0; c < cols_; ++c) {
                 int idx = r * cols_ + c;
-                if (idx >= static_cast<int>(grid.size())) continue;
                 auto [package_center_x, package_center_y] = package_centers_[idx];
-                auto layout = make_layout(0, package_center_x, package_center_y); // digit_idxは未使用なので0
-                uint8_t seg = grid[idx];
+                auto layout = make_layout(0, package_center_x, package_center_y);
+                
+                // 7セグメントを灰色で描画（消灯状態）
                 for (int s = 0; s < 7; ++s) {
-                    cv::Scalar color = (seg & (1 << s)) ? cv::Scalar(0, 0, 255) : cv::Scalar(80, 80, 80);
-                    cv::fillConvexPoly(img_, layout.segs[s], color, cv::LINE_AA);
+                    cv::fillConvexPoly(img_, layout.segs[s], cv::Scalar(80, 80, 80), cv::LINE_AA);
                     cv::polylines(img_, layout.segs[s], true, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
                 }
-                cv::Scalar dp_color = (seg & 0x80) ? cv::Scalar(0, 0, 255) : cv::Scalar(80, 80, 80);
-                cv::circle(img_, layout.dp_center, layout.dp_radius, dp_color, -1, cv::LINE_AA);
+                
+                // 小数点を灰色で描画
+                cv::circle(img_, layout.dp_center, layout.dp_radius, cv::Scalar(80, 80, 80), -1, cv::LINE_AA);
                 cv::circle(img_, layout.dp_center, layout.dp_radius, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
             }
         }
+    }
+    
+    void update_changed_segments(const std::vector<uint8_t>& new_grid) {
+        for (int r = 0; r < rows_; ++r) {
+            for (int c = 0; c < cols_; ++c) {
+                int idx = r * cols_ + c;
+                if (idx >= static_cast<int>(new_grid.size()) || idx >= static_cast<int>(prev_grid_.size())) continue;
+                
+                uint8_t new_seg = new_grid[idx];
+                uint8_t old_seg = prev_grid_[idx];
+                
+                if (new_seg == old_seg) continue; // 変更なし
+                
+                auto [package_center_x, package_center_y] = package_centers_[idx];
+                auto layout = make_layout(0, package_center_x, package_center_y);
+                
+                // 変更されたセグメントのみ更新
+                for (int s = 0; s < 7; ++s) {
+                    bool new_state = (new_seg & (1 << s)) != 0;
+                    bool old_state = (old_seg & (1 << s)) != 0;
+                    
+                    if (new_state != old_state) {
+                        // セグメントの状態が変わった場合のみ再描画
+                        cv::Scalar color = new_state ? cv::Scalar(0, 0, 255) : cv::Scalar(80, 80, 80);
+                        cv::fillConvexPoly(img_, layout.segs[s], color, cv::LINE_AA);
+                        cv::polylines(img_, layout.segs[s], true, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
+                    }
+                }
+                
+                // 小数点の更新
+                bool new_dp_state = (new_seg & 0x80) != 0;
+                bool old_dp_state = (old_seg & 0x80) != 0;
+                
+                if (new_dp_state != old_dp_state) {
+                    cv::Scalar dp_color = new_dp_state ? cv::Scalar(0, 0, 255) : cv::Scalar(80, 80, 80);
+                    cv::circle(img_, layout.dp_center, layout.dp_radius, dp_color, -1, cv::LINE_AA);
+                    cv::circle(img_, layout.dp_center, layout.dp_radius, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
+                }
+            }
+        }
+        
+        // 現在の状態を保存
+        prev_grid_ = new_grid;
+    }
+    void update(const std::vector<uint8_t>& grid) override {
+        std::lock_guard<std::mutex> lock(mtx_);
+        
+        // 差分描画：変更されたセグメントのみ更新
+        update_changed_segments(grid);
+        
+        // 表示
         cv::imshow("7seg-emulator", img_);
         cv::waitKey(1);
     }
 private:
     int rows_;
     int cols_;
+    int window_width_;
+    int window_height_;
     cv::Mat img_;
     std::mutex mtx_;
     std::vector<std::pair<double, double>> package_centers_;
+    std::vector<uint8_t> prev_grid_; // 前のフレーム状態
 };
 
 
