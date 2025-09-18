@@ -8,3 +8,7 @@ __pycache__/
 *.pyc
 *.log
 *.tar.gz
+bin/
+*.swp
+*.swo
+*~

@@ -27,6 +27,9 @@ echo ""
 # 依存関係のインストール
 echo "Installing dependencies..."
 sudo apt update
+
+# Raspberry Pi OS固有のパッケージ名を使用
+echo "Installing core dependencies..."
 sudo apt install -y \
     build-essential \
     cmake \
@@ -36,12 +39,21 @@ sudo apt install -y \
     libsdl2-dev \
     libgstreamer1.0-dev \
     libgstreamer-plugins-base1.0-dev \
-    libgstreamer-plugins-good1.0-dev \
     nlohmann-json3-dev \
     git
 
-echo "Dependencies installed successfully"
-echo ""
+# GStreamer plugins-goodのインストール（Raspberry Pi OS対応）
+echo "Installing GStreamer plugins-good..."
+if apt-cache show gstreamer1.0-plugins-good 2>/dev/null | grep -q "Package:"; then
+    sudo apt install -y gstreamer1.0-plugins-good
+    echo "Installed gstreamer1.0-plugins-good"
+elif apt-cache show libgstreamer-plugins-good1.0-dev 2>/dev/null | grep -q "Package:"; then
+    sudo apt install -y libgstreamer-plugins-good1.0-dev
+    echo "Installed libgstreamer-plugins-good1.0-dev"
+else
+    echo "Warning: GStreamer plugins-good not found, installing available alternatives..."
+    sudo apt install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-ugly
+fi
 
 # プロジェクトのビルド
 echo "Building project..."
