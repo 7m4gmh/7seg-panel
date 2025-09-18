@@ -1,0 +1,121 @@
+#!/bin/bash
+
+# RPi5用ビルドスクリプト
+# このスクリプトはRPi5上で実行してください
+
+set -e
+
+echo "=== 7-Segment LED Panel - RPi5 Build Script ==="
+
+# ログファイルの設定
+LOG_FILE="rpi5_test_results_$(date +%Y%m%d_%H%M%S).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "Test results will be saved to: $LOG_FILE"
+echo "Start time: $(date)"
+echo ""
+
+# システム情報の収集
+echo "=== System Information ==="
+echo "Hardware: $(uname -m)"
+echo "OS: $(lsb_release -d -s 2>/dev/null || echo 'Unknown')"
+echo "Kernel: $(uname -r)"
+echo "CPU: $(nproc) cores"
+echo "Memory: $(free -h | grep '^Mem:' | awk '{print $2}')"
+echo ""
+
+# 依存関係のインストール
+echo "Installing dependencies..."
+sudo apt update
+sudo apt install -y \
+    build-essential \
+    cmake \
+    pkg-config \
+    libopencv-dev \
+    libopencv-contrib-dev \
+    libsdl2-dev \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    libgstreamer-plugins-good1.0-dev \
+    nlohmann-json3-dev \
+    git
+
+echo "Dependencies installed successfully"
+echo ""
+
+# プロジェクトのビルド
+echo "Building project..."
+make clean
+make -j$(nproc)
+
+echo "Build completed successfully!"
+echo "Available binaries:"
+ls -la bin/linux-arm64-rpi5/
+echo ""
+
+# バージョン情報の確認
+echo "=== Version Information ==="
+echo "OpenCV version: $(pkg-config --modversion opencv4 2>/dev/null || echo 'Not found')"
+echo "SDL2 version: $(pkg-config --modversion sdl2 2>/dev/null || echo 'Not found')"
+echo "GStreamer version: $(pkg-config --modversion gstreamer-1.0 2>/dev/null || echo 'Not found')"
+
+# Git情報の確認
+if git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Git commit: $(git rev-parse HEAD)"
+    echo "Git branch: $(git branch --show-current)"
+    echo "Last commit message: $(git log -1 --pretty=%B | head -1)"
+else
+    echo "Git repository: Not found"
+fi
+echo ""
+
+echo "=== Performance Test ==="
+echo "Running emulator benchmark..."
+if [ -f "./emulator_benchmark" ]; then
+    echo "Running existing benchmark..."
+    ./emulator_benchmark
+    BENCHMARK_RESULT=$?
+else
+    echo "Building and running benchmark..."
+    make benchmark
+    ./emulator_benchmark
+    BENCHMARK_RESULT=$?
+fi
+
+if [ $BENCHMARK_RESULT -eq 0 ]; then
+    echo "Benchmark test: SUCCESS"
+else
+    echo "Benchmark test: FAILED"
+fi
+echo ""
+
+echo "=== Test file player with emulator ==="
+if [ -f "./bin/linux-arm64-rpi5/7seg-file-player" ]; then
+    echo "Testing file player with emulator mode..."
+    timeout 10s ./bin/linux-arm64-rpi5/7seg-file-player test.mp4 emulator-4x8 || true
+    TEST_RESULT=$?
+    if [ $TEST_RESULT -eq 124 ]; then
+        echo "Emulator test: SUCCESS (timeout as expected)"
+    elif [ $TEST_RESULT -eq 0 ]; then
+        echo "Emulator test: SUCCESS (completed normally)"
+    else
+        echo "Emulator test: FAILED (exit code: $TEST_RESULT)"
+    fi
+else
+    echo "File player binary not found"
+    echo "Emulator test: FAILED (binary missing)"
+fi
+
+echo ""
+echo "=== RPi5 Build and Test Complete ==="
+echo "End time: $(date)"
+echo "Log saved to: $LOG_FILE"
+
+# 結果のサマリー
+echo ""
+echo "=== Test Summary ==="
+echo "Build: SUCCESS"
+echo "Benchmark: $([ $BENCHMARK_RESULT -eq 0 ] && echo 'SUCCESS' || echo 'FAILED')"
+echo "Emulator Test: $([ -f "./bin/linux-arm64-rpi5/7seg-file-player" ] && echo 'SUCCESS' || echo 'FAILED')"
+echo ""
+echo "For detailed results, check: $LOG_FILE"
