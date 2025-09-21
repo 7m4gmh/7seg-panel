@@ -80,18 +80,57 @@ def load_config(config_name, filename="config.json"):
 			
 		config = all_configs["configurations"][config_name]
 		
-		# --- アドレス文字列("0x70")を数値(112)に変換 ---
-		if config.get("tca9548a_address"):
-			config["tca9548a_address"] = int(config["tca9548a_address"], 16)
-		else:
+		# 新しいbuses構造に対応
+		if "buses" in config:
+			# buses構造を古い形式に変換して互換性を保つ
+			config["channel_grids"] = {}
 			config["tca9548a_address"] = None
+			config["bus_number"] = None
+			
+			for bus_id, bus_config in config["buses"].items():
+				config["bus_number"] = int(bus_id)  # 最初のbus IDを使用
+				for tca_config in bus_config["tca9548as"]:
+					if tca_config.get("address"):
+						config["tca9548a_address"] = int(tca_config["address"], 16)
+					
+					# channelsがある場合
+					if "channels" in tca_config:
+						for ch_str, grid in tca_config["channels"].items():
+							ch_int = int(ch_str)
+							new_grid = [[int(addr, 16) for addr in row] for row in grid]
+							config["channel_grids"][ch_int] = new_grid
+					
+					# rowsがある場合（48x8用）
+					if "rows" in tca_config:
+						# rowsをchannels形式に変換
+						channel_modules = {}
+						for row_config in tca_config["rows"].values():
+							ch = row_config["channel"]
+							# 各チャンネルのモジュールを1行として設定
+							if str(ch) in tca_config["channels"]:
+								# アドレスを数値に変換
+								numeric_row = [int(addr, 16) for addr in tca_config["channels"][str(ch)][0]]
+								channel_modules[ch] = [numeric_row]  # 1行として設定
+						
+						for ch, modules in channel_modules.items():
+							config["channel_grids"][ch] = modules
+						
+						# rows情報を保存（C++版と同じ処理のため）
+						config["rows"] = tca_config["rows"]						# rows情報を保存（オフセット計算用）
+						config["rows"] = tca_config["rows"]		# 古い形式の後方互換性
+		else:
+			config["bus_number"] = 0  # デフォルト値
+			if config.get("tca9548a_address"):
+				config["tca9548a_address"] = int(config["tca9548a_address"], 16)
+			else:
+				config["tca9548a_address"] = None
 
-		new_channel_grids = {}
-		for ch_str, grid in config["channel_grids"].items():
-			ch_int = int(ch_str)
-			new_grid = [[int(addr, 16) for addr in row] for row in grid]
-			new_channel_grids[ch_int] = new_grid
-		config["channel_grids"] = new_channel_grids
+			new_channel_grids = {}
+			for ch_str, grid in config["channel_grids"].items():
+				ch_int = int(ch_str)
+				new_grid = [[int(addr, 16) for addr in row] for row in grid]
+				new_channel_grids[ch_int] = new_grid
+			config["channel_grids"] = new_channel_grids
 		
 		return config
 
@@ -116,6 +155,7 @@ def tca_select_channel(bus, tca_addr, channel):
 		control_byte = 1 << channel if channel >= 0 else 0
 		bus.write_byte(tca_addr, control_byte)
 		g_current_channel = channel
+		time.sleep(0.001)  # 1ms待機 (C++版に合わせる)
 	except IOError as e:
 		print(f"Failed to select TCA channel {channel} on addr {hex(tca_addr)}: {e}", file=sys.stderr)
 
@@ -138,30 +178,74 @@ def update_flexible_display(bus, config, full_text):
 	TOTAL_WIDTH = config["total_width"]
 	digits_per_module = MOD_DIGITS_W * MOD_DIGITS_H
 	global_row_offset, global_col_offset = 0, 0
-	sorted_channels = sorted(config["channel_grids"].keys())
-	for channel in sorted_channels:
-		address_grid = config["channel_grids"][channel]
-		tca_select_channel(bus, TCA_ADDR, channel)
-		if not address_grid: continue
-		channel_grid_height, channel_grid_width = len(address_grid), len(address_grid[0])
-		for grid_r, row_of_addrs in enumerate(address_grid):
-			for grid_c, module_addr in enumerate(row_of_addrs):
-				module_data_buffer = [' '] * digits_per_module
-				module_start_col = global_col_offset + (grid_c * MOD_DIGITS_W)
-				module_start_row = global_row_offset + (grid_r * MOD_DIGITS_H)
-				for r_in_mod in range(MOD_DIGITS_H):
-					for c_in_mod in range(MOD_DIGITS_W):
-						grid_index = (module_start_row + r_in_mod) * TOTAL_WIDTH + (module_start_col + c_in_mod)
-						module_buffer_index = r_in_mod * MOD_DIGITS_W + c_in_mod
-						if grid_index < len(full_text):
-							module_data_buffer[module_buffer_index] = full_text[grid_index]
-				update_display_module(bus, module_addr, module_data_buffer)
-		channel_width_in_digits = channel_grid_width * MOD_DIGITS_W
-		channel_height_in_digits = channel_grid_height * MOD_DIGITS_H
-		if (global_col_offset + channel_width_in_digits) < TOTAL_WIDTH:
-			global_col_offset += channel_width_in_digits
-		else:
-			global_col_offset, global_row_offset = 0, global_row_offset + channel_height_in_digits
+	
+	# 48x8でrowsがある場合：C++版と同じrowsベースの処理
+	if TOTAL_WIDTH == 48 and config.get("total_height", 0) == 8 and "rows" in config:
+		for row_id, row_config in config["rows"].items():
+			channel, row_offset, col_offset = row_config["channel"], row_config["row_offset"], row_config["col_offset"]
+			
+			if channel not in config["channel_grids"]:
+				continue
+			address_grid = config["channel_grids"][channel]
+			
+			tca_select_channel(bus, TCA_ADDR, channel)
+			if not address_grid:
+				continue
+			channel_grid_height, channel_grid_width = len(address_grid), len(address_grid[0])
+			
+			for grid_r, row_of_addrs in enumerate(address_grid):
+				for grid_c, module_addr in enumerate(row_of_addrs):
+					module_data_buffer = [' '] * digits_per_module
+					module_start_col = col_offset + (grid_c * MOD_DIGITS_W)
+					module_start_row = row_offset + (grid_r * MOD_DIGITS_H)
+					for r_in_mod in range(MOD_DIGITS_H):
+						for c_in_mod in range(MOD_DIGITS_W):
+							grid_index = (module_start_row + r_in_mod) * TOTAL_WIDTH + (module_start_col + c_in_mod)
+							module_buffer_index = r_in_mod * MOD_DIGITS_W + c_in_mod
+							if grid_index < len(full_text):
+								module_data_buffer[module_buffer_index] = full_text[grid_index]
+					update_display_module(bus, module_addr, module_data_buffer)
+	else:
+		# 従来のチャンネルベースの処理
+		sorted_channels = sorted(config["channel_grids"].keys())
+		for channel in sorted_channels:
+			address_grid = config["channel_grids"][channel]
+			tca_select_channel(bus, TCA_ADDR, channel)
+			if not address_grid: continue
+			channel_grid_height, channel_grid_width = len(address_grid), len(address_grid[0])
+			
+			# 48x8の場合の特殊処理：チャンネル番号に基づいてオフセットを決定
+			channel_row_offset = 0
+			channel_col_offset = 0
+			if TOTAL_WIDTH == 48 and config.get("total_height", 0) == 8:
+				# C++版と同じ計算：チャンネル0,2：上半分、チャンネル1,3：下半分
+				channel_row_offset = (int(channel) % 2) * 4
+				# チャンネル0,1：左半分、チャンネル2,3：右半分
+				channel_col_offset = (int(channel) // 2) * 24
+			
+			for grid_r, row_of_addrs in enumerate(address_grid):
+				for grid_c, module_addr in enumerate(row_of_addrs):
+					module_data_buffer = [' '] * digits_per_module
+					module_start_col = global_col_offset + channel_col_offset + (grid_c * MOD_DIGITS_W)
+					module_start_row = global_row_offset + channel_row_offset + (grid_r * MOD_DIGITS_H)
+					for r_in_mod in range(MOD_DIGITS_H):
+						for c_in_mod in range(MOD_DIGITS_W):
+							grid_index = (module_start_row + r_in_mod) * TOTAL_WIDTH + (module_start_col + c_in_mod)
+							module_buffer_index = r_in_mod * MOD_DIGITS_W + c_in_mod
+							if grid_index < len(full_text):
+								module_data_buffer[module_buffer_index] = full_text[grid_index]
+					update_display_module(bus, module_addr, module_data_buffer)
+			
+			# 48x8の場合は特別なオフセット計算をスキップ
+			if TOTAL_WIDTH == 48 and config.get("total_height", 0) == 8:
+				continue
+				
+			channel_width_in_digits = channel_grid_width * MOD_DIGITS_W
+			channel_height_in_digits = channel_grid_height * MOD_DIGITS_H
+			if (global_col_offset + channel_width_in_digits) < TOTAL_WIDTH:
+				global_col_offset += channel_width_in_digits
+			else:
+				global_col_offset, global_row_offset = 0, global_row_offset + channel_height_in_digits
 
 # ==============================================================================
 # 縦落ちテトリスのゲームクラス & ゲームループ
@@ -303,6 +387,8 @@ def main():
 	parser = argparse.ArgumentParser(description="Vertical Tetris for 7-segment LED display.")
 	parser.add_argument('--config', type=str, default='16x12', 
 						help='Display configuration name defined in config.json (e.g., 16x12, 12x8).')
+	parser.add_argument('--test', action='store_true', 
+						help='Run test display instead of game.')
 	args = parser.parse_args()
 
 	# ★★★ JSONファイルから設定を読み込む ★★★
@@ -310,7 +396,8 @@ def main():
 
 	bus = None
 	try:
-		bus = SMBus(0) 
+		bus_number = active_config.get("bus_number", 0)
+		bus = SMBus(bus_number) 
 		print(f"Using configuration: {active_config['name']}")
 		print("Initializing modules...")
 		
@@ -324,6 +411,7 @@ def main():
 						bus.write_byte_data(addr, 0x21, 0) # System setup: oscillator on
 						bus.write_byte_data(addr, 0x81, 0) # Display setup: display on, no blink
 						bus.write_byte_data(addr, 0xEF, 0) # Dimming setup: max brightness
+						time.sleep(0.001)  # 各モジュール初期化後に待機
 					except IOError as e:
 						print(f"Failed to initialize CH{channel} addr {hex(addr)}: {e}", file=sys.stderr)
 						return
@@ -331,7 +419,14 @@ def main():
 		if TCA_ADDR is not None:
 			tca_select_channel(bus, TCA_ADDR, -1)
 		
-		curses.wrapper(play_game_session, bus, active_config)
+		if args.test:
+			# テスト表示: 012345... を48文字表示
+			test_text = "".join(str(i % 10) for i in range(48))  # 01234567890123456789012345678901234567890123456789
+			print(f"Test text: {test_text}")
+			update_flexible_display(bus, active_config, test_text)
+			time.sleep(5)  # 5秒表示
+		else:
+			curses.wrapper(play_game_session, bus, active_config)
 
 	except FileNotFoundError:
 		print(f"Error: I2C bus device not found. Check your bus number (e.g., /dev/i2c-0).", file=sys.stderr)

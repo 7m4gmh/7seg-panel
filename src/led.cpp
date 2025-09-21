@@ -205,53 +205,117 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
         int bus_col_offset = 0;
         for (const auto& tca : bus_config.tca9548as) {
             bool use_tca = (tca.address != -1);
-            for (const auto& [channel, address_grid] : tca.channels) {
-                if (use_tca) {
-                    // ★変更★ select_i2c_channel の戻り値を確認
-                    if (!select_i2c_channel(i2c_fd, tca.address, channel, error_info_out)) {
-                        return false;
-                    }
+            // 48x8の場合：rowsベースの処理
+            if (config.total_width == 48 && config.total_height == 8 && !tca.rows.empty()) {
+                if (getenv("DEBUG_LED")) {
+                    printf("DEBUG: Using rows-based processing, rows.size()=%zu\n", tca.rows.size());
+                    printf("DEBUG: total_width=%d, total_height=%d\n", config.total_width, config.total_height);
                 }
-                if (address_grid.empty()) continue;
-                const int channel_grid_height = address_grid.size();
-                const int channel_grid_width = address_grid[0].size();
+                for (const auto& [row_id, row_config] : tca.rows) {
+                    auto [channel, row_offset, col_offset] = row_config;
+                    if (getenv("DEBUG_LED")) printf("DEBUG: Processing row_id=%d, channel=%d, row_offset=%d, col_offset=%d\n", row_id, channel, row_offset, col_offset);
+                    if (tca.channels.find(channel) == tca.channels.end()) continue;
+                    const auto& address_grid = tca.channels.at(channel);
+                    
+                    if (use_tca) {
+                        if (!select_i2c_channel(i2c_fd, tca.address, channel, error_info_out)) {
+                            return false;
+                        }
+                    }
+                    
+                    if (address_grid.empty()) continue;
+                    const int channel_grid_height = address_grid.size();
+                    const int channel_grid_width = address_grid[0].size();
 
-                for (int grid_r = 0; grid_r < channel_grid_height; ++grid_r) {
-                    for (int grid_c = 0; grid_c < channel_grid_width; ++grid_c) {
-                        //  データ準備のロジック  
-                        int module_addr = address_grid[grid_r][grid_c];
-                        int module_start_col = bus_col_offset + (grid_c * config.module_digits_width);
-                        int module_start_row = bus_row_offset + (grid_r * config.module_digits_height);
+                    for (int grid_r = 0; grid_r < channel_grid_height; ++grid_r) {
+                        for (int grid_c = 0; grid_c < channel_grid_width; ++grid_c) {
+                            //  データ準備のロジック  
+                            int module_addr = address_grid[grid_r][grid_c];
+                            int module_start_col = col_offset + bus_col_offset + (grid_c * config.module_digits_width);
+                            int module_start_row = row_offset + bus_row_offset + (grid_r * config.module_digits_height);
 
-                        for (int r_in_mod = 0; r_in_mod < config.module_digits_height; ++r_in_mod) {
-                            for (int c_in_mod = 0; c_in_mod < config.module_digits_width; ++c_in_mod) {
-                                int total_grid_col = global_row_offset + module_start_col + c_in_mod;
-                                int total_grid_row = global_col_offset + module_start_row + r_in_mod;
-                                int grid_index = total_grid_row * config.total_width + total_grid_col;
-                                int module_buffer_index = r_in_mod * config.module_digits_width + c_in_mod;
-                                if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < module_data_buffer.size()) {
-                                    module_data_buffer[module_buffer_index] = grid[grid_index];
+                            for (int r_in_mod = 0; r_in_mod < config.module_digits_height; ++r_in_mod) {
+                                for (int c_in_mod = 0; c_in_mod < config.module_digits_width; ++c_in_mod) {
+                                    int total_grid_col = global_row_offset + module_start_col + c_in_mod;
+                                    int total_grid_row = global_col_offset + module_start_row + r_in_mod;
+                                    int grid_index = total_grid_row * config.total_width + total_grid_col;
+                                    int module_buffer_index = r_in_mod * config.module_digits_width + c_in_mod;
+                                    if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < module_data_buffer.size()) {
+                                        module_data_buffer[module_buffer_index] = grid[grid_index];
+                                    }
                                 }
                             }
-                        }
 
-                        // ★変更★ update_module_from_grid の戻り値を確認
-                        if (!update_module_from_grid(i2c_fd, module_addr, module_data_buffer, error_info_out)) {
-                            fprintf(stderr, "Failed to update module at CH%d addr 0x%02X. Aborting update.\n", channel, module_addr);
-                            error_info_out.channel = channel; 
-                            return false; // エラーを伝播
+                            // ★変更★ update_module_from_grid の戻り値を確認
+                            if (!update_module_from_grid(i2c_fd, module_addr, module_data_buffer, error_info_out)) {
+                                fprintf(stderr, "Failed to update module at CH%d addr 0x%02X. Aborting update.\n", channel, module_addr);
+                                error_info_out.channel = channel; 
+                                return false; // エラーを伝播
+                            }
                         }
                     }
                 }
-                
-                // ... (オフセット計算のロジックは変更なし) ...
-                int channel_width_in_digits = channel_grid_width * config.module_digits_width;
-                int channel_height_in_digits = channel_grid_height * config.module_digits_height;
-                if ((bus_col_offset + channel_width_in_digits) < config.total_width) {
-                    bus_col_offset += channel_width_in_digits;
-                } else {
-                    bus_col_offset = 0;
-                    bus_row_offset += channel_height_in_digits;
+            } else {
+                // 従来のチャンネルベースの処理
+                for (const auto& [channel, address_grid] : tca.channels) {
+                    if (use_tca) {
+                        // ★変更★ select_i2c_channel の戻り値を確認
+                        if (!select_i2c_channel(i2c_fd, tca.address, channel, error_info_out)) {
+                            return false;
+                        }
+                    }
+                    if (address_grid.empty()) continue;
+                    const int channel_grid_height = address_grid.size();
+                    const int channel_grid_width = address_grid[0].size();
+
+                    // 48x8の場合の特殊処理：チャンネル番号に基づいてオフセットを決定
+                    int channel_row_offset = 0;
+                    int channel_col_offset = 0;
+                    if (config.total_width == 48 && config.total_height == 8) {
+                        // チャンネル0,2：上半分（行0-3）、チャンネル1,3：下半分（行4-7）
+                        channel_row_offset = (channel % 2) * 4;
+                        // チャンネル0,1：左半分（列0-23）、チャンネル2,3：右半分（列24-47）
+                        channel_col_offset = (channel / 2) * 24;
+                        fprintf(stderr, "DEBUG: Channel %d -> row_offset=%d, col_offset=%d\n", channel, channel_row_offset, channel_col_offset);
+                    }
+
+                    for (int grid_r = 0; grid_r < channel_grid_height; ++grid_r) {
+                        for (int grid_c = 0; grid_c < channel_grid_width; ++grid_c) {
+                            //  データ準備のロジック  
+                            int module_addr = address_grid[grid_r][grid_c];
+                            int module_start_col = channel_col_offset + bus_col_offset + (grid_c * config.module_digits_width);
+                            int module_start_row = channel_row_offset + bus_row_offset + (grid_r * config.module_digits_height);
+
+                            for (int r_in_mod = 0; r_in_mod < config.module_digits_height; ++r_in_mod) {
+                                for (int c_in_mod = 0; c_in_mod < config.module_digits_width; ++c_in_mod) {
+                                    int total_grid_col = global_row_offset + module_start_col + c_in_mod;
+                                    int total_grid_row = global_col_offset + module_start_row + r_in_mod;
+                                    int grid_index = total_grid_row * config.total_width + total_grid_col;
+                                    int module_buffer_index = r_in_mod * config.module_digits_width + c_in_mod;
+                                    if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < module_data_buffer.size()) {
+                                        module_data_buffer[module_buffer_index] = grid[grid_index];
+                                    }
+                                }
+                            }
+
+                            // ★変更★ update_module_from_grid の戻り値を確認
+                            if (!update_module_from_grid(i2c_fd, module_addr, module_data_buffer, error_info_out)) {
+                                fprintf(stderr, "Failed to update module at CH%d addr 0x%02X. Aborting update.\n", channel, module_addr);
+                                error_info_out.channel = channel; 
+                                return false; // エラーを伝播
+                            }
+                        }
+                    }
+                    
+                    // ... (オフセット計算のロジックは変更なし) ...
+                    int channel_width_in_digits = channel_grid_width * config.module_digits_width;
+                    int channel_height_in_digits = channel_grid_height * config.module_digits_height;
+                    if ((bus_col_offset + channel_width_in_digits) < config.total_width) {
+                        bus_col_offset += channel_width_in_digits;
+                    } else {
+                        bus_col_offset = 0;
+                        bus_row_offset += channel_height_in_digits;
+                    }
                 }
             }
         }

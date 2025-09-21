@@ -89,12 +89,10 @@
               "address": "0x77",
               "channels": {
                 "0": [
-                  ["0x70", "0x71", "0x72"], 
-                  ["0x73", "0x74", "0x75"]
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
                 ],
-                   "1": [
-                  ["0x70", "0x71", "0x72"], 
-                  ["0x73", "0x74", "0x75"]
+                "1": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
                 ]
               }
             }
@@ -105,6 +103,70 @@
       "module_digits_height": 4,
       "total_width": 24,
       "total_height": 8
+    },
+    "48x8": {
+      "name": "48x8 Expanded (4 channels with row-based layout)",
+      "buses": {
+        "1": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ],
+                "1": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ],
+                "2": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ],
+                "3": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ]
+              },
+              "rows": {
+                "0": {"channel": 0, "row_offset": 0, "col_offset": 0},
+                "1": {"channel": 2, "row_offset": 0, "col_offset": 24},
+                "2": {"channel": 1, "row_offset": 4, "col_offset": 0},
+                "3": {"channel": 3, "row_offset": 4, "col_offset": 24}
+              }
+            }
+          ]
+        }
+      },
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 48,
+      "total_height": 8
+    },
+    "48x4": {
+      "name": "48x4 Expanded (2 channels with row-based layout)",
+      "buses": {
+        "1": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ],
+                "2": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ]
+              },
+              "rows": {
+                "0": {"channel": 0, "row_offset": 0, "col_offset": 0},
+                "1": {"channel": 2, "row_offset": 0, "col_offset": 24}
+              }
+            }
+          ]
+        }
+      },
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 48,
+      "total_height": 4
     },
     "16x8": {
       "name": "16x8 Expanded (2x 12x4 via TCA9548a)",
