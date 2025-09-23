@@ -278,7 +278,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int i2c_fd = open_i2c_auto();
+    int i2c_fd = open_i2c_auto(active_config);
     if (i2c_fd < 0) { perror("Failed to open I2C device"); return 1; }
     if (!initialize_displays(i2c_fd, active_config)) {
         std::cerr << "Failed to initialize display modules." << std::endl;

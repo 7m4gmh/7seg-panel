@@ -64,9 +64,9 @@ bool attempt_i2c_recovery(int& i2c_fd, const DisplayConfig& config) {
         usleep(retry_count * 500000); // 0.5秒, 1.0秒, 1.5秒...
 
         // 5. I2Cデバイスを再度オープン
-        i2c_fd = open("/dev/i2c-0", O_RDWR);
+        i2c_fd = open_i2c_auto(config);
         if (i2c_fd < 0) {
-            perror("[Recovery] Failed to re-open /dev/i2c-0. Retrying...");
+            std::cerr << "[Recovery] Failed to re-open I2C device. Retrying..." << std::endl;
             continue; // 次のリトライへ
         }
 
@@ -84,12 +84,25 @@ bool attempt_i2c_recovery(int& i2c_fd, const DisplayConfig& config) {
     return false; // ★失敗したので false を返して終了
 }
 
-int open_i2c_auto() {
+int open_i2c_auto(const DisplayConfig& config) {
+    // config.busesの最初のbus番号を使う
+    if (!config.buses.empty()) {
+        int bus_id = config.buses.begin()->first;
+        std::string dev = "/dev/i2c-" + std::to_string(bus_id);
+        int fd = open(dev.c_str(), O_RDWR);
+        if (fd >= 0) {
+            std::cout << "[I2C] using device: " << dev << " (from config bus " << bus_id << ")" << std::endl;
+            return fd;
+        } else {
+            std::cerr << "[I2C] Failed to open configured bus " << bus_id << ": " << dev << std::endl;
+        }
+    }
+    // フォールバック: 既存の自動検出
     const char* cands[] = {"/dev/i2c-0", "/dev/i2c-1"};
     for (auto dev : cands) {
         int fd = open(dev, O_RDWR);
         if (fd >= 0) {
-            std::cout << "[I2C] using device: " << dev << std::endl;
+            std::cout << "[I2C] using device: " << dev << " (fallback)" << std::endl;
             return fd;
         }
     }

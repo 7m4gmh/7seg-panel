@@ -20,7 +20,9 @@ extern std::atomic<bool> g_should_exit;
 // シグナルハンドラ設定用
 void setup_signal_handlers();
 
-// 関数のシグネチャをDisplayConfigを受け取るように変更
+
+// I2Cバスをconfig.jsonから選択する
+int open_i2c_auto(const DisplayConfig& config);
 bool initialize_displays(int i2c_fd, const DisplayConfig& config);
 
 #endif

@@ -240,7 +240,7 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
     g_current_stop_flag = &stop_flag;
     stop_flag = false;
 
-    int i2c_fd = open_i2c_auto();
+    int i2c_fd = open_i2c_auto(config);
     if (i2c_fd < 0) {
         std::cerr << "I2C communication failed: No I2C devices found or access denied." << std::endl;
         std::cerr << "Please check:" << std::endl;
