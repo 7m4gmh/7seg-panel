@@ -63,6 +63,15 @@ DisplayConfig load_config_from_json(const std::string& config_name, const std::s
                             tca.channels[channel] = grid;
                         }
                     }
+                    if (tca_json.contains("rows")) {
+                        for (const auto& [row_str, row_config_json] : tca_json["rows"].items()) {
+                            int row = std::stoi(row_str);
+                            int channel = row_config_json["channel"];
+                            int row_offset = row_config_json["row_offset"];
+                            int col_offset = row_config_json["col_offset"];
+                            tca.rows[row] = {channel, row_offset, col_offset};
+                        }
+                    }
                     bus_config.tca9548as.push_back(tca);
                 }
             }

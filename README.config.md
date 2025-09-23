@@ -68,6 +68,7 @@ Bus ID をキーとするオブジェクト。各 Bus は以下の構造を持�
 
 - `address`: TCA9548A の I2C アドレス (16進数文字列、例: "0x77") または null (直接接続)
 - `channels`: チャンネルの定義 (オブジェクト)
+- `rows`: 行ベースのレイアウト定義 (オブジェクト、オプション)
 
 ### channels
 
@@ -75,6 +76,16 @@ Bus ID をキーとするオブジェクト。各 Bus は以下の構造を持�
 
 - グリッドは行の配列
 - 各行はモジュールアドレスの配列 (16進数文字列)
+
+### rows (48x8 構成用)
+
+行 ID をキーとするオブジェクト。各行は以下の構造を持ちます：
+
+- `channel`: 使用する TCA9548A チャンネル ID
+- `row_offset`: 行のオフセット (桁単位)
+- `col_offset`: 列のオフセット (桁単位)
+
+この設定は、異なるチャンネルが同じ行に配置される複雑なレイアウトで使用します。
 
 ## 例
 
@@ -177,23 +188,54 @@ Bus ID をキーとするオブジェクト。各 Bus は以下の構造を持�
 }
 ```
 
-### エミュレータ構成
+### 48x8 行ベース構成 (rows 使用)
 
 ```json
 {
   "configurations": {
-    "emulator-24x4": {
-      "name": "24x4 Emulator",
-      "type": "emulator",
-      "buses": {},
+    "48x8": {
+      "name": "48x8 Expanded (4 channels with row-based layout)",
+      "buses": {
+        "1": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ],
+                "1": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ],
+                "2": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ],
+                "3": [
+                  ["0x70", "0x71", "0x72", "0x73", "0x74", "0x75"]
+                ]
+              },
+              "rows": {
+                "0": {"channel": 0, "row_offset": 0, "col_offset": 0},
+                "1": {"channel": 2, "row_offset": 0, "col_offset": 24},
+                "2": {"channel": 1, "row_offset": 4, "col_offset": 0},
+                "3": {"channel": 3, "row_offset": 4, "col_offset": 24}
+              }
+            }
+          ]
+        }
+      },
       "module_digits_width": 4,
       "module_digits_height": 4,
-      "total_width": 24,
-      "total_height": 4
+      "total_width": 48,
+      "total_height": 8
     }
   }
 }
 ```
+
+この構成では、4つの TCA9548A チャンネルが使用され、rows 設定により異なるチャンネルが同じ行に配置されます：
+- 行0: チャンネル0 (左半分) と チャンネル2 (右半分) が同じ行に配置
+- 行1: チャンネル1 (左半分) と チャンネル3 (右半分) が同じ行に配置
 
 ## 注意点
 
@@ -206,5 +248,6 @@ Bus ID をキーとするオブジェクト。各 Bus は以下の構造を持�
 ## 変更履歴
 
 - 初期バージョン: 古い `tca9548a_address` と `channel_grids` 構造
-- 現在のバージョン: `buses` 構造で複数の TCA9548A と Bus をサポート</content>
+- 現在のバージョン: `buses` 構造で複数の TCA9548A と Bus をサポート
+- 48x8 対応: `rows` 構造で異なるチャンネルが同じ行に配置されるレイアウトをサポート</content>
 <parameter name="filePath">/home/hijiri/7seg-panel/README.config.md

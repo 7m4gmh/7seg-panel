@@ -17,54 +17,15 @@ STEP_SPEED_DIVISOR    = 5000.0   # divisor used in (INITIAL - score/divisor)
 # -----------------------------------------------------------------------------
 
 # ===# ==============================================================================
-# ▼▼▼ ゲーム定数 ▼▼▼
 # ==============================================================================
-# (0,0)を回転の中心とした、標準的なテトリミノ全7種類の形状定義
-# 座標系は (y, x) で、yは下方向がプラス、xは右方向がプラス
-SHAPES = {
-	'I': [
-		[(0, -1), (0, 0), (0, 1), (0, 2)],  # 縦向き
-		[(-1, 0), (0, 0), (1, 0), (2, 0)]   # 横向き (回転させるとこれになる)
-	],
-	'O': [
-		[(0, 0), (1, 0), (0, 1), (1, 1)]   # 正方形 (回転しても形は変わらない)
-	],
-	'T': [
-		[(-1, 0), (0, 0), (1, 0), (0, 1)],  # 上向きのT
-		[(0, 1), (0, 0), (0, -1), (-1, 0)], # 右向きのT
-		[(1, 0), (0, 0), (-1, 0), (0, -1)], # 下向きのT
-		[(0, -1), (0, 0), (0, 1), (1, 0)]   # 左向きのT
-	],
-	'L': [
-		[(0, -1), (0, 0), (0, 1), (1, 1)],
-		[(-1, 0), (0, 0), (1, 0), (1, -1)],
-		[(-1, -1), (0, -1), (0, 0), (0, 1)],
-		[(-1, 1), (-1, 0), (0, 0), (1, 0)]
-	],
-	'J': [
-		[(0, -1), (0, 0), (0, 1), (-1, 1)],
-		[(-1, -1), (-1, 0), (0, 0), (1, 0)],
-		[(1, -1), (0, -1), (0, 0), (0, 1)],
-		[(-1, 0), (0, 0), (1, 0), (1, 1)]
-	],
-	'S': [
-		[(-1, 0), (0, 0), (0, 1), (1, 1)],
-		[(0, 1), (0, 0), (1, 0), (1, -1)]
-	],
-	'Z': [
-		[(-1, 1), (0, 1), (0, 0), (1, 0)],
-		[(0, -1), (0, 0), (1, 0), (1, 1)]
-	]
-}
-
-
-SHAPE_KEYS = list(SHAPES.keys())
+# スクリーンセーバー定数
+# ==============================================================================
 DIGITS_PER_MODULE = 16
 
 # 7セグメントディスプレイのセグメントマッピング
 # 各文字に対して、点灯するセグメントを1、消灯するセグメントを0で表現
 # 例: '0' は a,b,c,d,e,f が点灯し、g は消灯
-digit_map={'0':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':0},'1':{'a':0,'b':1,'c':1,'d':0,'e':0,'f':0,'g':0},'2':{'a':1,'b':1,'c':0,'d':1,'e':1,'f':0,'g':1},'3':{'a':1,'b':1,'c':1,'d':1,'e':0,'f':0,'g':1},'4':{'a':0,'b':1,'c':1,'d':0,'e':0,'f':1,'g':1},'5':{'a':1,'b':0,'c':1,'d':1,'e':0,'f':1,'g':1},'6':{'a':1,'b':0,'c':1,'d':1,'e':1,'f':1,'g':1},'7':{'a':1,'b':1,'c':1,'d':0,'e':0,'f':0,'g':0},'8':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'9':{'a':1,'b':1,'c':1,'d':1,'e':0,'f':1,'g':1},' ': {'a':0,'b':0,'c':0,'d':0,'e':0,'f':0,'g':0},'*':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'#':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1}}
+digit_map={'0':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':0},'1':{'a':0,'b':1,'c':1,'d':0,'e':0,'f':0,'g':0},'2':{'a':1,'b':1,'c':0,'d':1,'e':1,'f':0,'g':1},'3':{'a':1,'b':1,'c':1,'d':1,'e':0,'f':0,'g':1},'4':{'a':0,'b':1,'c':1,'d':0,'e':0,'f':1,'g':1},'5':{'a':1,'b':0,'c':1,'d':1,'e':0,'f':1,'g':1},'6':{'a':1,'b':0,'c':1,'d':1,'e':1,'f':1,'g':1},'7':{'a':1,'b':1,'c':1,'d':0,'e':0,'f':0,'g':0},'8':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'9':{'a':1,'b':1,'c':1,'d':1,'e':0,'f':1,'g':1},' ': {'a':0,'b':0,'c':0,'d':0,'e':0,'f':0,'g':0},'*':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'#':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1},'O':{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':0},'=':{'a':0,'b':0,'c':0,'d':0,'e':0,'f':0,'g':1},'W':{'a':0,'b':1,'c':1,'d':1,'e':1,'f':0,'g':1},'A':{'a':1,'b':1,'c':1,'d':0,'e':1,'f':1,'g':1},'|':{'a':0,'b':1,'c':1,'d':0,'e':0,'f':0,'g':0},':':{'dp':1},'.':{'dp':1}}
 segment_memory_addr={'a':0,'b':2,'c':4,'d':6,'e':8,'f':10,'g':12,'dp':14}
 g_current_channel = -2
 
@@ -248,14 +209,69 @@ def update_flexible_display(bus, config, full_text):
 				global_col_offset, global_row_offset = 0, global_row_offset + channel_height_in_digits
 
 # ==============================================================================
-# 縦落ちテトリスのゲームクラス & ゲームループ
+# スクリーンセーバークラス & ゲームループ
 # ==============================================================================
-class VerticalTetrisGame:
-	def __init__(self, width, height):
+class LEDScreensaver:
+	def __init__(self, width, height, fixed_mode=None):
 		self.width, self.height = width, height
-		self.field = [[' '] * width for _ in range(height)]
-		self.score, self.game_over = 0, False
-		self.new_block()
+		if fixed_mode:
+			self.modes = [fixed_mode]
+			self.mode_duration = float('inf')  # 無限大にして切り替えなし
+		else:
+			self.modes = ['ip', 'breakout', 'invaders', 'miyajima', 'miyajima2', 'clock']
+			self.mode_duration = 10  # 各モードの表示時間（秒）
+		self.current_mode = 0
+		self.mode_timer = 0
+		
+		# IP表示用
+		import socket
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			s.connect(("8.8.8.8", 80))
+			self.ip_address = s.getsockname()[0]
+			s.close()
+		except:
+			self.ip_address = "127.0.0.1"
+		
+		# breakout用
+		self.breakout_ball = {'x': width//2, 'y': height//2, 'dx': 1, 'dy': 1}
+		self.breakout_paddle = {'x': width//2, 'y': height-1, 'width': 5}
+		self.breakout_paddle_direction = 1  # パドルの移動方向
+		self.breakout_blocks = []
+		for y in range(3):
+			for x in range(0, width, 2):
+				if x + 1 < width:
+					self.breakout_blocks.append({'x': x, 'y': y, 'width': 2, 'height': 1})
+		
+		# invaders用
+		self.invaders = []
+		for y in range(2):
+			for x in range(0, width, 3):
+				if x + 2 < width:
+					self.invaders.append({'x': x, 'y': y, 'alive': True})
+		self.invader_direction = 1
+		self.invader_move_timer = 0
+		self.invader_move_interval = 2.0
+		self.cannon = {'x': width//2, 'y': height-1}
+		self.cannon_direction = 1  # 砲台の移動方向
+		
+		# miyajima用
+		self.miyajima_cells = []
+		for y in range(height):
+			for x in range(width):
+				interval = random.randint(1, 255)
+				initial_value = random.choice([' '] + [str(i) for i in range(1, 10)])
+				self.miyajima_cells.append({'interval': interval, 'value': initial_value, 'timer': 0.0})
+		
+		# miyajima2用
+		self.miyajima2_scroll_timer = 0.0
+		self.miyajima2_scroll_interval = 0.5  # 0.5秒ごとにスクロール
+		
+		# clock用
+		self.clock_timer = 0
+		self.bullets = []
+		self.bullet_timer = 0
+		self.bullet_interval = 0.3
 
 	def new_block(self):
 		self.current_shape_key = random.choice(SHAPE_KEYS)
@@ -291,104 +307,319 @@ class VerticalTetrisGame:
 		if not self.check_collision(self.current_shape[next_rotation], self.block_pos):
 			self.rotation = next_rotation
 
-	def lock_block(self):
-		for dy, dx in self.get_current_rotation():
-			y, x = self.block_pos['y'] + dy, self.block_pos['x'] + dx
-			if 0 <= y < self.height and 0 <= x < self.width: self.field[y][x] = '*'
+	def update(self, dt):
+		if self.mode_duration != float('inf'):
+			self.mode_timer += dt
+			if self.mode_timer >= self.mode_duration:
+				self.current_mode = (self.current_mode + 1) % len(self.modes)
+				self.mode_timer = 0
+		
+		mode = self.modes[self.current_mode]
+		if mode == 'breakout':
+			self.update_breakout(dt)
+		elif mode == 'invaders':
+			self.update_invaders(dt)
+		elif mode == 'miyajima':
+			self.update_miyajima(dt)
+		elif mode == 'miyajima2':
+			self.update_miyajima2(dt)
+		elif mode == 'clock':
+			self.update_clock(dt)
+	
+	def update_breakout(self, dt):
+		# パドルの移動 - ボールを追う
+		ball_x = self.breakout_ball['x']
+		paddle_x = self.breakout_paddle['x']
+		if ball_x < paddle_x - 1:
+			self.breakout_paddle['x'] -= 0.3  # 左に移動
+		elif ball_x > paddle_x + 1:
+			self.breakout_paddle['x'] += 0.3  # 右に移動
+		
+		# パドルの境界チェック
+		if self.breakout_paddle['x'] < self.breakout_paddle['width']//2:
+			self.breakout_paddle['x'] = self.breakout_paddle['width']//2
+		if self.breakout_paddle['x'] > self.width - self.breakout_paddle['width']//2:
+			self.breakout_paddle['x'] = self.width - self.breakout_paddle['width']//2
+		
+		# ボールの移動 (速度をさらに遅く)
+		self.breakout_ball['x'] += self.breakout_ball['dx'] * 0.3
+		self.breakout_ball['y'] += self.breakout_ball['dy'] * 0.3
+		
+		# 壁との衝突
+		if self.breakout_ball['x'] <= 0 or self.breakout_ball['x'] >= self.width - 1:
+			self.breakout_ball['dx'] *= -1
+		if self.breakout_ball['y'] <= 0:
+			self.breakout_ball['dy'] *= -1
+		
+		# パドルとの衝突
+		if (self.breakout_ball['y'] >= self.breakout_paddle['y'] and 
+			self.breakout_paddle['x'] - self.breakout_paddle['width']//2 <= self.breakout_ball['x'] <= self.breakout_paddle['x'] + self.breakout_paddle['width']//2):
+			self.breakout_ball['dy'] *= -1
+		
+		# ブロックとの衝突
+		for block in self.breakout_blocks[:]:
+			if (block['x'] <= self.breakout_ball['x'] < block['x'] + block['width'] and
+				block['y'] <= self.breakout_ball['y'] < block['y'] + block['height']):
+				self.breakout_blocks.remove(block)
+				self.breakout_ball['dy'] *= -1
+				break
+		
+		# 全てのブロックを消したらリセット
+		if not self.breakout_blocks:
+			self.breakout_ball = {'x': self.width//2, 'y': self.height//2, 'dx': 1, 'dy': 1}
+			self.breakout_blocks = []
+			for y in range(3):
+				for x in range(0, self.width, 2):
+					if x + 1 < self.width:
+						self.breakout_blocks.append({'x': x, 'y': y, 'width': 2, 'height': 1})
+		
+		# ボールが下に落ちたらリセット
+		if self.breakout_ball['y'] >= self.height:
+			self.breakout_ball = {'x': self.width//2, 'y': self.height//2, 'dx': 1, 'dy': 1}
+	
+	def update_invaders(self, dt):
+		# 砲台の移動
+		self.cannon['x'] += self.cannon_direction * 0.3
+		if self.cannon['x'] >= self.width - 1:
+			self.cannon['x'] = self.width - 1
+			self.cannon_direction = -1
+		if self.cannon['x'] <= 0:
+			self.cannon['x'] = 0
+			self.cannon_direction = 1
+		
+		self.invader_move_timer += dt
+		if self.invader_move_timer >= self.invader_move_interval:
+			self.invader_move_timer = 0
+			# インベーダーの移動
+			for invader in self.invaders:
+				if invader['alive']:
+					invader['x'] += self.invader_direction
+			
+			# 端に到達したら方向転換
+			if self.invaders:
+				min_x = min(inv['x'] for inv in self.invaders if inv['alive'])
+				max_x = max(inv['x'] + 2 for inv in self.invaders if inv['alive'])
+				if min_x <= 0 or max_x >= self.width:
+					self.invader_direction *= -1
+					for invader in self.invaders:
+						if invader['alive']:
+							invader['y'] += 1
+							# 砲台との衝突判定
+							if invader['y'] >= self.height - 1:
+								# 敵が砲台に到達したらリセット
+								self.invaders = []
+								for y in range(2):
+									for x in range(0, self.width, 3):
+										if x + 2 < self.width:
+											self.invaders.append({'x': x, 'y': y, 'alive': True})
+								self.invader_direction = 1
+								break
+		
+		# 弾の発射
+		self.bullet_timer += dt
+		if self.bullet_timer >= self.bullet_interval:
+			self.bullet_timer = 0
+			self.bullets.append({'x': self.cannon['x'], 'y': self.cannon['y'] - 1})
+		
+		# 弾の移動
+		for bullet in self.bullets[:]:
+			bullet['y'] -= 1
+			if bullet['y'] < 0:
+				self.bullets.remove(bullet)
+			else:
+				# インベーダーとの衝突判定
+				for invader in self.invaders:
+					if (invader['alive'] and 
+						invader['x'] <= bullet['x'] < invader['x'] + 3 and
+						invader['y'] <= bullet['y'] < invader['y'] + 1):
+						invader['alive'] = False
+						if bullet in self.bullets:
+							self.bullets.remove(bullet)
+						break
+		
+		# 全てのインベーダーが死んだらリセット
+		if not any(invader['alive'] for invader in self.invaders):
+			self.invaders = []
+			for y in range(2):
+				for x in range(0, self.width, 3):
+					if x + 2 < self.width:
+						self.invaders.append({'x': x, 'y': y, 'alive': True})
+			self.invader_direction = 1
 
-	def clear_lines(self):
-		new_field, lines_cleared = [], 0
-		for row in self.field:
-			if ' ' in row: new_field.append(row)
-			else: lines_cleared += 1
-		empty_rows = [[' '] * self.width for _ in range(lines_cleared)]
-		self.field = empty_rows + new_field
-		if lines_cleared > 0: self.score += [0, 100, 300, 500, 800][lines_cleared]
-
-	def step(self):
-		if not self.move_down():
-			self.lock_block()
-			self.clear_lines()
-			self.new_block()
-
+	def update_miyajima(self, dt):
+		for cell in self.miyajima_cells:
+			cell['timer'] += dt
+			while cell['timer'] >= cell['interval'] * 0.1:  # interval × 100ms
+				cell['timer'] -= cell['interval'] * 0.1
+				# カウントアップ (9 → 空白 → 1 → 2 → ... → 9)
+				if cell['value'] == ' ':
+					cell['value'] = '1'
+				elif cell['value'] == '9':
+					cell['value'] = ' '
+				else:
+					cell['value'] = str(int(cell['value']) + 1)
+	
+	def update_miyajima2(self, dt):
+		# カウントアップ
+		for cell in self.miyajima_cells:
+			cell['timer'] += dt
+			while cell['timer'] >= cell['interval'] * 0.1:  # interval × 100ms
+				cell['timer'] -= cell['interval'] * 0.1
+				# カウントアップ (9 → 空白 → 1 → 2 → ... → 9)
+				if cell['value'] == ' ':
+					cell['value'] = '1'
+				elif cell['value'] == '9':
+					cell['value'] = ' '
+				else:
+					cell['value'] = str(int(cell['value']) + 1)
+		
+		# スクロール
+		self.miyajima2_scroll_timer += dt
+		if self.miyajima2_scroll_timer >= self.miyajima2_scroll_interval:
+			self.miyajima2_scroll_timer = 0.0
+			# 右にシフト
+			for y in range(self.height):
+				# 各行の最後のデータを保存
+				last_value = self.miyajima_cells[y * self.width + (self.width - 1)]['value']
+				last_interval = self.miyajima_cells[y * self.width + (self.width - 1)]['interval']
+				# 右にシフト
+				for x in range(self.width - 1, 0, -1):
+					idx = y * self.width + x
+					prev_idx = y * self.width + (x - 1)
+					self.miyajima_cells[idx]['value'] = self.miyajima_cells[prev_idx]['value']
+					self.miyajima_cells[idx]['interval'] = self.miyajima_cells[prev_idx]['interval']
+				# 最初の位置に最後のデータを入れる
+				self.miyajima_cells[y * self.width]['value'] = last_value
+				self.miyajima_cells[y * self.width]['interval'] = last_interval
+	
+	def update_clock(self, dt):
+		self.clock_timer += dt
+		# 時計は毎秒更新
+	
 	def get_render_string(self):
-		temp_field = [row[:] for row in self.field]
-		for dy, dx in self.get_current_rotation():
-			y, x = self.block_pos['y'] + dy, self.block_pos['x'] + dx
-			if 0 <= y < self.height and 0 <= x < self.width: temp_field[y][x] = '#'
-		return "".join(["".join(row) for row in temp_field])
+		field = [[' '] * self.width for _ in range(self.height)]
+		mode = self.modes[self.current_mode]
+		
+		if mode == 'ip':
+			# IPアドレスをセンタリングして表示（ドットをDPに）
+			ip_str = self.ip_address.replace('.', ':')
+			start_x = max(0, (self.width - len(ip_str)) // 2)
+			start_y = self.height // 2
+			for i, char in enumerate(ip_str):
+				if start_x + i < self.width:
+					field[start_y][start_x + i] = char
+		
+		elif mode == 'breakout':
+			# ボール
+			x, y = int(self.breakout_ball['x']), int(self.breakout_ball['y'])
+			if 0 <= x < self.width and 0 <= y < self.height:
+				field[y][x] = 'O'
+			
+			# パドル
+			paddle_y = int(self.breakout_paddle['y'])
+			paddle_x = int(self.breakout_paddle['x'])
+			paddle_start = paddle_x - self.breakout_paddle['width']//2
+			paddle_end = paddle_start + self.breakout_paddle['width']
+			for x in range(max(0, paddle_start), min(self.width, paddle_end)):
+				field[paddle_y][x] = '='
+			
+			# ブロック
+			for block in self.breakout_blocks:
+				for dy in range(block['height']):
+					for dx in range(block['width']):
+						y, x = int(block['y']) + dy, int(block['x']) + dx
+						if 0 <= x < self.width and 0 <= y < self.height:
+							field[y][x] = '#'
+		
+		elif mode == 'invaders':
+			# インベーダー
+			for invader in self.invaders:
+				if invader['alive']:
+					for dx in range(3):
+						x = int(invader['x']) + dx
+						y = int(invader['y'])
+						if 0 <= x < self.width and 0 <= y < self.height:
+							field[y][x] = 'W'
+			
+			# 砲台
+			cannon_x, cannon_y = int(self.cannon['x']), int(self.cannon['y'])
+			if 0 <= cannon_x < self.width and 0 <= cannon_y < self.height:
+				field[cannon_y][cannon_x] = 'A'
+			
+			# 弾
+			for bullet in self.bullets:
+				x, y = int(bullet['x']), int(bullet['y'])
+				if 0 <= x < self.width and 0 <= y < self.height:
+					field[y][x] = '|'
+		
+		elif mode == 'miyajima':
+			# miyajimaパターン
+			for i, cell in enumerate(self.miyajima_cells):
+				y, x = divmod(i, self.width)
+				field[y][x] = cell['value']
+		
+		elif mode == 'miyajima2':
+			# miyajima2パターン (スクロール)
+			for i, cell in enumerate(self.miyajima_cells):
+				y, x = divmod(i, self.width)
+				field[y][x] = cell['value']
+		
+		return "".join(["".join(row) for row in field])
 
-def play_game_session(stdscr, bus, config):
+def play_screensaver_session(stdscr, bus, config, args):
 		curses.curs_set(0)
 		DISPLAY_WIDTH, DISPLAY_HEIGHT = config["total_width"], config["total_height"]
-		game = VerticalTetrisGame(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+		screensaver = LEDScreensaver(DISPLAY_WIDTH, DISPLAY_HEIGHT, args.mode)
 		
 		RENDER_INTERVAL = 1.0 / 15  # 1秒間に15回画面を更新
 		last_render_time = 0
-		step_interval = 0.5  # Moon gravity: ~1 block every 3s
-		last_step_time = time.time()
+		last_update_time = time.time()
 		 
 		stdscr.nodelay(1)  # キー入力を待たない非ブロッキングモード
-		while not game.game_over:
+		while True:
 			current_time = time.time()
+			dt = current_time - last_update_time
+			last_update_time = current_time
 			
-			# --- ▼▼▼ キー操作のロジックを修正 ▼▼▼ ---
+			# キー操作
 			key = stdscr.getch()
 			if key != -1:
-				if key == curses.KEY_LEFT:
-					game.move_horizontal(-1)
-				elif key == curses.KEY_RIGHT:
-					game.move_horizontal(1)
-				elif key == curses.KEY_DOWN:
-					# 1マス下に移動し、自動落下のタイマーをリセット
-					if game.move_down():
-						last_step_time = current_time
-				elif key == curses.KEY_UP or key == ord(' '):  # ↑キーまたはスペースキー
-					game.rotate()
-				elif key == ord('q'):
+				if key == ord('q'):
 					return
-
-			# 自動落下（重力）
-			if current_time - last_step_time > step_interval:
-				game.step()
-				last_step_time = current_time
-				# スコアに応じてゲーム速度を上げる
-				step_interval = max(0.5, 1.0 - game.score / 5000.0)
-
+			
+			# スクリーンセーバーの更新
+			screensaver.update(dt)
+			
 			# 画面描画
 			if current_time - last_render_time > RENDER_INTERVAL:
-				game_field_str = game.get_render_string()
+				screensaver_field_str = screensaver.get_render_string()
 				
 				# Curses画面（ターミナル）の描画
 				stdscr.clear()
-				stdscr.addstr(0, 0, f"SCORE: {game.score}")
+				mode_name = screensaver.modes[screensaver.current_mode].upper()
+				stdscr.addstr(0, 0, f"MODE: {mode_name}")
 				for y in range(DISPLAY_HEIGHT):
-					line = game_field_str[y * DISPLAY_WIDTH : (y + 1) * DISPLAY_WIDTH]
+					line = screensaver_field_str[y * DISPLAY_WIDTH : (y + 1) * DISPLAY_WIDTH]
 					stdscr.addstr(y + 2, 0, line)
 				stdscr.refresh()
 				
 				# LEDパネルの描画
-				update_flexible_display(bus, config, game_field_str)
+				update_flexible_display(bus, config, screensaver_field_str)
 				last_render_time = current_time
 				
 			time.sleep(0.01)
-		
-		# ゲームオーバー処理
-		game_over_text = ("GAME OVER".center(DISPLAY_WIDTH) + (' ' * DISPLAY_WIDTH) + 
-						  f"SCORE {game.score}".center(DISPLAY_WIDTH) + "PRESS ANY KEY".center(DISPLAY_WIDTH))
-		update_flexible_display(bus, config, game_over_text)
-		stdscr.nodelay(0)
-		stdscr.getch()
 
 # ==============================================================================
 # メイン実行部
 # ==============================================================================
 def main():
-	parser = argparse.ArgumentParser(description="Vertical Tetris for 7-segment LED display.")
+	parser = argparse.ArgumentParser(description="LED Screensaver for 7-segment LED display.")
 	parser.add_argument('--config', type=str, default='16x12', 
 						help='Display configuration name defined in config.json (e.g., 16x12, 12x8).')
 	parser.add_argument('--test', action='store_true', 
-						help='Run test display instead of game.')
+						help='Run test display instead of screensaver.')
+	parser.add_argument('--mode', type=str, choices=['ip', 'breakout', 'invaders', 'miyajima', 'miyajima2', 'clock'], 
+						help='Fixed mode to display (default: cycle through all modes).')
 	args = parser.parse_args()
 
 	# ★★★ JSONファイルから設定を読み込む ★★★
@@ -426,7 +657,7 @@ def main():
 			update_flexible_display(bus, active_config, test_text)
 			time.sleep(5)  # 5秒表示
 		else:
-			curses.wrapper(play_game_session, bus, active_config)
+			curses.wrapper(play_screensaver_session, bus, active_config, args)
 
 	except FileNotFoundError:
 		print(f"Error: I2C bus device not found. Check your bus number (e.g., /dev/i2c-0).", file=sys.stderr)

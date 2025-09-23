@@ -14,6 +14,7 @@ extern double CHAR_HEIGHT_MM;
 struct TCA9548AConfig {
     int address; // TCA9548A のアドレス (-1 で直接接続)
     std::map<int, std::vector<std::vector<int>>> channels; // channel -> slave address grid
+    std::map<int, std::tuple<int, int, int>> rows; // row -> (channel, row_offset, col_offset)
 };
 
 // Bus の構成を定義する構造体
