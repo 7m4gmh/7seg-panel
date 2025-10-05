@@ -14,19 +14,9 @@ int main(int argc, char* argv[]) {
         "    --threshold min max, -t min max: Set binarization threshold (default: 64 255)\n"
         "    --loop, -l: Repeat video playback (file-player only)";
 
-    // ファイルプレイヤ専用オプション: ループ再生フラグを argv から検出
-    bool loop = false;
-    for (int i = 2; i < argc; ++i) {
-        std::string arg = argv[i];
-        if (arg == "--loop" || arg == "-l") {
-            loop = true;
-            break;
-        }
-    }
-
     // common_main_runner を呼び出し、ファイル再生ロジックをラムダ式で渡す
     return common_main_runner(usage, argc, argv, 
-        [loop](const std::string& video_path, const DisplayConfig& config, ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug) {
+        [](const std::string& video_path, const DisplayConfig& config, ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug, bool loop) {
             std::atomic<bool> stop_flag(false);
             // g_should_exit は共通シグナルハンドラで更新される
             std::thread watch_dog([&stop_flag] {
@@ -46,14 +36,20 @@ int main(int argc, char* argv[]) {
             };
 
             if (loop) {
+                std::cerr << "[file_player] loop enabled" << std::endl;
                 // 指定があれば動画終了後に繰り返す（stop_flag が立てられたら終了）
+                int loop_count = 0;
                 while (!stop_flag) {
+                    loop_count++;
+                    if (debug) std::cerr << "[file_player] starting loop iteration " << loop_count << std::endl;
                     int rc = play_once();
+                    if (debug) std::cerr << "[file_player] play_once returned rc=" << rc << std::endl;
                     if (stop_flag) break;
                     // 再開前に少し待つ（無限ループ防止）
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     (void)rc; // rc は将来的な利用のために残す
                 }
+                std::cerr << "[file_player] loop exiting after " << loop_count << " iterations" << std::endl;
             } else {
                 (void)play_once();
             }
