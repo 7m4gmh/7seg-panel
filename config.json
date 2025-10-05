@@ -327,21 +327,21 @@
       "total_width": 24,
       "total_height": 8
     },
-    "emulator-40x20": {
-      "name": "40x20 Emulator",
+    "emulator-30x40": {
+      "name": "30x40 Emulator",
+      "type": "emulator",
+      "module_digits_width": 30,
+      "module_digits_height": 40,
+      "total_width": 30,
+      "total_height": 40
+    },
+    "emulator-40x40": {
+      "name": "40x40 Emulator",
       "type": "emulator",
       "module_digits_width": 40,
-      "module_digits_height": 20,
+      "module_digits_height": 40,
       "total_width": 40,
-      "total_height": 20
-    },
-    "emulator-60x30": {
-      "name": "60x30 Emulator",
-      "type": "emulator",
-      "module_digits_width": 60,
-      "module_digits_height": 30,
-      "total_width": 60,
-      "total_height": 30
+      "total_height": 40
     },
     "emulator-80x40": {
       "name": "80x40 Emulator",
