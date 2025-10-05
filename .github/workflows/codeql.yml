@@ -50,8 +50,12 @@ jobs:
           sudo apt-get install -y cmake
 
       - name: Build with Make
+        env:
+          CC: clang
+          CXX: clang++
         run: |
-          make -j"$(nproc)"
+          # build all targets so CodeQL build tracer sees C/C++ compile commands
+          make all -j"$(nproc)"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
