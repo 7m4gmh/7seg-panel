@@ -34,12 +34,13 @@ int main(int argc, char* argv[]) {
                 std::cerr << "[file_player] loop enabled" << std::endl;
                 // 指定があれば動画終了後に繰り返す（stop_flag が立てられたら終了）
                 int loop_count = 0;
-                while (!stop_flag) {
+                while (!stop_flag && !g_should_exit) {
                     loop_count++;
                     if (debug) std::cerr << "[file_player] starting loop iteration " << loop_count << std::endl;
                     int rc = play_once();
                     if (debug) std::cerr << "[file_player] play_once returned rc=" << rc << std::endl;
                     if (stop_flag) break;
+                    if (g_should_exit) break;
                     // 再開前に少し待つ（無限ループ防止）
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     (void)rc; // rc は将来的な利用のために残す
