@@ -52,10 +52,13 @@ jobs:
       - name: Build with Make
         env:
           CC: clang
-          CXX: clang++
         run: |
+          # Ensure cpp-httplib header is available where Makefile expects it (-I../cpp-httplib)
+          mkdir -p ../cpp-httplib
+          curl -sSL https://raw.githubusercontent.com/yhirose/cpp-httplib/master/httplib.h -o ../cpp-httplib/httplib.h
           # build all targets so CodeQL build tracer sees C/C++ compile commands
-          make all -j"$(nproc)"
+          # pass CXX=clang++ to ensure clang is used (Makefile sets CXX=g++ by default)
+          make CXX=clang++ all -j"$(nproc)"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
