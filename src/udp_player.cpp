@@ -16,13 +16,46 @@
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <port> [config_name]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <port> [config_name] [options]" << std::endl;
         std::cerr << "  config_name from config.json (e.g., 24x4)" << std::endl;
+        std::cerr << "  options:" << std::endl;
+        std::cerr << "    --crop, -c: Crop to fit aspect ratio" << std::endl;
+        std::cerr << "    --stretch, -s: Stretch to fill display" << std::endl;
+        std::cerr << "    --fit, -f: Fit entire video within display (may add padding) (default)" << std::endl;
+        std::cerr << "    --threshold min max, -t min max: Set binarization threshold (default: 64 255)" << std::endl;
         return 1;
     }
 
     int port = std::stoi(argv[1]);
-    std::string config_name = (argc > 2) ? argv[2] : "24x4";
+    std::string config_name = "24x4";
+    ScalingMode scaling_mode = ScalingMode::CROP;
+    int min_threshold = 64;
+    int max_threshold = 255;
+
+    for (int i = 2; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--stretch" || arg == "-s") {
+            scaling_mode = ScalingMode::STRETCH;
+        } else if (arg == "--crop" || arg == "-c") {
+            scaling_mode = ScalingMode::CROP;
+        } else if (arg == "--threshold" || arg == "-t") {
+            if (i + 2 < argc) {
+                try {
+                    min_threshold = std::stoi(argv[i + 1]);
+                    max_threshold = std::stoi(argv[i + 2]);
+                    i += 2;
+                } catch (const std::exception&) {
+                    std::cerr << "Invalid threshold values. Expected integers." << std::endl;
+                    return 1;
+                }
+            } else {
+                std::cerr << "Missing threshold values after " << arg << std::endl;
+                return 1;
+            }
+        } else {
+            config_name = arg;
+        }
+    }
 
     DisplayConfig active_config;
     try {

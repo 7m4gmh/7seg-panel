@@ -29,6 +29,11 @@ const size_t MAX_FILE_SIZE = 100 * 1024 * 1024;
 std::vector<std::string> g_default_videos;
 size_t g_next_default_video_index = 0;
 
+// 画像処理パラメータ
+ScalingMode g_scaling_mode = ScalingMode::FIT;
+int g_min_threshold = 64;
+int g_max_threshold = 255;
+
 // I2Cエラー分析用のグローバル変数
 std::map<std::pair<int, int>, int> g_error_counts;
 
@@ -95,9 +100,9 @@ void playback_thread_worker(const DisplayConfig& config) { // ★★★ config�
 
         if (!path_to_play.empty()) {
             if (config.type == "emulator") {
-                play_video_stream_emulator(path_to_play, config, g_stop_current_video);
+                play_video_stream_emulator(path_to_play, config, g_stop_current_video, g_scaling_mode, g_min_threshold, g_max_threshold);
             } else {
-                play_video_stream(path_to_play, config, g_stop_current_video);
+                play_video_stream(path_to_play, config, g_stop_current_video, g_scaling_mode, g_min_threshold, g_max_threshold);
             }
             g_stop_current_video = false; // 次の再生のためにリセット
             {
@@ -127,9 +132,9 @@ void playback_thread_worker_main(const DisplayConfig& config) {
 
         if (!path_to_play.empty()) {
             if (config.type == "emulator") {
-                play_video_stream_emulator(path_to_play, config, g_stop_current_video);
+                play_video_stream_emulator(path_to_play, config, g_stop_current_video, g_scaling_mode, g_min_threshold, g_max_threshold);
             } else {
-                play_video_stream(path_to_play, config, g_stop_current_video);
+                play_video_stream(path_to_play, config, g_stop_current_video, g_scaling_mode, g_min_threshold, g_max_threshold);
             }
             g_stop_current_video = false; // 次の再生のためにリセット
             {
@@ -148,7 +153,15 @@ int main(int argc, char* argv[]) {
     signal(SIGINT, http_player_shutdown_handler);
 
     return common_main_runner(usage, argc, argv,
-        [](const std::string& default_video_path, const DisplayConfig& config) {
+        [](const std::string& default_video_path, const DisplayConfig& config, ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug, bool loop) {
+            (void)debug; // debug flag is provided by caller; not used in this lambda
+            (void)loop; // loop flag is not applicable to http_player
+
+            // 画像処理パラメータを設定
+            g_scaling_mode = scaling_mode;
+            g_min_threshold = min_threshold;
+            g_max_threshold = max_threshold;
+            
             std::cout << "Using default video directory: '" << default_video_path << "'" << std::endl;
             load_default_videos(default_video_path, g_default_videos);
             
