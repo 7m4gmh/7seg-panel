@@ -19,12 +19,7 @@ int main(int argc, char* argv[]) {
         [](const std::string& video_path, const DisplayConfig& config, ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug, bool loop) {
             std::atomic<bool> stop_flag(false);
             // g_should_exit は共通シグナルハンドラで更新される
-            std::thread watch_dog([&stop_flag] {
-                while(!g_should_exit) {
-                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                }
-                stop_flag = true;
-            });
+            // watch_dog スレッドは不要（再生ループ側で g_should_exit を参照するため）
             
             // 再生関数をラップ
             auto play_once = [&](void) -> int {
@@ -54,9 +49,7 @@ int main(int argc, char* argv[]) {
                 (void)play_once();
             }
             
-            if(watch_dog.joinable()) {
-                watch_dog.join();
-            }
+            // ここでの待ちは不要。playback ループは g_should_exit を見て終了する。
         }
     );
 }
