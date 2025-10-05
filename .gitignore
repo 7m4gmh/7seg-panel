@@ -9,6 +9,7 @@ __pycache__/
 *.log
 *.tar.gz
 bin/
+*.deb
 *.swp
 *.swo
 *~
