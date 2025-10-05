@@ -33,11 +33,21 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
+        env:
+          # disable autobuild so we run an explicit, controlled build step
+          CODEQL_RUN_AUTOBUILD: false
 
       - name: Install build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential
+          # basic build tools + clang (useful for CodeQL), pkg-config and common libs
+          sudo apt-get install -y build-essential clang pkg-config git
+          # OpenCV and SDL2 development packages for building on ubuntu runners
+          sudo apt-get install -y libopencv-dev libsdl2-dev
+          # GStreamer (used by project for ffmpeg/gstreamer playback paths)
+          sudo apt-get install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libglib2.0-dev
+          # optional helpers
+          sudo apt-get install -y cmake
 
       - name: Build with Make
         run: |
