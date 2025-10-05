@@ -93,6 +93,45 @@ make core
 ./7seg-file-player test.mp4 emulator-24x4
 ```
 
+## Recent changes (video scaling behavior)
+
+This project recently received fixes and improvements to the video scaling modes so behavior is consistent across orientations (horizontal/vertical) and between the real-device and emulator playback paths.
+
+- FIT (default): the entire video is scaled to fit inside the display's physical aspect ratio. Black padding (letterboxing/pillarboxing) will be added on the shorter axis. Internally we compute a display-shaped ROI based on the configured module layout and physical character dimensions, scale the source to fit into that ROI, and pass only the ROI downstream for sampling. This prevents accidental cropping or distortion.
+
+- CROP: the video is center-cropped to match the display's physical aspect ratio while preserving the source aspect ratio. After cropping the ROI is passed downstream without forcing a full W×H canvas resize, so the sampled region keeps correct proportions.
+
+- STRETCH: the video is resized non-uniformly to fill the display-shaped ROI (i.e. aspect ratio is not preserved). This intentionally distorts the video to use the full display area.
+
+These changes make the three modes behave predictably for combinations like horizontal video on vertical displays (FIT will letterbox, CROP will center-crop, STRETCH will distort to fill).
+
+## Debug logging
+
+A new runtime flag is available to enable extra debug output for scaling and ROI calculation.
+
+Usage:
+```bash
+# Enable debug output
+./bin/darwin-arm64/7seg-file-player <video> <config> --fit --debug
+
+# Short form
+./bin/darwin-arm64/7seg-file-player <video> <config> --fit -d
+```
+
+When enabled the player prints per-frame messages like:
+
+- [FIT] source_aspect=... display_aspect=... roi=(x,y,w,h) dst=(w,h)
+- [STRETCH] source_aspect=... display_aspect=... roi=(x,y,w,h)
+
+The debug flag is off by default so normal runs are quiet.
+
+## Notes for reviewers / maintainers
+
+- The playback code now avoids forcing a W×H resize for FIT/CROP/STRETCH; we pass an appropriately-shaped ROI to the sampling logic so `frame_to_grid` sees the correct proportions.
+- Debug prints are gated by the `--debug`/`-d` switch.
+- Some small cleanups were applied (unused variables removed, minor refactor of logging points).
+
+
 Tip
 - For streaming, we recommend the net player with OBS via FLV/TCP:
 	- [README.en.md](README.en.md) → "Send directly from OBS (FLV/TCP)"

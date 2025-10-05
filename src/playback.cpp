@@ -28,7 +28,7 @@ constexpr double SEG_L = 6.0;   // 横セグメント長さ
 constexpr double SEG_W = 2;   // セグメント幅
 constexpr double TILT = 10.0;   // degree
 constexpr double X_RANGE = 3.0;
-constexpr double Y_RANGE = 4.0;
+//constexpr double Y_RANGE = 4.0; // unused, removed to avoid warnings
 constexpr double SCALE = 8.0; // スケール値を調整
 
 inline int seg_x(double x) {
@@ -94,9 +94,7 @@ struct CachedDisplayLayout {
 
 SegmentLayout make_layout(int digit_idx, double package_center_x, double package_center_y) {
     // --- まず座標・補正量をすべて宣言 ---
-    double tilt_rad = TILT * CV_PI / 180.0;
-    double vlen = SEG_L * SCALE; // 横セグメント長さを縦セグメント高さとみなす
-    int tilt_dx = static_cast<int>(vlen/2 * std::tan(tilt_rad) + 0.5);
+    // tilt calculations not required in this implementation (previously unused)
     double digit_spacing = UNIT_W * SCALE;
     double dx = digit_idx * digit_spacing;
     double margin = 0.0; // 任意のマージン（mm単位）
@@ -236,7 +234,8 @@ void display_text_emulator(const std::vector<uint8_t>& grid, const DisplayConfig
 }
 
 // 共通の動画再生ロジック
-int play_video_stream(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
+int play_video_stream(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag, 
+                     ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug) {
     g_current_stop_flag = &stop_flag;
     stop_flag = false;
 
@@ -260,11 +259,6 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
     if (video_path == "-") {
         std::cout << "標準入力からビデオストリームを読み込みます..." << std::endl;
         // GStreamerパイプラインを使って標準入力(fd=0)から読み込む
-        //const std::string gst_pipeline = "fdsrc ! matroskademux ! videoconvert ! appsink";
-        //const std::string gst_pipeline = "fdsrc ! tsdemux ! videoconvert ! appsink";
-        // tsdemux と videoconvert の間に、avdec_h264 を追加
-        //const std::string gst_pipeline = "fdsrc ! tsdemux ! avdec_h264 ! videoconvert ! appsink";
-        //const std::string gst_pipeline = "fdsrc ! decodebin ! videoconvert ! appsink";
         const std::string gst_pipeline = 
              "fdsrc ! decodebin name=d "
             "d. ! queue ! videoconvert ! appsink "
@@ -314,24 +308,98 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
     while (!g_should_exit && !stop_flag && cap.read(frame)) {
         cv::Mat cropped_frame;
         float source_aspect = static_cast<float>(frame.cols) / frame.rows;
-        const float target_aspect = static_cast<float>(config.total_width) / config.total_height;
+        const float target_aspect = static_cast<float>(config.total_width * CHAR_WIDTH_MM) / (config.total_height * CHAR_HEIGHT_MM);
 
-        if (source_aspect > target_aspect) {
-            int new_width = static_cast<int>(frame.rows * target_aspect);
-            int x = (frame.cols - new_width) / 2;
-            cv::Rect crop_region(x, 0, new_width, frame.rows);
-            cropped_frame = frame(crop_region);
-        } else {
-            int new_height = static_cast<int>(frame.cols / target_aspect);
-            int y = (frame.rows - new_height) / 2;
-            cv::Rect crop_region(0, y, frame.cols, new_height);
-            cropped_frame = frame(crop_region);
+            if (scaling_mode == ScalingMode::CROP) {
+            // アスペクト比を維持してトリミング
+            if (source_aspect > target_aspect) {
+                int new_width = static_cast<int>(frame.rows * target_aspect);
+                int x = (frame.cols - new_width) / 2;
+                cv::Rect crop_region(x, 0, new_width, frame.rows);
+                cropped_frame = frame(crop_region);
+            } else {
+                int new_height = static_cast<int>(frame.cols / target_aspect);
+                int y = (frame.rows - new_height) / 2;
+                cv::Rect crop_region(0, y, frame.cols, new_height);
+                cropped_frame = frame(crop_region);
+            }
+        } else if (scaling_mode == ScalingMode::STRETCH) {
+            // アスペクト比を無視してディスプレイ領域いっぱいに表示する
+            // display の物理アスペクト比に合わせた ROI サイズを計算し、
+            // そのサイズに対して動画を非保持アスペクトでリサイズ（ストレッチ）して渡す。
+            const double display_aspect = (config.total_width * CHAR_WIDTH_MM) / (config.total_height * CHAR_HEIGHT_MM);
+            int roi_w, roi_h, roi_x, roi_y;
+            if (static_cast<double>(W) / static_cast<double>(H) > display_aspect) {
+                roi_h = H;
+                roi_w = std::max(1, static_cast<int>(std::round(roi_h * display_aspect)));
+                roi_x = (W - roi_w) / 2;
+                roi_y = 0;
+            } else {
+                roi_w = W;
+                roi_h = std::max(1, static_cast<int>(std::round(roi_w / display_aspect)));
+                roi_x = 0;
+                roi_y = (H - roi_h) / 2;
+            }
+            if (debug) std::cerr << "[STRETCH] source_aspect=" << source_aspect << " display_aspect=" << display_aspect
+                      << " roi=("<<roi_x<<","<<roi_y<<","<<roi_w<<","<<roi_h<<")\n";
+            cv::Mat stretched;
+            // 非アスペクト保持でリサイズ -> 結果は display の領域サイズ (roi_w x roi_h)
+            cv::resize(frame, stretched, cv::Size(roi_w, roi_h));
+            cropped_frame = stretched;
+            } else { // FIT
+            // アスペクト比を維持して全体を表示（余白可能）
+            // display の物理アスペクト比に合わせた ROI を W x H キャンバス上に作り、
+            // その ROI 内に動画をアスペクト比を保って FIT して中央に貼り付ける。
+            // 最後に ROI 部分だけを抜き出して次段に渡す（frame_to_grid が正しい割合で動作するようにする）。
+            const double display_aspect = (config.total_width * CHAR_WIDTH_MM) / (config.total_height * CHAR_HEIGHT_MM);
+
+            // W x H のキャンバス
+            cv::Mat fit_canvas = cv::Mat::zeros(H, W, frame.type());
+
+            // キャンバス上の ROI を決定
+            int roi_w, roi_h, roi_x, roi_y;
+            if (static_cast<double>(W) / static_cast<double>(H) > display_aspect) {
+                // キャンバスは表示より横長 -> ROI の高さを H に合わせる
+                roi_h = H;
+                roi_w = std::max(1, static_cast<int>(std::round(roi_h * display_aspect)));
+                roi_x = (W - roi_w) / 2;
+                roi_y = 0;
+            } else {
+                // キャンバスは表示より縦長 -> ROI の幅を W に合わせる
+                roi_w = W;
+                roi_h = std::max(1, static_cast<int>(std::round(roi_w / display_aspect)));
+                roi_x = 0;
+                roi_y = (H - roi_h) / 2;
+            }
+
+            // ROI 内に動画を FIT（縮小）して中央寄せ
+            double scale2 = std::min(static_cast<double>(roi_w) / frame.cols, static_cast<double>(roi_h) / frame.rows);
+            int dst_w = std::max(1, static_cast<int>(frame.cols * scale2 + 0.5));
+            int dst_h = std::max(1, static_cast<int>(frame.rows * scale2 + 0.5));
+            if (debug) std::cerr << "[FIT] source_aspect=" << source_aspect << " display_aspect=" << display_aspect
+                      << " roi=("<<roi_x<<","<<roi_y<<","<<roi_w<<","<<roi_h<<") dst=("<<dst_w<<","<<dst_h<<")\n";
+
+            cv::Mat scaled_frame;
+            cv::resize(frame, scaled_frame, cv::Size(dst_w, dst_h));
+            int paste_x = roi_x + (roi_w - dst_w) / 2;
+            int paste_y = roi_y + (roi_h - dst_h) / 2;
+            scaled_frame.copyTo(fit_canvas(cv::Rect(paste_x, paste_y, dst_w, dst_h)));
+
+            // 重要: ROI 部分だけを抜き出して渡す。これで frame_to_grid が期待通りの領域を扱う。
+            cropped_frame = fit_canvas(cv::Rect(roi_x, roi_y, roi_w, roi_h)).clone();
         }
 
         cv::Mat resized_frame, gray_frame, bw_frame;
-        cv::resize(cropped_frame, resized_frame, cv::Size(W, H));
+        // FIT/CROP は既にアスペクトを display に合わせた ROI を渡しているため、
+        // ここで無理に W x H にリサイズするとアスペクト比が崩れて潰れた表示になる。
+        // そのため FIT と CROP の場合はリサイズをスキップして、切り出した画像をそのまま渡す。
+        if (scaling_mode == ScalingMode::FIT || scaling_mode == ScalingMode::CROP || scaling_mode == ScalingMode::STRETCH) {
+            resized_frame = cropped_frame;
+        } else {
+            cv::resize(cropped_frame, resized_frame, cv::Size(W, H));
+        }
         cv::cvtColor(resized_frame, gray_frame, cv::COLOR_BGR2GRAY);
-        cv::threshold(gray_frame, bw_frame, 128, 255, cv::THRESH_BINARY);
+        cv::threshold(gray_frame, bw_frame, min_threshold, max_threshold, cv::THRESH_BINARY);
 
         std::vector<uint8_t> grid;
         frame_to_grid(bw_frame, config, grid);
@@ -373,7 +441,8 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
     return 0;
 }
 
-int play_video_stream_emulator(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag) {
+int play_video_stream_emulator(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag,
+                              ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug) {
     g_current_stop_flag = &stop_flag;
     stop_flag = false;
 
@@ -462,24 +531,93 @@ int play_video_stream_emulator(const std::string& video_path, const DisplayConfi
         
         cv::Mat cropped_frame;
         float source_aspect = static_cast<float>(frame.cols) / frame.rows;
-        const float target_aspect = static_cast<float>(config.total_width) / config.total_height;
+        const float target_aspect = static_cast<float>(config.total_width * CHAR_WIDTH_MM) / (config.total_height * CHAR_HEIGHT_MM);
 
-        if (source_aspect > target_aspect) {
-            int new_width = static_cast<int>(frame.rows * target_aspect);
-            int x = (frame.cols - new_width) / 2;
-            cv::Rect crop_region(x, 0, new_width, frame.rows);
-            cropped_frame = frame(crop_region);
-        } else {
-            int new_height = static_cast<int>(frame.cols / target_aspect);
-            int y = (frame.rows - new_height) / 2;
-            cv::Rect crop_region(0, y, frame.cols, new_height);
-            cropped_frame = frame(crop_region);
+            if (scaling_mode == ScalingMode::CROP) {
+            // アスペクト比を維持してトリミング
+            if (source_aspect > target_aspect) {
+                int new_width = static_cast<int>(frame.rows * target_aspect);
+                int x = (frame.cols - new_width) / 2;
+                cv::Rect crop_region(x, 0, new_width, frame.rows);
+                cropped_frame = frame(crop_region);
+            } else {
+                int new_height = static_cast<int>(frame.cols / target_aspect);
+                int y = (frame.rows - new_height) / 2;
+                cv::Rect crop_region(0, y, frame.cols, new_height);
+                cropped_frame = frame(crop_region);
+            }
+        } else if (scaling_mode == ScalingMode::STRETCH) {
+            // エミュレータ側でもストレッチは display の物理アスペクトに合わせて
+            const double display_aspect = (config.total_width * CHAR_WIDTH_MM) / (config.total_height * CHAR_HEIGHT_MM);
+            int roi_w, roi_h, roi_x, roi_y;
+            if (static_cast<double>(W) / static_cast<double>(H) > display_aspect) {
+                roi_h = H;
+                roi_w = std::max(1, static_cast<int>(std::round(roi_h * display_aspect)));
+                roi_x = (W - roi_w) / 2;
+                roi_y = 0;
+            } else {
+                roi_w = W;
+                roi_h = std::max(1, static_cast<int>(std::round(roi_w / display_aspect)));
+                roi_x = 0;
+                roi_y = (H - roi_h) / 2;
+            }
+            if (debug) std::cerr << "[STRETCH-emu] source_aspect=" << source_aspect << " display_aspect=" << display_aspect
+                      << " roi=("<<roi_x<<","<<roi_y<<","<<roi_w<<","<<roi_h<<")\n";
+            cv::Mat stretched;
+            cv::resize(frame, stretched, cv::Size(roi_w, roi_h));
+            cropped_frame = stretched;
+            } else { // FIT
+            // アスペクト比を維持して全体を表示（余白可能）
+            // display の物理アスペクト比に合わせた ROI を W x H キャンバス上に作り、
+            // その ROI 内に動画をアスペクト比を保って FIT して中央に貼り付ける。
+            const double display_aspect = (config.total_width * CHAR_WIDTH_MM) / (config.total_height * CHAR_HEIGHT_MM);
+
+            // W x H のキャンバス
+            cv::Mat fit_canvas = cv::Mat::zeros(H, W, frame.type());
+
+            // キャンバス上の ROI を決定
+            int roi_w, roi_h, roi_x, roi_y;
+            if (static_cast<double>(W) / static_cast<double>(H) > display_aspect) {
+                // キャンバスは表示より横長 -> ROI の高さを H に合わせる
+                roi_h = H;
+                roi_w = std::max(1, static_cast<int>(std::round(roi_h * display_aspect)));
+                roi_x = (W - roi_w) / 2;
+                roi_y = 0;
+            } else {
+                // キャンバスは表示より縦長 -> ROI の幅を W に合わせる
+                roi_w = W;
+                roi_h = std::max(1, static_cast<int>(std::round(roi_w / display_aspect)));
+                roi_x = 0;
+                roi_y = (H - roi_h) / 2;
+            }
+
+            // ROI 内に動画を FIT（縮小）して中央寄せ
+            double scale2 = std::min(static_cast<double>(roi_w) / frame.cols, static_cast<double>(roi_h) / frame.rows);
+            int dst_w = std::max(1, static_cast<int>(frame.cols * scale2 + 0.5));
+            int dst_h = std::max(1, static_cast<int>(frame.rows * scale2 + 0.5));
+            if (debug) std::cerr << "[FIT-emu] source_aspect=" << source_aspect << " display_aspect=" << display_aspect
+                      << " roi=("<<roi_x<<","<<roi_y<<","<<roi_w<<","<<roi_h<<") dst=("<<dst_w<<","<<dst_h<<")\n";
+            if (debug) std::cerr << "[FIT] source_aspect=" << source_aspect << " display_aspect=" << display_aspect
+                      << " roi=("<<roi_x<<","<<roi_y<<","<<roi_w<<","<<roi_h<<") dst=("<<dst_w<<","<<dst_h<<")\n";
+            cv::Mat scaled_frame;
+            cv::resize(frame, scaled_frame, cv::Size(dst_w, dst_h));
+            int paste_x = roi_x + (roi_w - dst_w) / 2;
+            int paste_y = roi_y + (roi_h - dst_h) / 2;
+            scaled_frame.copyTo(fit_canvas(cv::Rect(paste_x, paste_y, dst_w, dst_h)));
+
+            // 重要: ROI 部分だけを抜き出して渡す。これで frame_to_grid が期待通りの領域を扱う。
+            cropped_frame = fit_canvas(cv::Rect(roi_x, roi_y, roi_w, roi_h)).clone();
         }
 
         cv::Mat resized_frame, gray_frame, bw_frame;
-        cv::resize(cropped_frame, resized_frame, cv::Size(W, H));
+        // エミュレータ側も同様: FIT と CROP の場合は ROI のまま渡す
+        if (scaling_mode == ScalingMode::FIT || scaling_mode == ScalingMode::CROP || scaling_mode == ScalingMode::STRETCH) {
+            resized_frame = cropped_frame;
+        } else {
+            cv::resize(cropped_frame, resized_frame, cv::Size(W, H));
+        }
         cv::cvtColor(resized_frame, gray_frame, cv::COLOR_BGR2GRAY);
-        cv::threshold(gray_frame, bw_frame, 128, 255, cv::THRESH_BINARY);
+        cv::threshold(gray_frame, bw_frame, min_threshold, max_threshold, cv::THRESH_BINARY);
 
         std::vector<uint8_t> grid;
         frame_to_grid(bw_frame, config, grid);
