@@ -12,3 +12,11 @@ bin/
 *.swp
 *.swo
 *~
+
+# Local test media (do not commit large video files)
+test/
+*.mp4
+*.mov
+
+# KiCad cache / build artifacts
+hardware/**/fp-info-cache
