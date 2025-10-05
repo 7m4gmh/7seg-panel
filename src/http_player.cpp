@@ -153,8 +153,9 @@ int main(int argc, char* argv[]) {
     signal(SIGINT, http_player_shutdown_handler);
 
     return common_main_runner(usage, argc, argv,
-        [](const std::string& default_video_path, const DisplayConfig& config, ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug) {
+        [](const std::string& default_video_path, const DisplayConfig& config, ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug, bool loop) {
             (void)debug; // debug flag is provided by caller; not used in this lambda
+            (void)loop; // loop flag is not applicable to http_player
 
             // 画像処理パラメータを設定
             g_scaling_mode = scaling_mode;

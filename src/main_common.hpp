@@ -30,7 +30,7 @@ extern std::map<std::pair<int, int>, int> g_error_counts;
 // C++17の [[nodiscard]] 属性。戻り値を使わないと警告を出す。
 [[nodiscard]]
 bool parse_arguments(int argc, char* argv[], std::string& first_arg, std::string& config_name, 
-                    ScalingMode& scaling_mode, int& min_threshold, int& max_threshold, bool& debug) {
+                    ScalingMode& scaling_mode, int& min_threshold, int& max_threshold, bool& debug, bool& loop) {
     if (argc < 2) {
         return false;
     }
@@ -41,10 +41,15 @@ bool parse_arguments(int argc, char* argv[], std::string& first_arg, std::string
     max_threshold = 255; // デフォルト値
 
     debug = false;
+    loop = false;
     for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--debug" || arg == "-d") {
             debug = true;
+            continue;
+        }
+        if (arg == "--loop" || arg == "-l") {
+            loop = true;
             continue;
         }
         if (arg == "--stretch" || arg == "-s") {
@@ -84,8 +89,9 @@ int common_main_runner(const std::string& usage, int argc, char* argv[], PlayerL
     ScalingMode scaling_mode;
     int min_threshold, max_threshold;
     bool debug = false;
+    bool loop = false;
 
-    if (!parse_arguments(argc, argv, first_arg, config_name, scaling_mode, min_threshold, max_threshold, debug)) {
+    if (!parse_arguments(argc, argv, first_arg, config_name, scaling_mode, min_threshold, max_threshold, debug, loop)) {
         std::cerr << usage << std::endl;
         return 1;
     }
@@ -98,12 +104,13 @@ int common_main_runner(const std::string& usage, int argc, char* argv[], PlayerL
         else if (scaling_mode == ScalingMode::STRETCH) mode_str = "STRETCH";
         else if (scaling_mode == ScalingMode::FIT) mode_str = "FIT";
         std::cout << "Scaling mode: " << mode_str << std::endl;
-        std::cout << "Threshold: " << min_threshold << " - " << max_threshold << std::endl;
+    std::cout << "Threshold: " << min_threshold << " - " << max_threshold << std::endl;
+    std::cout << "Loop: " << (loop ? "YES" : "NO") << std::endl;
 
         setup_signal_handlers();
 
     // 各プレイヤー固有のロジックをここで実行
-    player_logic(first_arg, active_config, scaling_mode, min_threshold, max_threshold, debug);
+    player_logic(first_arg, active_config, scaling_mode, min_threshold, max_threshold, debug, loop);
 
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
