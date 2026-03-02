@@ -296,7 +296,12 @@
           ]
         }
       },
-    "4x4-direct": {
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 12,
+      "total_height": 8
+    },
+        "4x4-direct": {
       "name": "4x4 Grid (Direct Connection)",
       "buses": {
         "0": {
