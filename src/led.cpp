@@ -5,6 +5,7 @@
 #include <map>
 #include <cstring>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/ioctl.h>
 #ifndef __APPLE__
 #include <linux/i2c-dev.h>
@@ -194,8 +195,7 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
     (void)error_info_out;
     return true;
 #else
-    const int digits_per_module = config.module_digits_width * config.module_digits_height;
-    std::vector<uint8_t> module_data_buffer(digits_per_module);
+    (void)0; // placeholder to avoid unused warnings
     int global_row_offset = 0;
     int global_col_offset = 0;
 
@@ -227,30 +227,50 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
                     const int channel_grid_height = address_grid.size();
                     const int channel_grid_width = address_grid[0].size();
 
+                    // Precompute per-module widths/heights for this address grid
+                    std::vector<std::vector<int>> mod_widths(channel_grid_height, std::vector<int>(channel_grid_width));
+                    std::vector<std::vector<int>> mod_heights(channel_grid_height, std::vector<int>(channel_grid_width));
+                    for (int rr = 0; rr < channel_grid_height; ++rr) {
+                        for (int cc = 0; cc < channel_grid_width; ++cc) {
+                            int maddr = address_grid[rr][cc];
+                            auto [mw, mh] = config.module_size_for_address(maddr);
+                            mod_widths[rr][cc] = mw;
+                            mod_heights[rr][cc] = mh;
+                        }
+                    }
+
                     for (int grid_r = 0; grid_r < channel_grid_height; ++grid_r) {
                         for (int grid_c = 0; grid_c < channel_grid_width; ++grid_c) {
-                            //  データ準備のロジック  
                             int module_addr = address_grid[grid_r][grid_c];
-                            int module_start_col = col_offset + bus_col_offset + (grid_c * config.module_digits_width);
-                            int module_start_row = row_offset + bus_row_offset + (grid_r * config.module_digits_height);
+                            // compute start col by summing widths of previous modules in the same row
+                            int col_sum = 0;
+                            for (int pc = 0; pc < grid_c; ++pc) col_sum += mod_widths[grid_r][pc];
+                            int module_start_col = col_offset + bus_col_offset + col_sum;
+                            // compute start row by summing heights of previous rows at this column
+                            int row_sum = 0;
+                            for (int pr = 0; pr < grid_r; ++pr) row_sum += mod_heights[pr][grid_c];
+                            int module_start_row = row_offset + bus_row_offset + row_sum;
 
-                            for (int r_in_mod = 0; r_in_mod < config.module_digits_height; ++r_in_mod) {
-                                for (int c_in_mod = 0; c_in_mod < config.module_digits_width; ++c_in_mod) {
+                            int mod_w = mod_widths[grid_r][grid_c];
+                            int mod_h = mod_heights[grid_r][grid_c];
+                            std::vector<uint8_t> local_module_buffer(mod_w * mod_h);
+
+                            for (int r_in_mod = 0; r_in_mod < mod_h; ++r_in_mod) {
+                                for (int c_in_mod = 0; c_in_mod < mod_w; ++c_in_mod) {
                                     int total_grid_col = global_row_offset + module_start_col + c_in_mod;
                                     int total_grid_row = global_col_offset + module_start_row + r_in_mod;
                                     int grid_index = total_grid_row * config.total_width + total_grid_col;
-                                    int module_buffer_index = r_in_mod * config.module_digits_width + c_in_mod;
-                                    if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < module_data_buffer.size()) {
-                                        module_data_buffer[module_buffer_index] = grid[grid_index];
+                                    int module_buffer_index = r_in_mod * mod_w + c_in_mod;
+                                    if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < local_module_buffer.size()) {
+                                        local_module_buffer[module_buffer_index] = grid[grid_index];
                                     }
                                 }
                             }
 
-                            // ★変更★ update_module_from_grid の戻り値を確認
-                            if (!update_module_from_grid(i2c_fd, module_addr, module_data_buffer, error_info_out)) {
+                            if (!update_module_from_grid(i2c_fd, module_addr, local_module_buffer, error_info_out)) {
                                 fprintf(stderr, "Failed to update module at CH%d addr 0x%02X. Aborting update.\n", channel, module_addr);
                                 error_info_out.channel = channel; 
-                                return false; // エラーを伝播
+                                return false;
                             }
                         }
                     }
@@ -279,37 +299,65 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
                         fprintf(stderr, "DEBUG: Channel %d -> row_offset=%d, col_offset=%d\n", channel, channel_row_offset, channel_col_offset);
                     }
 
+                    // Precompute per-module widths/heights for this address grid
+                    std::vector<std::vector<int>> mod_widths(channel_grid_height, std::vector<int>(channel_grid_width));
+                    std::vector<std::vector<int>> mod_heights(channel_grid_height, std::vector<int>(channel_grid_width));
+                    for (int rr = 0; rr < channel_grid_height; ++rr) {
+                        for (int cc = 0; cc < channel_grid_width; ++cc) {
+                            int maddr = address_grid[rr][cc];
+                            auto [mw, mh] = config.module_size_for_address(maddr);
+                            mod_widths[rr][cc] = mw;
+                            mod_heights[rr][cc] = mh;
+                        }
+                    }
+
                     for (int grid_r = 0; grid_r < channel_grid_height; ++grid_r) {
                         for (int grid_c = 0; grid_c < channel_grid_width; ++grid_c) {
-                            //  データ準備のロジック  
                             int module_addr = address_grid[grid_r][grid_c];
-                            int module_start_col = channel_col_offset + bus_col_offset + (grid_c * config.module_digits_width);
-                            int module_start_row = channel_row_offset + bus_row_offset + (grid_r * config.module_digits_height);
+                            // compute start col by summing widths of previous modules in the same row
+                            int col_sum = 0;
+                            for (int pc = 0; pc < grid_c; ++pc) col_sum += mod_widths[grid_r][pc];
+                            int module_start_col = channel_col_offset + bus_col_offset + col_sum;
+                            // compute start row by summing heights of previous rows at this column
+                            int row_sum = 0;
+                            for (int pr = 0; pr < grid_r; ++pr) row_sum += mod_heights[pr][grid_c];
+                            int module_start_row = channel_row_offset + bus_row_offset + row_sum;
 
-                            for (int r_in_mod = 0; r_in_mod < config.module_digits_height; ++r_in_mod) {
-                                for (int c_in_mod = 0; c_in_mod < config.module_digits_width; ++c_in_mod) {
+                            int mod_w = mod_widths[grid_r][grid_c];
+                            int mod_h = mod_heights[grid_r][grid_c];
+                            std::vector<uint8_t> local_module_buffer(mod_w * mod_h);
+
+                            for (int r_in_mod = 0; r_in_mod < mod_h; ++r_in_mod) {
+                                for (int c_in_mod = 0; c_in_mod < mod_w; ++c_in_mod) {
                                     int total_grid_col = global_row_offset + module_start_col + c_in_mod;
                                     int total_grid_row = global_col_offset + module_start_row + r_in_mod;
                                     int grid_index = total_grid_row * config.total_width + total_grid_col;
-                                    int module_buffer_index = r_in_mod * config.module_digits_width + c_in_mod;
-                                    if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < module_data_buffer.size()) {
-                                        module_data_buffer[module_buffer_index] = grid[grid_index];
+                                    int module_buffer_index = r_in_mod * mod_w + c_in_mod;
+                                    if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < local_module_buffer.size()) {
+                                        local_module_buffer[module_buffer_index] = grid[grid_index];
                                     }
                                 }
                             }
 
-                            // ★変更★ update_module_from_grid の戻り値を確認
-                            if (!update_module_from_grid(i2c_fd, module_addr, module_data_buffer, error_info_out)) {
+                            if (!update_module_from_grid(i2c_fd, module_addr, local_module_buffer, error_info_out)) {
                                 fprintf(stderr, "Failed to update module at CH%d addr 0x%02X. Aborting update.\n", channel, module_addr);
                                 error_info_out.channel = channel; 
                                 return false; // エラーを伝播
                             }
                         }
                     }
-                    
-                    // ... (オフセット計算のロジックは変更なし) ...
-                    int channel_width_in_digits = channel_grid_width * config.module_digits_width;
-                    int channel_height_in_digits = channel_grid_height * config.module_digits_height;
+
+                    // compute channel width/height in digits by summing per-module sizes
+                    int channel_width_in_digits = 0;
+                    for (int cc = 0; cc < channel_grid_width; ++cc) {
+                        // assume top row's widths represent column widths
+                        channel_width_in_digits += mod_widths[0][cc];
+                    }
+                    int channel_height_in_digits = 0;
+                    for (int rr = 0; rr < channel_grid_height; ++rr) {
+                        // assume left column's heights represent row heights
+                        channel_height_in_digits += mod_heights[rr][0];
+                    }
                     if ((bus_col_offset + channel_width_in_digits) < config.total_width) {
                         bus_col_offset += channel_width_in_digits;
                     } else {

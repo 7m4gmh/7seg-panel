@@ -84,6 +84,28 @@ DisplayConfig load_config_from_json(const std::string& config_name, const std::s
     config.total_width = conf_json["total_width"];
     config.total_height = conf_json["total_height"];
 
+    // Optional: per-module size overrides
+    if (conf_json.contains("module_sizes")) {
+        for (const auto& [addr_str, size_json] : conf_json["module_sizes"].items()) {
+            int addr = 0;
+            try {
+                if (addr_str.rfind("0x", 0) == 0 || addr_str.rfind("0X", 0) == 0) {
+                    addr = std::stoi(addr_str, nullptr, 16);
+                } else {
+                    addr = std::stoi(addr_str);
+                }
+            } catch (...) {
+                // ignore invalid keys
+                continue;
+            }
+            if (size_json.is_array() && size_json.size() >= 2) {
+                int w = size_json[0];
+                int h = size_json[1];
+                config.module_sizes_by_address[addr] = {w, h};
+            }
+        }
+    }
+
     // C++版で使う物理寸法もJSONから読み込む
     CHAR_WIDTH_MM = data["char_width_mm"];
     CHAR_HEIGHT_MM = data["char_height_mm"];
