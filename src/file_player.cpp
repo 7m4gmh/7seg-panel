@@ -1,4 +1,5 @@
 #include "common.h"
+#include "led.h"
 #include "playback.h"
 #include "main_common.hpp" 
 #include <thread>   
@@ -51,6 +52,15 @@ int main(int argc, char* argv[]) {
             }
             
             // ここでの待ちは不要。playback ループは g_should_exit を見て終了する。
+
+            // 再生終了時に物理パネルを消灯する（エミュレータでは不要）
+            if (config.type != "emulator") {
+                if (!clear_all_displays(config)) {
+                    std::cerr << "Warning: failed to clear displays on exit." << std::endl;
+                } else {
+                    std::cerr << "Displays cleared on exit." << std::endl;
+                }
+            }
         }
     );
 }

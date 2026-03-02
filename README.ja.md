@@ -10,11 +10,9 @@
 
 ## 目次
 
+
 - [概要](#概要)
 - [主な機能](#主な機能)
-- [前提条件](#前提条件)
-- [ビルド方法](#ビルド方法)
-- [設定方法](#設定方法)
 - [使用方法](#使用方法)
   - [ファイルプレイヤー (7seg-file-player)](#ファイルプレイヤー-7seg-file-player)
   - [HTTPプレイヤー (7seg-http-player)](#httpプレイヤー-7seg-http-player)
@@ -26,20 +24,17 @@
 
 ## 主な機能
 
-- **多彩なプレイヤー**:
   - `7seg-file-player`: ローカルの動画ファイルを再生します。
-  - `7seg-http-player`: Web UIを提供し、動画のアップロード、キュー管理、再生制御が可能です。
-  - `7seg-udp-player`: UDPストリームを受信してリアルタイム表示します。
+    - `7seg-file-player`: ローカルの動画ファイルを再生します。動画のスケーリングモード（FIT, CROP, STRETCH）に対応。
+    - `7seg-http-player`: Web UIを提供し、動画のアップロード、キュー管理、再生制御が可能です。
+    - `7seg-udp-player`: UDPストリームを受信してリアルタイム表示します。
+
 - **柔軟なパネル構成**: `config.json`により、LEDモジュールの物理的な配置やI2Cアドレスを自由に定義できます。
-- **高度なI2Cエラー復旧**:
   - 通信エラーを自動で検知し、ディスプレイの再初期化を実行します。
   - 復旧処理が失敗した場合、成功するまで複数回リトライします。
 - **ハードウェア問題分析**: プログラム終了時(`Ctrl+C`)に、エラーが発生したI2Cチャンネルとアドレスごとの回数を集計・表示し、問題のあるハードウェア（モジュール、配線）の特定を支援します。
 - **Web UIによる遠隔操作** (`7seg-http-player`):
   - 動画ファイルのアップロード
-  - 再生キューの管理（追加・削除）
-  - 現在再生中の動画の停止
-  - 再生状況の確認
 
 ## 前提条件
 
@@ -49,10 +44,8 @@
 - **libSDL2** (`libsdl2-dev`) (オーディオ再生用)
 - **GStreamer** (標準入力からのストリーミング再生用)
 
+
 ## ビルド方法
-
-See [README.md](README.md)
-
 ## 設定方法
 
 `config.json`ファイルを編集して、お使いのLEDパネルのハードウェア構成を定義します。
@@ -65,8 +58,6 @@ See [README.md](README.md)
     "16x16_expanded": {
       "tca9548a_address": 119,
       "total_width": 16,
-      "total_height": 16,
-      "module_digits_width": 16,
       "module_digits_height": 4,
       "channel_grids": {
         "0": [
@@ -94,6 +85,12 @@ See [README.md](README.md)
 ./7seg-file-player <動画ファイルのパス> [設定名]
 ```
 例: `./7seg-file-player ./videos/my_video.mp4 16x16_expanded`
+
+オプション例:
+- FIT（デフォルト）: `./7seg-file-player ./videos/my_video.mp4 16x16_expanded --fit`
+- CROP: `./7seg-file-player ./videos/my_video.mp4 16x16_expanded --crop`
+- STRETCH: `./7seg-file-player ./videos/my_video.mp4 16x16_expanded --stretch`
+（オプションを省略した場合はFITが適用されます）
 
 ### HTTPプレイヤー (`7seg-http-player`)
 

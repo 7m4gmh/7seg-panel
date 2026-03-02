@@ -331,3 +331,81 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
 #endif
 }
 
+
+// 全モジュールを消灯する実装
+bool clear_all_displays(const DisplayConfig& config) {
+#ifdef __APPLE__
+    (void)config;
+    return true;
+#else
+    int fd = -1;
+    // config からバスを選択して/dev/i2c-N を開く（common.cpp の open_i2c_auto と同様）
+    if (!config.buses.empty()) {
+        int bus_id = config.buses.begin()->first;
+        std::string dev = "/dev/i2c-" + std::to_string(bus_id);
+        fd = open(dev.c_str(), O_RDWR);
+        if (fd >= 0) {
+            std::cerr << "[I2C] using device: " << dev << std::endl;
+        } else {
+            std::cerr << "[I2C] Failed to open configured bus " << bus_id << ": " << dev << std::endl;
+        }
+    }
+    if (fd < 0) {
+        const char* cands[] = {"/dev/i2c-0", "/dev/i2c-1"};
+        for (auto dev : cands) {
+            fd = open(dev, O_RDWR);
+            if (fd >= 0) {
+                std::cerr << "[I2C] using device: " << dev << " (fallback)" << std::endl;
+                break;
+            }
+        }
+    }
+    if (fd < 0) {
+        perror("[I2C] clear_all_displays: open failed");
+        return false;
+    }
+
+    I2CErrorInfo dummy;
+    // 全モジュールに対して0表示を書き込む
+    for (const auto& [bus_id, bus_config] : config.buses) {
+        for (const auto& tca : bus_config.tca9548as) {
+            bool use_tca = (tca.address != -1);
+            for (const auto& [channel, address_grid] : tca.channels) {
+                if (use_tca) {
+                    if (!select_i2c_channel(fd, tca.address, channel, dummy)) {
+                        std::cerr << "ERROR: Failed to select channel " << channel << " on TCA 0x" << std::hex << tca.address << std::dec << std::endl;
+                        // 続行は試みるがエラーを記録
+                    }
+                }
+
+                for (const auto& row : address_grid) {
+                    for (int addr : row) {
+                        if (ioctl(fd, I2C_SLAVE, addr) < 0) {
+                            perror("ioctl I2C_SLAVE failed during clear_all_displays");
+                            continue;
+                        }
+                        uint8_t buf[17];
+                        buf[0] = 0x00; // register 0x00
+                        memset(buf + 1, 0x00, 16);
+                        if (write(fd, buf, 17) != 17) {
+                            fprintf(stderr, "ERROR: Failed to write clear data to module at address 0x%02X\n", addr);
+                            perror(" -> i2c write");
+                        }
+                        usleep(1000);
+                    }
+                }
+            }
+            if (use_tca) {
+                // 全チャンネルを無効化
+                if (!select_i2c_channel(fd, tca.address, -1, dummy)) {
+                    std::cerr << "ERROR [clear]: Failed to disable all channels on TCA9548A 0x" << std::hex << tca.address << std::dec << std::endl;
+                }
+            }
+        }
+    }
+
+    close(fd);
+    return true;
+#endif
+}
+

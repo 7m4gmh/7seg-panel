@@ -53,11 +53,11 @@ How to build
 - Use the grouped targets below as needed.
 
 Common targets
-```bash
-# Show available targets (default)
-make
 
-# Non-GStreamer players only: udp/file/http
+```bash
+
+# Show available targets (default)
+
 make core
 
 # GStreamer-based tools: http-streamer / rtp-player
@@ -70,10 +70,8 @@ make rtp        # 7seg-rtp-player
 # Everything
 make all
 
-# Cleanup
-make clean
-```
 
+# Cleanup
 ### macOS Emulator Support
 The project includes macOS emulator support for development and testing without physical hardware:
 - Automatically detects macOS and uses emulator mode

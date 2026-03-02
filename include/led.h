@@ -16,3 +16,6 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
 void reset_i2c_channel_cache();
 
 bool select_i2c_channel(int i2c_fd, int expander_addr, int channel, I2CErrorInfo& error_info_out);
+
+// 全モジュールを消灯する（終了時に呼ぶ）
+bool clear_all_displays(const DisplayConfig& config);
