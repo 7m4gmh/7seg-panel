@@ -296,10 +296,26 @@
           ]
         }
       },
+    "4x4-direct": {
+      "name": "4x4 Grid (Direct Connection)",
+      "buses": {
+        "0": {
+          "tca9548as": [
+            {
+              "address": null,
+              "channels": {
+                "-1": [
+                  ["0x70"]
+                ]
+              }
+            }
+          ]
+        }
+      },
       "module_digits_width": 4,
       "module_digits_height": 4,
-      "total_width": 12,
-      "total_height": 8
+      "total_width": 4,
+      "total_height": 4
     },
     "emulator-24x4": {
       "name": "24x4 Emulator",
