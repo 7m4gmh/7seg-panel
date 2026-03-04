@@ -122,6 +122,22 @@ def clear_display(bus, addr):
         pass
 
 
+def light_local_column(bus, addr, local_c):
+    """Light a single local column (0..7) on HT16K33-driven 8x8 module.
+
+    This uses the common mapping where display RAM stores column patterns
+    at even addresses: buffer[0], buffer[2], ..., buffer[14] correspond
+    to columns 0..7.
+    """
+    buf = [0x00] * 16
+    idx = (local_c % 8) * 2
+    buf[idx] = 0xFF
+    try:
+        bus.write_i2c_block_data(addr, 0x00, buf)
+    except Exception:
+        pass
+
+
 def live_sequence(conf, mapping, duration=0.5, busnum=1):
     try:
         from smbus2 import SMBus
@@ -142,12 +158,13 @@ def live_sequence(conf, mapping, duration=0.5, busnum=1):
                     # still flash again for visibility
                     pass
                 print(f'Lighting logical ({r},{c}) -> addr={addr}')
-                init_ht16k33(bus, int(addr, 16))
-                fill_display_all(bus, int(addr, 16))
+                a = int(addr, 16)
+                init_ht16k33(bus, a)
+                light_local_column(bus, a, lc)
                 import time
                 time.sleep(duration)
-                clear_display(bus, int(addr, 16))
-                time.sleep(0.1)
+                clear_display(bus, a)
+                time.sleep(0.05)
                 seen.add(addr)
 
 
