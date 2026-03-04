@@ -22,6 +22,13 @@ Note (platform): Developed and tested primarily on Radxa ROCK 5B. It may also wo
 
 ---
 
+**Module Mapping (モジュールマッピング)**
+
+You can define per-module physical mappings in `config.json` to accommodate different wiring or digit order of hardware modules. Use a simple column-reversal flag (`module_column_reverse`) or an explicit logical→physical index map (`module_index_map`). See `docs/module-mapping.md` for details and examples.
+
+ハードウェア毎に桁順や配線が異なる場合、`config.json` でモジュール単位のマッピングを定義できます。簡易的に列方向を反転する `module_column_reverse`（真偽値）を使うか、論理インデックス（左上から行優先）からモジュール内の物理インデックスへ明示的に変換する `module_index_map`（配列）を定義してください。優先順位は `module_index_map` → `module_column_reverse` → 既定順（row-major）です。詳しい書き方とテスト手順は `docs/module-mapping.md` を参照してください。
+
+
 [![デモ動画](./docs/7seg-output_hq.gif)](https://www.instagram.com/reel/DOIo3QTEZs0/?utm_source=ig_web_button_share_sheet)
 
 
