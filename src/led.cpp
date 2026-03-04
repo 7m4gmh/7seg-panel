@@ -260,10 +260,17 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
                                     int total_grid_col = global_col_offset + module_start_col + c_in_mod;
                                     int total_grid_row = global_row_offset + module_start_row + r_in_mod;
                                     int grid_index = total_grid_row * config.total_width + total_grid_col;
-                                    int use_c = c_in_mod;
-                                    bool reverse_cols = config.module_columns_reversed(module_addr);
-                                    if (reverse_cols) use_c = (mod_w - 1 - c_in_mod);
-                                    int module_buffer_index = r_in_mod * mod_w + use_c;
+                                    int logical_idx = r_in_mod * mod_w + c_in_mod;
+                                    const std::vector<int>* idx_map = config.module_index_map_for_address(module_addr);
+                                    int module_buffer_index = logical_idx;
+                                    if (idx_map && static_cast<int>(idx_map->size()) == mod_w * mod_h) {
+                                        module_buffer_index = (*idx_map)[logical_idx];
+                                    } else {
+                                        int use_c = c_in_mod;
+                                        bool reverse_cols = config.module_columns_reversed(module_addr);
+                                        if (reverse_cols) use_c = (mod_w - 1 - c_in_mod);
+                                        module_buffer_index = r_in_mod * mod_w + use_c;
+                                    }
                                     if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < local_module_buffer.size()) {
                                         local_module_buffer[module_buffer_index] = grid[grid_index];
                                     }
@@ -335,12 +342,19 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
                                     int total_grid_col = global_col_offset + module_start_col + c_in_mod;
                                     int total_grid_row = global_row_offset + module_start_row + r_in_mod;
                                     int grid_index = total_grid_row * config.total_width + total_grid_col;
-                                    int use_c = c_in_mod;
-                                    bool reverse_cols = config.module_columns_reversed(module_addr);
-                                    if (reverse_cols) use_c = (mod_w - 1 - c_in_mod);
-                                    int module_buffer_index = r_in_mod * mod_w + use_c;
-                                    if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < local_module_buffer.size()) {
-                                        local_module_buffer[module_buffer_index] = grid[grid_index];
+                                    int logical_idx = r_in_mod * mod_w + c_in_mod;
+                                    const std::vector<int>* idx_map2 = config.module_index_map_for_address(module_addr);
+                                    int module_buffer_index2 = logical_idx;
+                                    if (idx_map2 && static_cast<int>(idx_map2->size()) == mod_w * mod_h) {
+                                        module_buffer_index2 = (*idx_map2)[logical_idx];
+                                    } else {
+                                        int use_c = c_in_mod;
+                                        bool reverse_cols = config.module_columns_reversed(module_addr);
+                                        if (reverse_cols) use_c = (mod_w - 1 - c_in_mod);
+                                        module_buffer_index2 = r_in_mod * mod_w + use_c;
+                                    }
+                                    if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index2) < local_module_buffer.size()) {
+                                        local_module_buffer[module_buffer_index2] = grid[grid_index];
                                     }
                                 }
                             }

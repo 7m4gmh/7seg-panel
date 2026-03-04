@@ -390,6 +390,31 @@
             "0x71": true
           }
         },
+        "8x2-direct-map": {
+          "name": "8x2 Grid Mapped (Direct I2C)",
+          "buses": {
+            "0": {
+              "tca9548as": [
+                {
+                  "address": null,
+                  "channels": {
+                    "-1": [
+                      ["0x70", "0x71"]
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "module_digits_width": 8,
+          "module_digits_height": 2,
+          "total_width": 16,
+          "total_height": 2,
+          "module_index_map": {
+            "0x70": [6,7,4,5,2,3,0,1,14,15,12,13,10,11,8,9],
+            "0x71": [6,7,4,5,2,3,0,1,14,15,12,13,10,11,8,9]
+          }
+        },
         "8x4-direct": {
           "name": "8x4 Grid (Direct Connection, 2x 8x2 modules)",
           "buses": {

@@ -38,6 +38,10 @@ struct DisplayConfig {
     // Optional: per-module column-order reversal flag by module I2C address
     // key: module address (int), value: true if module columns should be reversed
     std::map<int,bool> module_column_reverse;
+    // Optional: per-module explicit index mapping (linear index mapping)
+    // key: module address (int), value: array of length (module_width*module_height)
+    // mapping[logical_index] = physical_index
+    std::map<int,std::vector<int>> module_index_map;
 
     int total_digits() const { return total_width * total_height; }
 
@@ -53,6 +57,12 @@ struct DisplayConfig {
         auto it = module_column_reverse.find(addr);
         if (it != module_column_reverse.end()) return it->second;
         return false;
+    }
+
+    const std::vector<int>* module_index_map_for_address(int addr) const {
+        auto it = module_index_map.find(addr);
+        if (it != module_index_map.end()) return &it->second;
+        return nullptr;
     }
 
     std::vector<int> all_addresses() const {

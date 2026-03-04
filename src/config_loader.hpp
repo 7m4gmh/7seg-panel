@@ -125,6 +125,28 @@ DisplayConfig load_config_from_json(const std::string& config_name, const std::s
         }
     }
 
+    // Optional: per-module explicit index mapping
+    if (conf_json.contains("module_index_map")) {
+        for (const auto& [addr_str, arr] : conf_json["module_index_map"].items()) {
+            int addr = 0;
+            try {
+                if (addr_str.rfind("0x", 0) == 0 || addr_str.rfind("0X", 0) == 0) {
+                    addr = std::stoi(addr_str, nullptr, 16);
+                } else {
+                    addr = std::stoi(addr_str);
+                }
+            } catch (...) {
+                continue;
+            }
+            if (!arr.is_array()) continue;
+            std::vector<int> v;
+            for (const auto& el : arr) {
+                try { v.push_back(el.get<int>()); } catch(...) { v.push_back(0); }
+            }
+            config.module_index_map[addr] = v;
+        }
+    }
+
     // C++版で使う物理寸法もJSONから読み込む
     CHAR_WIDTH_MM = data["char_width_mm"];
     CHAR_HEIGHT_MM = data["char_height_mm"];
