@@ -35,6 +35,9 @@ struct DisplayConfig {
     // Optional: per-module digit size override by module I2C address
     // key: module address (int), value: pair(width, height)
     std::map<int, std::pair<int,int>> module_sizes_by_address;
+    // Optional: per-module column-order reversal flag by module I2C address
+    // key: module address (int), value: true if module columns should be reversed
+    std::map<int,bool> module_column_reverse;
 
     int total_digits() const { return total_width * total_height; }
 
@@ -44,6 +47,12 @@ struct DisplayConfig {
         auto it = module_sizes_by_address.find(addr);
         if (it != module_sizes_by_address.end()) return it->second;
         return { module_digits_width, module_digits_height };
+    }
+
+    bool module_columns_reversed(int addr) const {
+        auto it = module_column_reverse.find(addr);
+        if (it != module_column_reverse.end()) return it->second;
+        return false;
     }
 
     std::vector<int> all_addresses() const {

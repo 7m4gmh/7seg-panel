@@ -106,6 +106,25 @@ DisplayConfig load_config_from_json(const std::string& config_name, const std::s
         }
     }
 
+    // Optional: per-module column reversal flags
+    if (conf_json.contains("module_column_reverse")) {
+        for (const auto& [addr_str, val] : conf_json["module_column_reverse"].items()) {
+            int addr = 0;
+            try {
+                if (addr_str.rfind("0x", 0) == 0 || addr_str.rfind("0X", 0) == 0) {
+                    addr = std::stoi(addr_str, nullptr, 16);
+                } else {
+                    addr = std::stoi(addr_str);
+                }
+            } catch (...) {
+                continue;
+            }
+            bool b = false;
+            try { b = static_cast<bool>(val.get<bool>()); } catch(...) { b = false; }
+            config.module_column_reverse[addr] = b;
+        }
+    }
+
     // C++版で使う物理寸法もJSONから読み込む
     CHAR_WIDTH_MM = data["char_width_mm"];
     CHAR_HEIGHT_MM = data["char_height_mm"];
