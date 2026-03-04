@@ -257,8 +257,8 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
 
                             for (int r_in_mod = 0; r_in_mod < mod_h; ++r_in_mod) {
                                 for (int c_in_mod = 0; c_in_mod < mod_w; ++c_in_mod) {
-                                    int total_grid_col = global_row_offset + module_start_col + c_in_mod;
-                                    int total_grid_row = global_col_offset + module_start_row + r_in_mod;
+                                    int total_grid_col = global_col_offset + module_start_col + c_in_mod;
+                                    int total_grid_row = global_row_offset + module_start_row + r_in_mod;
                                     int grid_index = total_grid_row * config.total_width + total_grid_col;
                                     int module_buffer_index = r_in_mod * mod_w + c_in_mod;
                                     if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < local_module_buffer.size()) {
@@ -329,8 +329,8 @@ bool update_flexible_display(int i2c_fd, const DisplayConfig& config, const std:
 
                             for (int r_in_mod = 0; r_in_mod < mod_h; ++r_in_mod) {
                                 for (int c_in_mod = 0; c_in_mod < mod_w; ++c_in_mod) {
-                                    int total_grid_col = global_row_offset + module_start_col + c_in_mod;
-                                    int total_grid_row = global_col_offset + module_start_row + r_in_mod;
+                                    int total_grid_col = global_col_offset + module_start_col + c_in_mod;
+                                    int total_grid_row = global_row_offset + module_start_row + r_in_mod;
                                     int grid_index = total_grid_row * config.total_width + total_grid_col;
                                     int module_buffer_index = r_in_mod * mod_w + c_in_mod;
                                     if (static_cast<size_t>(grid_index) < grid.size() && static_cast<size_t>(module_buffer_index) < local_module_buffer.size()) {
