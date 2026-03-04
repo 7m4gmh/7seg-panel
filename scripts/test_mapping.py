@@ -97,12 +97,69 @@ def simulate_cycle(conf, blocks, mapping, swap_addrs=None):
             print(f"  addr={a[0]}, local_r={a[1]}, local_c={a[2]}")
 
 
+def init_ht16k33(bus, addr):
+    try:
+        bus.write_byte(addr, 0x21)
+        bus.write_byte(addr, 0x81)
+        bus.write_byte(addr, 0xE0 | 15)
+    except Exception:
+        pass
+
+
+def fill_display_all(bus, addr):
+    data = [0xFF] * 16
+    try:
+        bus.write_i2c_block_data(addr, 0x00, data)
+    except Exception:
+        pass
+
+
+def clear_display(bus, addr):
+    data = [0x00] * 16
+    try:
+        bus.write_i2c_block_data(addr, 0x00, data)
+    except Exception:
+        pass
+
+
+def live_sequence(conf, mapping, duration=0.5, busnum=1):
+    try:
+        from smbus2 import SMBus
+    except Exception as e:
+        raise SystemExit('smbus2 required for --live mode. Install with: pip3 install smbus2')
+
+    total_w = conf['total_width']
+    total_h = conf['total_height']
+
+    seen = set()
+    with SMBus(busnum) as bus:
+        for r in range(total_h):
+            for c in range(total_w):
+                addr, lr, lc = mapping[(r, c)]
+                if addr is None:
+                    continue
+                if addr in seen:
+                    # still flash again for visibility
+                    pass
+                print(f'Lighting logical ({r},{c}) -> addr={addr}')
+                init_ht16k33(bus, int(addr, 16))
+                fill_display_all(bus, int(addr, 16))
+                import time
+                time.sleep(duration)
+                clear_display(bus, int(addr, 16))
+                time.sleep(0.1)
+                seen.add(addr)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--config', default='config.json')
     p.add_argument('--name', default='8x2-direct')
     p.add_argument('--cycle', action='store_true', help='Cycle columns and print mapping')
     p.add_argument('--swap', nargs='*', help='List of module addresses to reverse column order for (e.g. 0x70)')
+    p.add_argument('--live', action='store_true', help='Drive actual I2C devices to light modules sequentially')
+    p.add_argument('--duration', type=float, default=0.6, help='Duration per lit module in seconds for --live')
+    p.add_argument('--bus', type=int, default=1, help='I2C bus number for --live')
     args = p.parse_args()
 
     cfg_path = Path(args.config)
@@ -115,6 +172,8 @@ def main():
     print_mapping(conf, blocks, mapping)
     if args.cycle:
         simulate_cycle(conf, blocks, mapping, swap_addrs=set(args.swap or []))
+    if args.live:
+        live_sequence(conf, mapping, duration=args.duration, busnum=args.bus)
 
 
 if __name__ == '__main__':
