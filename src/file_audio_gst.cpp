@@ -35,7 +35,7 @@ bool file_audio_start(const std::string& filepath) {
     std::string desc =
         "filesrc location=\"" + filepath + "\" ! decodebin name=d "
         "d. ! queue ! audioconvert ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! "
-        "appsink name=asink emit-signals=true sync=true max-buffers=64 drop=false";
+            "appsink name=asink emit-signals=true sync=true max-buffers=4 drop=true";
 
     GError* err = nullptr;
     g_pipeline = gst_parse_launch(desc.c_str(), &err);
@@ -57,36 +57,45 @@ bool file_audio_start(const std::string& filepath) {
     g_signal_connect(asink, "new-sample", G_CALLBACK(on_new_sample), nullptr);
 
     g_run = true;
-    g_loop_thread = std::thread([]{
-        GstBus* bus = gst_element_get_bus(g_pipeline);
+        // Try to start playback and wait for preroll to reduce startup latency
         gst_element_set_state(g_pipeline, GST_STATE_PLAYING);
-        while (g_run) {
-            GstMessage* msg = gst_bus_timed_pop_filtered(bus, 100 * GST_MSECOND,
-                (GstMessageType)(GST_MESSAGE_ERROR | GST_MESSAGE_EOS));
-            if (!msg) continue;
-            switch (GST_MESSAGE_TYPE(msg)) {
-                case GST_MESSAGE_ERROR: {
-                    GError* e; gchar* dbg;
-                    gst_message_parse_error(msg, &e, &dbg);
-                    std::cerr << "[file-audio] ERROR: " << (e?e->message:"?") << std::endl;
-                    if (dbg) {
-                        g_free(dbg);
-                    }
-                    if (e) {
-                        g_error_free(e);
-                    }
-                    g_run = false;
-                    break;
-                }
-                case GST_MESSAGE_EOS:
-                    g_run = false; break;
-                default: break;
-            }
-            gst_message_unref(msg);
+        GstStateChangeReturn sret = gst_element_get_state(g_pipeline, nullptr, nullptr, 2 * GST_SECOND);
+        if (sret == GST_STATE_CHANGE_FAILURE) {
+            std::cerr << "[file-audio] failed to set pipeline to PLAYING" << std::endl;
+            gst_object_unref(g_pipeline);
+            g_pipeline = nullptr;
+            return false;
         }
-        gst_element_set_state(g_pipeline, GST_STATE_NULL);
-        gst_object_unref(bus);
-    });
+
+        g_loop_thread = std::thread([]{
+            GstBus* bus = gst_element_get_bus(g_pipeline);
+            while (g_run) {
+                GstMessage* msg = gst_bus_timed_pop_filtered(bus, 100 * GST_MSECOND,
+                    (GstMessageType)(GST_MESSAGE_ERROR | GST_MESSAGE_EOS));
+                if (!msg) continue;
+                switch (GST_MESSAGE_TYPE(msg)) {
+                    case GST_MESSAGE_ERROR: {
+                        GError* e; gchar* dbg;
+                        gst_message_parse_error(msg, &e, &dbg);
+                        std::cerr << "[file-audio] ERROR: " << (e?e->message:"?") << std::endl;
+                        if (dbg) {
+                            g_free(dbg);
+                        }
+                        if (e) {
+                            g_error_free(e);
+                        }
+                        g_run = false;
+                        break;
+                    }
+                    case GST_MESSAGE_EOS:
+                        g_run = false; break;
+                    default: break;
+                }
+                gst_message_unref(msg);
+            }
+            gst_element_set_state(g_pipeline, GST_STATE_NULL);
+            gst_object_unref(bus);
+        });
 
     return true;
 }
