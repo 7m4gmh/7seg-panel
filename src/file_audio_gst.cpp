@@ -35,7 +35,7 @@ bool file_audio_start(const std::string& filepath) {
     std::string desc =
         "filesrc location=\"" + filepath + "\" ! decodebin name=d "
         "d. ! queue ! audioconvert ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! "
-        "appsink name=asink emit-signals=true sync=false max-buffers=64 drop=false";
+        "appsink name=asink emit-signals=true sync=true max-buffers=64 drop=false";
 
     GError* err = nullptr;
     g_pipeline = gst_parse_launch(desc.c_str(), &err);
