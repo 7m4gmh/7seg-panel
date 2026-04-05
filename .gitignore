@@ -21,3 +21,4 @@ test/
 
 # KiCad cache / build artifacts
 hardware/**/fp-info-cache
+**/.history/
