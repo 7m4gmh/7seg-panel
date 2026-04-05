@@ -317,7 +317,11 @@ def apply_grid_to_modules(bus: SMBus, layout: dict, grid: list[int], error_on_fa
 
                     for grid_r in range(channel_grid_height):
                         for grid_c in range(channel_grid_width):
-                            module_addr = address_grid[grid_r][grid_c]
+                            module_addr_raw = address_grid[grid_r][grid_c]
+                            try:
+                                module_addr = parse_hex(module_addr_raw) if isinstance(module_addr_raw, str) else int(module_addr_raw)
+                            except Exception:
+                                module_addr = module_addr_raw
                             col_sum = sum(mod_widths[grid_r][pc] for pc in range(grid_c))
                             module_start_col = col_offset + col_sum
                             row_sum = sum(mod_heights[pr][grid_c] for pr in range(grid_r))
@@ -384,7 +388,11 @@ def apply_grid_to_modules(bus: SMBus, layout: dict, grid: list[int], error_on_fa
                     bus_row_offset = 0
                     for grid_r in range(channel_grid_height):
                         for grid_c in range(channel_grid_width):
-                            module_addr = address_grid[grid_r][grid_c]
+                            module_addr_raw = address_grid[grid_r][grid_c]
+                            try:
+                                module_addr = parse_hex(module_addr_raw) if isinstance(module_addr_raw, str) else int(module_addr_raw)
+                            except Exception:
+                                module_addr = module_addr_raw
                             col_sum = sum(mod_widths[grid_r][pc] for pc in range(grid_c))
                             module_start_col = channel_col_offset + bus_col_offset + col_sum
                             row_sum = sum(mod_heights[pr][grid_c] for pr in range(grid_r))
