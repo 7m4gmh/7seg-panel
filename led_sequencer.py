@@ -127,8 +127,7 @@ def main() -> None:
             bus.close()
 
 
-if __name__ == "__main__":
-    main()
+# `main()` をファイル末尾で呼び出します（helper 関数定義の後）
 
 
 def parse_hex(s: str) -> int:
@@ -423,4 +422,8 @@ def apply_grid_to_modules(bus: SMBus, layout: dict, grid: list[int], error_on_fa
                                 bus_col_offset = 0
                                 bus_row_offset += channel_height_in_digits
     return True
+
+
+if __name__ == "__main__":
+    main()
 
