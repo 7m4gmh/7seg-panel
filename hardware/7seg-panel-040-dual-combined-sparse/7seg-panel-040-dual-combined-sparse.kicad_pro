@@ -498,7 +498,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "7seg-panel-040-display-dual-wide.kicad_pro",
+    "filename": "7seg-panel-040-dual-combined-sparse.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -731,18 +731,18 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "7seg-panel-040-display-dual-wide.kicad_sch",
-        "name": "7seg-panel-040-display-dual-wide",
+        "filename": "7seg-panel-040-dual-combined-sparse.kicad_sch",
+        "name": "7seg-panel-040-dual-combined-sparse",
         "uuid": "f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
       }
     ],
-    "used_designators": "H107-108",
+    "used_designators": "",
     "variants": []
   },
   "sheets": [
     [
       "f15a2eb9-fdcc-4981-acd3-42a966d94cc8",
-      "7seg-panel-040-display-dual-wide"
+      "7seg-panel-040-dual-combined-sparse"
     ]
   ],
   "text_variables": {},
