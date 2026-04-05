@@ -24,7 +24,7 @@ except Exception:
     SMBus = None
 
 
-SEGMENTS = ["A", "B", "C", "D", "E", "F", "G"]
+SEGMENTS = ["A", "B", "C", "D", "E", "F", "G", "DP"]
 
 
 def load_config(path: str) -> dict:
@@ -104,9 +104,11 @@ def main() -> None:
                         print(f"{ts} - Digit #{idx} (row={r},col={c}) SEG {seg} ON")
                     else:
                         seg_bit = segment_name_to_bit(seg)
-                        # write same segment bit to all modules (matches many existing test scripts)
-                        write_segment_to_all(bus, modules, seg_bit)
-                        print(f"{ts} - SEG {seg} -> i2c write 0x{seg_bit:02X} to {len(modules)} modules")
+                        # build full-grid where only this digit has the seg_bit set
+                        grid = [0] * len(digits)
+                        grid[idx] = seg_bit
+                        ok = apply_grid_to_modules(bus, layout, grid, error_on_fail=False)
+                        print(f"{ts} - Digit #{idx} SEG {seg} -> i2c grid write seg=0x{seg_bit:02X} ok={ok}")
                     time.sleep(delay)
 
             # Phase 2: one digit at a time all segments ON (others OFF)
@@ -115,9 +117,11 @@ def main() -> None:
                 if mode == "print":
                     print(f"{ts} - Digit #{idx} (row={r},col={c}) ALL SEGMENTS ON")
                 else:
-                    # a..g bits = 0x7F
-                    write_segment_to_all(bus, modules, 0x7F)
-                    print(f"{ts} - ALL SEGMENTS ON -> i2c write 0x7F to {len(modules)} modules")
+                    # a..g + dp bits = 0xFF
+                    grid = [0] * len(digits)
+                    grid[idx] = 0xFF
+                    ok = apply_grid_to_modules(bus, layout, grid, error_on_fail=False)
+                    print(f"{ts} - Digit #{idx} ALL SEGMENTS ON -> i2c grid write ok={ok}")
                 time.sleep(delay)
 
     except KeyboardInterrupt:
