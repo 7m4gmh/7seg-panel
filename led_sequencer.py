@@ -383,6 +383,12 @@ def apply_grid_to_modules(bus: SMBus, layout: dict, grid: list[int], error_on_fa
                                         module_buffer_index = r_in_mod * mod_w + use_c
                                     if 0 <= grid_index < len(grid) and 0 <= module_buffer_index < len(local_module_buffer):
                                         local_module_buffer[module_buffer_index] = grid[grid_index]
+                            if DEBUG:
+                                try:
+                                    ma = hex(module_addr) if isinstance(module_addr, int) else str(module_addr)
+                                except Exception:
+                                    ma = str(module_addr)
+                                print(f"DEBUG: module {ma} start_row={module_start_row} start_col={module_start_col} size={mod_w}x{mod_h} local_buffer: {' '.join(f'{b:02X}' for b in local_module_buffer)}")
                             if use_tca:
                                 try:
                                     bus.write_byte(tca_addr, 1 << channel)
@@ -454,6 +460,12 @@ def apply_grid_to_modules(bus: SMBus, layout: dict, grid: list[int], error_on_fa
                                         module_buffer_index = r_in_mod * mod_w + use_c
                                     if 0 <= grid_index < len(grid) and 0 <= module_buffer_index < len(local_module_buffer):
                                         local_module_buffer[module_buffer_index] = grid[grid_index]
+                            if DEBUG:
+                                try:
+                                    ma = hex(module_addr) if isinstance(module_addr, int) else str(module_addr)
+                                except Exception:
+                                    ma = str(module_addr)
+                                print(f"DEBUG: module {ma} start_row={module_start_row} start_col={module_start_col} size={mod_w}x{mod_h} local_buffer: {' '.join(f'{b:02X}' for b in local_module_buffer)}")
                             if use_tca:
                                 try:
                                     bus.write_byte(tca_addr, 1 << int(channel))
