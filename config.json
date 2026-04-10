@@ -505,9 +505,6 @@
           "total_width": 24,
           "total_height": 2
         },
-            "0x71": [6,7,4,5,2,3,0,1,14,15,12,13,10,11,8,9]
-          }
-        },
     "emulator-24x4": {
       "name": "24x4 Emulator",
       "type": "emulator",
