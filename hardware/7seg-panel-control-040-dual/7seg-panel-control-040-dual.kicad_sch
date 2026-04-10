@@ -2417,17 +2417,6 @@
 		)
 		(uuid "0e64aed1-c7c0-4ca4-974b-1e9225dffd3c")
 	)
-	(text "Voltage drops may cause malfunction. \nMake sure if sufficient power supply capacity. \nI2C address 0x70 is robust against voltage fluctuations."
-		(exclude_from_sim no)
-		(at 116.84 29.718 0)
-		(effects
-			(font
-				(size 2.54 2.54)
-			)
-			(justify left)
-		)
-		(uuid "2a8d191c-f0f9-42b6-81a1-779609f9ae99")
-	)
 	(text "39-47kR"
 		(exclude_from_sim no)
 		(at 232.41 136.652 0)
@@ -2437,18 +2426,6 @@
 			)
 		)
 		(uuid "3589136e-f725-47be-aa91-b82d2a5029f0")
-	)
-	(text "EXTERNAL I2C BUS"
-		(exclude_from_sim no)
-		(at 62.992 188.468 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-				(thickness 0.254)
-				(bold yes)
-			)
-		)
-		(uuid "35fb1ecb-23e3-4eb9-a9d3-ede14a893630")
 	)
 	(text "It's advisable to use a small IR diode, such as 1N4148W, etc.\nShot key diodes may work, but not parfect in high-tempature conditions.\n"
 		(exclude_from_sim no)
@@ -2555,12 +2532,6 @@
 		(uuid "09886b92-1aa6-4efd-9ee7-8670ee59fd72")
 	)
 	(junction
-		(at 127 80.01)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "38be3d6a-41ba-477b-9296-e2c83bdb2f26")
-	)
-	(junction
 		(at 226.06 115.57)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2585,22 +2556,10 @@
 		(uuid "82c759ca-fd8b-498c-86e8-cd8d383ffb96")
 	)
 	(junction
-		(at 127 96.52)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "9544cb15-6c87-4545-ab23-a898bab49c5e")
-	)
-	(junction
 		(at 227.33 205.74)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "97e7dd4a-1e49-4847-a2fa-492fcdfc463e")
-	)
-	(junction
-		(at 139.7 80.01)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "aef74707-51ea-4e01-a0ee-dac644a9d68d")
 	)
 	(junction
 		(at 128.27 186.69)
@@ -2613,12 +2572,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "bb4cde8e-4851-447e-a9fa-a504acec86cb")
-	)
-	(junction
-		(at 139.7 96.52)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "ca1851bf-ecd9-4c0c-8cab-a08dae8e3fc6")
 	)
 	(junction
 		(at 128.27 170.18)
@@ -2670,16 +2623,6 @@
 	)
 	(wire
 		(pts
-			(xy 64.77 203.2) (xy 66.04 203.2)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "085ed36f-ce3a-44d2-b837-dd898f4a1d08")
-	)
-	(wire
-		(pts
 			(xy 218.44 158.75) (xy 237.49 158.75)
 		)
 		(stroke
@@ -2687,16 +2630,6 @@
 			(type default)
 		)
 		(uuid "12036047-40f2-49f9-b39e-1da3d4557b7e")
-	)
-	(wire
-		(pts
-			(xy 127 96.52) (xy 139.7 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "12d56418-3db0-4215-ad8e-56ced17a8b32")
 	)
 	(wire
 		(pts
@@ -2720,16 +2653,6 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 115.57) (xy 64.77 115.57)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1da1d0f5-489e-4914-90af-7a668ba9b3c8")
-	)
-	(wire
-		(pts
 			(xy 256.54 118.11) (xy 270.51 118.11)
 		)
 		(stroke
@@ -2737,16 +2660,6 @@
 			(type default)
 		)
 		(uuid "1e1fa28d-8469-45b0-bb3e-324161b8c075")
-	)
-	(wire
-		(pts
-			(xy 172.72 95.25) (xy 171.45 95.25)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "201b5f2a-9e55-4be3-88e6-08c2264c387c")
 	)
 	(wire
 		(pts
@@ -2807,26 +2720,6 @@
 			(type default)
 		)
 		(uuid "2c70ca17-aa18-4f3d-9e7c-17588a289db4")
-	)
-	(wire
-		(pts
-			(xy 173.99 185.42) (xy 172.72 185.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3542541f-4c6d-4ba5-89c9-2cc7901caa32")
-	)
-	(wire
-		(pts
-			(xy 64.77 129.54) (xy 63.5 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3d8baa9c-3b76-4c9e-8088-db9465d0f890")
 	)
 	(wire
 		(pts
@@ -2900,16 +2793,6 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 182.88) (xy 172.72 182.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5433e369-329c-475b-a008-0dee5f2f3c11")
-	)
-	(wire
-		(pts
 			(xy 226.06 115.57) (xy 229.87 115.57)
 		)
 		(stroke
@@ -2930,16 +2813,6 @@
 	)
 	(wire
 		(pts
-			(xy 64.77 132.08) (xy 63.5 132.08)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5f08e59a-4d96-4240-a6ec-ea7a9aa0fb1d")
-	)
-	(wire
-		(pts
 			(xy 226.06 118.11) (xy 226.06 120.65)
 		)
 		(stroke
@@ -2957,16 +2830,6 @@
 			(type default)
 		)
 		(uuid "69c193da-bc37-40e6-bf39-b22112133704")
-	)
-	(wire
-		(pts
-			(xy 127 80.01) (xy 139.7 80.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6c992f1b-4fa0-4d2c-b5e4-f8253124ab57")
 	)
 	(wire
 		(pts
@@ -3040,16 +2903,6 @@
 	)
 	(wire
 		(pts
-			(xy 172.72 92.71) (xy 171.45 92.71)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "837acef9-bdab-40e7-8681-34dc65128818")
-	)
-	(wire
-		(pts
 			(xy 218.44 162.56) (xy 218.44 158.75)
 		)
 		(stroke
@@ -3070,16 +2923,6 @@
 	)
 	(wire
 		(pts
-			(xy 127 90.17) (xy 127 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "89c8676b-e877-49fd-8ed6-0e1c0f187af4")
-	)
-	(wire
-		(pts
 			(xy 119.38 180.34) (xy 119.38 186.69)
 		)
 		(stroke
@@ -3097,26 +2940,6 @@
 			(type default)
 		)
 		(uuid "8d36bcd8-bb17-4cf1-b872-7206b644e02c")
-	)
-	(wire
-		(pts
-			(xy 118.11 80.01) (xy 118.11 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "904a38ee-fd04-4f55-8d1d-393310407a60")
-	)
-	(wire
-		(pts
-			(xy 118.11 80.01) (xy 127 80.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "92ba0128-835e-48b5-8973-6243303501a1")
 	)
 	(wire
 		(pts
@@ -3170,16 +2993,6 @@
 	)
 	(wire
 		(pts
-			(xy 118.11 90.17) (xy 118.11 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "adec6bc1-48ba-4ea8-bf6c-dea76c5bc340")
-	)
-	(wire
-		(pts
 			(xy 139.7 80.01) (xy 151.13 80.01)
 		)
 		(stroke
@@ -3217,46 +3030,6 @@
 			(type default)
 		)
 		(uuid "c114f71f-b649-4948-8578-64633e611f1a")
-	)
-	(wire
-		(pts
-			(xy 64.77 205.74) (xy 66.04 205.74)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c1575084-e192-4e63-9296-e8231ffa8d40")
-	)
-	(wire
-		(pts
-			(xy 63.5 113.03) (xy 64.77 113.03)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c92eaf58-b7c6-4b7b-a19e-d24dcf51ac19")
-	)
-	(wire
-		(pts
-			(xy 66.04 219.71) (xy 64.77 219.71)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ca24b400-74a1-4274-a316-fca21f62c9ec")
-	)
-	(wire
-		(pts
-			(xy 127 87.63) (xy 127 80.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cae41986-02c4-48c7-b477-364560208cf7")
 	)
 	(wire
 		(pts
@@ -3310,16 +3083,6 @@
 	)
 	(wire
 		(pts
-			(xy 118.11 96.52) (xy 127 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "da8fa804-e151-4cc6-b25b-ad5450acedfd")
-	)
-	(wire
-		(pts
 			(xy 234.95 115.57) (xy 243.84 115.57)
 		)
 		(stroke
@@ -3327,16 +3090,6 @@
 			(type default)
 		)
 		(uuid "dc78ba56-d3d2-45c1-94bc-a3f372298f53")
-	)
-	(wire
-		(pts
-			(xy 66.04 222.25) (xy 64.77 222.25)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dd89bcb3-4890-4390-9848-7da8ed3f52bd")
 	)
 	(wire
 		(pts
@@ -3398,7 +3151,7 @@
 		)
 		(uuid "fd68d826-3601-45cc-9b80-826400fce415")
 	)
-	(global_label "ROW7"
+	(global_label "A_ROW7"
 		(shape output)
 		(at 276.86 93.98 0)
 		(fields_autoplaced yes)
@@ -3410,7 +3163,7 @@
 		)
 		(uuid "0180cd2a-fa3a-49ee-a630-61182ee35df2")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 93.98 0)
+			(at 287.1628 93.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3446,7 +3199,7 @@
 			)
 		)
 	)
-	(global_label "ROW0"
+	(global_label "A_ROW0"
 		(shape output)
 		(at 311.15 87.63 180)
 		(fields_autoplaced yes)
@@ -3458,7 +3211,7 @@
 		)
 		(uuid "03855e6a-790d-45a9-b445-1800dfe53989")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 302.9034 87.63 0)
+			(at 300.8472 87.63 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3542,7 +3295,7 @@
 			)
 		)
 	)
-	(global_label "ROW13"
+	(global_label "A_ROW13"
 		(shape output)
 		(at 236.22 96.52 180)
 		(fields_autoplaced yes)
@@ -3554,7 +3307,7 @@
 		)
 		(uuid "0c2ed929-1f34-4055-9ff8-9b607c47beac")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 226.7639 96.52 0)
+			(at 224.7077 96.52 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3566,7 +3319,7 @@
 			)
 		)
 	)
-	(global_label "ROW11"
+	(global_label "A_ROW11"
 		(shape output)
 		(at 236.22 101.6 180)
 		(fields_autoplaced yes)
@@ -3578,7 +3331,7 @@
 		)
 		(uuid "0c44707b-214a-41e1-b139-11cbe1ca1e75")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 226.7639 101.6 0)
+			(at 224.7077 101.6 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3638,31 +3391,7 @@
 			)
 		)
 	)
-	(global_label "EX_SCL"
-		(shape output)
-		(at 66.04 205.74 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "172e495b-1c3e-474b-bb63-b7ae3362921f")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 75.8589 205.74 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(global_label "ROW0"
+	(global_label "A_ROW0"
 		(shape output)
 		(at 270.51 120.65 0)
 		(fields_autoplaced yes)
@@ -3674,7 +3403,7 @@
 		)
 		(uuid "1a6c8957-2029-4c0a-8288-5f66bb612c38")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 278.7566 120.65 0)
+			(at 280.8128 120.65 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3734,7 +3463,7 @@
 			)
 		)
 	)
-	(global_label "COM2"
+	(global_label "A_COM2"
 		(shape output)
 		(at 236.22 76.2 180)
 		(fields_autoplaced yes)
@@ -3746,7 +3475,7 @@
 		)
 		(uuid "1d388c17-93df-440c-87ee-54a3e600e730")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 227.9734 76.2 0)
+			(at 225.9172 76.2 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3782,30 +3511,6 @@
 			)
 		)
 	)
-	(global_label "EX_SCL"
-		(shape output)
-		(at 66.04 222.25 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "2343ce27-c8eb-4004-bd8a-630f0477e01f")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 75.8589 222.25 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
 	(global_label "SCL"
 		(shape output)
 		(at 171.45 110.49 0)
@@ -3830,7 +3535,7 @@
 			)
 		)
 	)
-	(global_label "ROW12"
+	(global_label "A_ROW12"
 		(shape output)
 		(at 236.22 99.06 180)
 		(fields_autoplaced yes)
@@ -3842,7 +3547,7 @@
 		)
 		(uuid "25bf0245-8875-4423-94b5-5d8b2bf50688")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 226.7639 99.06 0)
+			(at 224.7077 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3854,7 +3559,7 @@
 			)
 		)
 	)
-	(global_label "COM6"
+	(global_label "A_COM6"
 		(shape output)
 		(at 236.22 86.36 180)
 		(fields_autoplaced yes)
@@ -3866,7 +3571,7 @@
 		)
 		(uuid "2607adfe-2fbe-4353-88f7-d9a35fb0153c")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 227.9734 86.36 0)
+			(at 225.9172 86.36 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3926,7 +3631,7 @@
 			)
 		)
 	)
-	(global_label "ROW6"
+	(global_label "A_ROW6"
 		(shape output)
 		(at 276.86 91.44 0)
 		(fields_autoplaced yes)
@@ -3938,31 +3643,7 @@
 		)
 		(uuid "2d729968-a208-4038-a739-de5eb8e5efd3")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(global_label "SCL"
-		(shape output)
-		(at 172.72 95.25 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "2db0a08c-1618-4c93-a024-e378743c621a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 179.2128 95.25 0)
+			(at 287.1628 91.44 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3998,7 +3679,7 @@
 			)
 		)
 	)
-	(global_label "ROW10"
+	(global_label "A_ROW10"
 		(shape output)
 		(at 276.86 101.6 0)
 		(fields_autoplaced yes)
@@ -4010,7 +3691,7 @@
 		)
 		(uuid "2f47df07-27bd-40d4-90b5-0ced297faf84")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 286.3161 101.6 0)
+			(at 288.3723 101.6 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4022,7 +3703,7 @@
 			)
 		)
 	)
-	(global_label "COM2"
+	(global_label "A_COM2"
 		(shape output)
 		(at 311.15 69.85 180)
 		(fields_autoplaced yes)
@@ -4034,7 +3715,7 @@
 		)
 		(uuid "30957767-5e91-4c4d-807e-d3c2bb1890a9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 302.9034 69.85 0)
+			(at 300.8472 69.85 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4118,31 +3799,7 @@
 			)
 		)
 	)
-	(global_label "EX_SCL"
-		(shape output)
-		(at 64.77 115.57 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "36eedf19-722b-4b7a-982b-ab60f06b53ec")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 74.5889 115.57 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(global_label "ROW15"
+	(global_label "A_ROW15"
 		(shape output)
 		(at 236.22 91.44 180)
 		(fields_autoplaced yes)
@@ -4154,7 +3811,7 @@
 		)
 		(uuid "39fd0db0-7d6d-4262-9541-2d5dcf1d2a1f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 226.7639 91.44 0)
+			(at 224.7077 91.44 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4166,7 +3823,7 @@
 			)
 		)
 	)
-	(global_label "COM0"
+	(global_label "A_COM0"
 		(shape output)
 		(at 213.36 115.57 180)
 		(fields_autoplaced yes)
@@ -4178,7 +3835,7 @@
 		)
 		(uuid "3c85d29e-52ca-4ee2-8fa2-041045c5ad14")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 205.1134 115.57 0)
+			(at 203.0572 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4187,30 +3844,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-			)
-		)
-	)
-	(global_label "SCL"
-		(shape output)
-		(at 173.99 185.42 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "3d4c5ca0-4389-4b40-8fcb-dc2d9cec6d4b")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 180.4828 185.42 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 			)
 		)
 	)
@@ -4238,7 +3871,7 @@
 			)
 		)
 	)
-	(global_label "ROW9"
+	(global_label "A_ROW9"
 		(shape output)
 		(at 276.86 99.06 0)
 		(fields_autoplaced yes)
@@ -4250,7 +3883,7 @@
 		)
 		(uuid "455e5e77-fc64-46c9-8981-90485a0f68c1")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 99.06 0)
+			(at 287.1628 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4286,7 +3919,7 @@
 			)
 		)
 	)
-	(global_label "ROW2"
+	(global_label "A_ROW2"
 		(shape output)
 		(at 270.51 115.57 0)
 		(fields_autoplaced yes)
@@ -4298,31 +3931,7 @@
 		)
 		(uuid "4c36ff26-8046-47bf-83a2-2bd81aaffbe6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 278.7566 115.57 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(global_label "SDA"
-		(shape bidirectional)
-		(at 172.72 92.71 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "4ca4ef9a-bcc0-49e2-b414-650941bdb11b")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 180.3846 92.71 0)
+			(at 280.8128 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4358,7 +3967,7 @@
 			)
 		)
 	)
-	(global_label "COM0"
+	(global_label "A_COM0"
 		(shape output)
 		(at 236.22 71.12 180)
 		(fields_autoplaced yes)
@@ -4370,7 +3979,7 @@
 		)
 		(uuid "50149f84-fea3-4663-95de-e4c385f4272f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 227.9734 71.12 0)
+			(at 225.9172 71.12 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4382,7 +3991,7 @@
 			)
 		)
 	)
-	(global_label "COM3"
+	(global_label "A_COM3"
 		(shape output)
 		(at 323.85 69.85 0)
 		(fields_autoplaced yes)
@@ -4394,7 +4003,7 @@
 		)
 		(uuid "513d779d-412f-44f2-a8ef-b923d59dc651")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 332.0966 69.85 0)
+			(at 334.1528 69.85 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4406,7 +4015,7 @@
 			)
 		)
 	)
-	(global_label "ROW14"
+	(global_label "A_ROW14"
 		(shape output)
 		(at 311.15 115.57 180)
 		(fields_autoplaced yes)
@@ -4418,7 +4027,7 @@
 		)
 		(uuid "5210dba2-fc72-4ee0-ab30-ec5bd7043c06")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 301.6939 115.57 0)
+			(at 299.6377 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4502,7 +4111,7 @@
 			)
 		)
 	)
-	(global_label "COM1"
+	(global_label "A_COM1"
 		(shape output)
 		(at 323.85 67.31 0)
 		(fields_autoplaced yes)
@@ -4514,7 +4123,7 @@
 		)
 		(uuid "59bcd964-0e0c-458d-915e-c486fe1b65b0")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 332.0966 67.31 0)
+			(at 334.1528 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4526,7 +4135,7 @@
 			)
 		)
 	)
-	(global_label "COM4"
+	(global_label "A_COM4"
 		(shape output)
 		(at 311.15 72.39 180)
 		(fields_autoplaced yes)
@@ -4538,7 +4147,7 @@
 		)
 		(uuid "5b688a39-f77c-477a-bf33-36d4de238ad9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 302.9034 72.39 0)
+			(at 300.8472 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4574,7 +4183,7 @@
 			)
 		)
 	)
-	(global_label "COM5"
+	(global_label "A_COM5"
 		(shape output)
 		(at 323.85 72.39 0)
 		(fields_autoplaced yes)
@@ -4586,7 +4195,7 @@
 		)
 		(uuid "6068a01e-676b-433d-9ea3-809b4b88ce6c")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 332.0966 72.39 0)
+			(at 334.1528 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4646,7 +4255,7 @@
 			)
 		)
 	)
-	(global_label "COM5"
+	(global_label "A_COM5"
 		(shape output)
 		(at 236.22 83.82 180)
 		(fields_autoplaced yes)
@@ -4658,7 +4267,7 @@
 		)
 		(uuid "7165607e-80e0-47cb-a780-581b54cba94a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 227.9734 83.82 0)
+			(at 225.9172 83.82 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4670,7 +4279,7 @@
 			)
 		)
 	)
-	(global_label "ROW11"
+	(global_label "A_ROW11"
 		(shape output)
 		(at 323.85 110.49 0)
 		(fields_autoplaced yes)
@@ -4682,7 +4291,7 @@
 		)
 		(uuid "71f8f666-6dca-44ad-a6e0-bc002a23b077")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 333.3061 110.49 0)
+			(at 335.3623 110.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4694,7 +4303,7 @@
 			)
 		)
 	)
-	(global_label "ROW8"
+	(global_label "A_ROW8"
 		(shape output)
 		(at 276.86 96.52 0)
 		(fields_autoplaced yes)
@@ -4706,7 +4315,7 @@
 		)
 		(uuid "7322fdff-ae59-4a0c-89da-a2643f27c851")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 96.52 0)
+			(at 287.1628 96.52 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4742,31 +4351,7 @@
 			)
 		)
 	)
-	(global_label "EX_SDA"
-		(shape bidirectional)
-		(at 64.77 113.03 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "75798e74-8259-4138-87b4-279b840fe3d3")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 75.7607 113.03 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(global_label "COM7"
+	(global_label "A_COM7"
 		(shape output)
 		(at 323.85 74.93 0)
 		(fields_autoplaced yes)
@@ -4778,7 +4363,7 @@
 		)
 		(uuid "7963cf7d-a602-434a-a4bc-1d1ceebbfd23")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 332.0966 74.93 0)
+			(at 334.1528 74.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4790,7 +4375,7 @@
 			)
 		)
 	)
-	(global_label "ROW15"
+	(global_label "A_ROW15"
 		(shape output)
 		(at 323.85 115.57 0)
 		(fields_autoplaced yes)
@@ -4802,7 +4387,7 @@
 		)
 		(uuid "84b03943-d6a0-4310-83bd-90b60bc838be")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 333.3061 115.57 0)
+			(at 335.3623 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4838,7 +4423,7 @@
 			)
 		)
 	)
-	(global_label "COM1"
+	(global_label "A_COM1"
 		(shape output)
 		(at 236.22 73.66 180)
 		(fields_autoplaced yes)
@@ -4850,7 +4435,7 @@
 		)
 		(uuid "88be18c4-186f-4f20-a080-3e5d8ae8f594")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 227.9734 73.66 0)
+			(at 225.9172 73.66 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4958,7 +4543,7 @@
 			)
 		)
 	)
-	(global_label "ROW4"
+	(global_label "A_ROW4"
 		(shape output)
 		(at 276.86 86.36 0)
 		(fields_autoplaced yes)
@@ -4970,7 +4555,7 @@
 		)
 		(uuid "988d3772-4b3b-42d7-8a99-e01a7a707ae8")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 86.36 0)
+			(at 287.1628 86.36 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5006,7 +4591,7 @@
 			)
 		)
 	)
-	(global_label "ROW1"
+	(global_label "A_ROW1"
 		(shape output)
 		(at 276.86 78.74 0)
 		(fields_autoplaced yes)
@@ -5018,7 +4603,7 @@
 		)
 		(uuid "9b0a93d9-c5b8-4493-ac4a-2555270ea54b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 78.74 0)
+			(at 287.1628 78.74 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5102,7 +4687,7 @@
 			)
 		)
 	)
-	(global_label "COM4"
+	(global_label "A_COM4"
 		(shape output)
 		(at 236.22 81.28 180)
 		(fields_autoplaced yes)
@@ -5114,7 +4699,7 @@
 		)
 		(uuid "9e723cae-996a-43f8-b5a4-786c6cd123aa")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 227.9734 81.28 0)
+			(at 225.9172 81.28 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5150,7 +4735,7 @@
 			)
 		)
 	)
-	(global_label "ROW2"
+	(global_label "A_ROW2"
 		(shape output)
 		(at 276.86 81.28 0)
 		(fields_autoplaced yes)
@@ -5162,7 +4747,7 @@
 		)
 		(uuid "a0bc9848-dd1b-4032-9a98-1846a8c99fd8")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 81.28 0)
+			(at 287.1628 81.28 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5174,7 +4759,7 @@
 			)
 		)
 	)
-	(global_label "ROW5"
+	(global_label "A_ROW5"
 		(shape output)
 		(at 323.85 92.71 0)
 		(fields_autoplaced yes)
@@ -5186,7 +4771,7 @@
 		)
 		(uuid "a18dbbd6-4a64-4529-a62e-a9b1d3295d77")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 332.0966 92.71 0)
+			(at 334.1528 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5222,30 +4807,6 @@
 			)
 		)
 	)
-	(global_label "EX_SCL"
-		(shape output)
-		(at 64.77 132.08 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "a8202cad-41df-44f3-9fc3-7b07d1d7e467")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 74.5889 132.08 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
 	(global_label "ROW7"
 		(shape output)
 		(at 278.13 184.15 0)
@@ -5270,7 +4831,7 @@
 			)
 		)
 	)
-	(global_label "ROW4"
+	(global_label "A_ROW4"
 		(shape output)
 		(at 311.15 92.71 180)
 		(fields_autoplaced yes)
@@ -5282,7 +4843,7 @@
 		)
 		(uuid "ad13b84e-8566-476b-8df1-68937589c0a6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 302.9034 92.71 0)
+			(at 300.8472 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5294,7 +4855,7 @@
 			)
 		)
 	)
-	(global_label "ROW2"
+	(global_label "A_ROW2"
 		(shape output)
 		(at 311.15 90.17 180)
 		(fields_autoplaced yes)
@@ -5306,7 +4867,7 @@
 		)
 		(uuid "ad6a1afd-bcff-414f-b6a1-ad8d2bb958a2")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 302.9034 90.17 0)
+			(at 300.8472 90.17 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5342,7 +4903,7 @@
 			)
 		)
 	)
-	(global_label "COM3"
+	(global_label "A_COM3"
 		(shape output)
 		(at 236.22 78.74 180)
 		(fields_autoplaced yes)
@@ -5354,7 +4915,7 @@
 		)
 		(uuid "b5f4742d-7691-4107-894e-727430ee5e4b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 227.9734 78.74 0)
+			(at 225.9172 78.74 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5366,7 +4927,7 @@
 			)
 		)
 	)
-	(global_label "ROW1"
+	(global_label "A_ROW1"
 		(shape output)
 		(at 323.85 87.63 0)
 		(fields_autoplaced yes)
@@ -5378,7 +4939,7 @@
 		)
 		(uuid "b8aa78f5-fe6e-409b-adb7-d7d14b4f8c24")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 332.0966 87.63 0)
+			(at 334.1528 87.63 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5390,7 +4951,7 @@
 			)
 		)
 	)
-	(global_label "COM0"
+	(global_label "A_COM0"
 		(shape output)
 		(at 311.15 67.31 180)
 		(fields_autoplaced yes)
@@ -5402,7 +4963,7 @@
 		)
 		(uuid "b96f2452-1708-4ce2-9a2f-0443c1b5491d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 302.9034 67.31 0)
+			(at 300.8472 67.31 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5438,7 +4999,7 @@
 			)
 		)
 	)
-	(global_label "COM6"
+	(global_label "A_COM6"
 		(shape output)
 		(at 311.15 74.93 180)
 		(fields_autoplaced yes)
@@ -5450,7 +5011,7 @@
 		)
 		(uuid "ba24e383-266e-4a5d-b96a-b94543231b43")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 302.9034 74.93 0)
+			(at 300.8472 74.93 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5510,7 +5071,7 @@
 			)
 		)
 	)
-	(global_label "ROW10"
+	(global_label "A_ROW10"
 		(shape output)
 		(at 311.15 110.49 180)
 		(fields_autoplaced yes)
@@ -5522,7 +5083,7 @@
 		)
 		(uuid "bfa3c613-106a-428b-b62a-742db9fb2a81")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 301.6939 110.49 0)
+			(at 299.6377 110.49 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5606,7 +5167,7 @@
 			)
 		)
 	)
-	(global_label "ROW9"
+	(global_label "A_ROW9"
 		(shape output)
 		(at 323.85 107.95 0)
 		(fields_autoplaced yes)
@@ -5618,7 +5179,7 @@
 		)
 		(uuid "c6ad48fd-ba21-4247-a796-95ee1b220aa0")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 332.0966 107.95 0)
+			(at 334.1528 107.95 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5630,7 +5191,7 @@
 			)
 		)
 	)
-	(global_label "ROW6"
+	(global_label "A_ROW6"
 		(shape output)
 		(at 311.15 95.25 180)
 		(fields_autoplaced yes)
@@ -5642,7 +5203,7 @@
 		)
 		(uuid "c7d8a731-369c-45a9-9e8b-afeadd551540")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 302.9034 95.25 0)
+			(at 300.8472 95.25 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5654,7 +5215,7 @@
 			)
 		)
 	)
-	(global_label "ROW14"
+	(global_label "A_ROW14"
 		(shape output)
 		(at 236.22 93.98 180)
 		(fields_autoplaced yes)
@@ -5666,7 +5227,7 @@
 		)
 		(uuid "c829a503-fde0-4a61-b9c8-9a59deca5ecd")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 226.7639 93.98 0)
+			(at 224.7077 93.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5774,7 +5335,7 @@
 			)
 		)
 	)
-	(global_label "ROW3"
+	(global_label "A_ROW3"
 		(shape output)
 		(at 276.86 83.82 0)
 		(fields_autoplaced yes)
@@ -5786,7 +5347,7 @@
 		)
 		(uuid "d4565f42-89d8-469e-92ef-b9d20ba83e50")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 83.82 0)
+			(at 287.1628 83.82 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5798,7 +5359,7 @@
 			)
 		)
 	)
-	(global_label "ROW3"
+	(global_label "A_ROW3"
 		(shape output)
 		(at 323.85 90.17 0)
 		(fields_autoplaced yes)
@@ -5810,7 +5371,7 @@
 		)
 		(uuid "d7debcfb-5c04-47f4-88f0-f694539ce0a7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 332.0966 90.17 0)
+			(at 334.1528 90.17 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5846,7 +5407,7 @@
 			)
 		)
 	)
-	(global_label "ROW1"
+	(global_label "A_ROW1"
 		(shape output)
 		(at 270.51 118.11 0)
 		(fields_autoplaced yes)
@@ -5858,7 +5419,7 @@
 		)
 		(uuid "dd0dc36b-eda7-4345-8833-4b3cb8ba8f88")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 278.7566 118.11 0)
+			(at 280.8128 118.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5894,7 +5455,7 @@
 			)
 		)
 	)
-	(global_label "ROW7"
+	(global_label "A_ROW7"
 		(shape output)
 		(at 323.85 95.25 0)
 		(fields_autoplaced yes)
@@ -5906,7 +5467,7 @@
 		)
 		(uuid "dde6d37b-4745-4454-9279-ea76d00d53fd")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 332.0966 95.25 0)
+			(at 334.1528 95.25 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5918,31 +5479,7 @@
 			)
 		)
 	)
-	(global_label "EX_SDA"
-		(shape bidirectional)
-		(at 66.04 219.71 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "de24f46b-5972-4a70-8afb-445a009e4818")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 77.0307 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(global_label "ROW0"
+	(global_label "A_ROW0"
 		(shape output)
 		(at 276.86 76.2 0)
 		(fields_autoplaced yes)
@@ -5954,31 +5491,7 @@
 		)
 		(uuid "de4e4329-8243-4e8a-ac55-b5ff7e001ef5")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 76.2 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(global_label "EX_SDA"
-		(shape bidirectional)
-		(at 66.04 203.2 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "e05de171-4b5c-4cde-8299-557a3a3a9a1a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 77.0307 203.2 0)
+			(at 287.1628 76.2 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6062,31 +5575,7 @@
 			)
 		)
 	)
-	(global_label "SDA"
-		(shape bidirectional)
-		(at 173.99 182.88 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "efb9827c-2fb6-44cb-9085-689a0ca183a3")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 181.6546 182.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(global_label "ROW8"
+	(global_label "A_ROW8"
 		(shape output)
 		(at 311.15 107.95 180)
 		(fields_autoplaced yes)
@@ -6098,7 +5587,7 @@
 		)
 		(uuid "f00dd3ab-c72e-452f-b0cd-d58a542e92e0")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 302.9034 107.95 0)
+			(at 300.8472 107.95 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6134,7 +5623,7 @@
 			)
 		)
 	)
-	(global_label "COM7"
+	(global_label "A_COM7"
 		(shape output)
 		(at 236.22 88.9 180)
 		(fields_autoplaced yes)
@@ -6146,7 +5635,7 @@
 		)
 		(uuid "f39cb049-ab96-40b5-9d27-9b1394e44b38")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 227.9734 88.9 0)
+			(at 225.9172 88.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6206,31 +5695,7 @@
 			)
 		)
 	)
-	(global_label "EX_SDA"
-		(shape bidirectional)
-		(at 64.77 129.54 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "fb5d05ca-6b14-4a98-ac8d-7a505699cb00")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 75.7607 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(global_label "ROW5"
+	(global_label "A_ROW5"
 		(shape output)
 		(at 276.86 88.9 0)
 		(fields_autoplaced yes)
@@ -6242,7 +5707,7 @@
 		)
 		(uuid "fbe540ad-93b7-4297-a0ff-76d36e14f2fa")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 285.1066 88.9 0)
+			(at 287.1628 88.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6302,7 +5767,7 @@
 			)
 		)
 	)
-	(global_label "ROW12"
+	(global_label "A_ROW12"
 		(shape output)
 		(at 311.15 113.03 180)
 		(fields_autoplaced yes)
@@ -6314,7 +5779,7 @@
 		)
 		(uuid "fdf111ad-aab7-43d7-8323-42998c64b814")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 301.6939 113.03 0)
+			(at 299.6377 113.03 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6350,7 +5815,7 @@
 			)
 		)
 	)
-	(global_label "ROW13"
+	(global_label "A_ROW13"
 		(shape output)
 		(at 323.85 113.03 0)
 		(fields_autoplaced yes)
@@ -6362,7 +5827,7 @@
 		)
 		(uuid "fefca866-ca88-44f8-b2f6-e6ef4263ea35")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 333.3061 113.03 0)
+			(at 335.3623 113.03 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6385,7 +5850,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "034e3d04-6be0-4f03-a30e-a1996d4a658d")
-		(property "Reference" "R126"
+		(property "Reference" "R104"
 			(at 226.822 130.81 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6546,9 +6011,9 @@
 			(uuid "54ca2f59-3a80-4866-b829-d4dc26b5f20f")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "R126")
+					(reference "R104")
 					(unit 1)
 				)
 			)
@@ -6566,7 +6031,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "05e219c1-74b9-4e6d-8f03-3e86ccb670e7")
-		(property "Reference" "U103"
+		(property "Reference" "U102"
 			(at 256.54 62.23 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6704,9 +6169,9 @@
 			(uuid "a5efc1d9-8639-4816-8fd4-545e17fd9046")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "U103")
+					(reference "U102")
 					(unit 1)
 				)
 			)
@@ -6724,7 +6189,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0890585d-6651-4f19-9b57-468cbe6b6dfc")
-		(property "Reference" "J116"
+		(property "Reference" "J110"
 			(at 250.19 109.22 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6796,90 +6261,9 @@
 			(uuid "5feabee7-951f-4e8d-a5f2-aa6ceb6839cc")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J116")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 59.69 219.71 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "0aa09f68-6659-4f04-a27d-93699cdec1fb")
-		(property "Reference" "J105"
-			(at 59.69 213.36 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "I2C"
-			(at 59.69 215.9 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
-			(at 59.69 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 59.69 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 59.69 219.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "0f5fdd0e-d741-4d06-acec-facc4666235d")
-		)
-		(pin "1"
-			(uuid "5805f1dd-73a0-4ef6-9342-280fbad76bd6")
-		)
-		(instances
-			(project "7seg-panel-control-040"
-				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J105")
+					(reference "J110")
 					(unit 1)
 				)
 			)
@@ -6897,7 +6281,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0af3a61f-f36d-4af4-8c19-806f740353a8")
-		(property "Reference" "U104"
+		(property "Reference" "U103"
 			(at 257.81 152.4 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7035,9 +6419,9 @@
 			(uuid "60adc9b7-2646-4984-b09e-e148bb8f701f")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "U104")
+					(reference "U103")
 					(unit 1)
 				)
 			)
@@ -7055,7 +6439,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1464d6ea-133d-4aca-84a3-cce8d7115caa")
-		(property "Reference" "J117"
+		(property "Reference" "J113"
 			(at 124.46 186.69 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7075,7 +6459,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
+		(property "Footprint" "7seg-panel:Generic_XH_S2B-XH-A-1_1x02_P2.50mm_Horizontal"
 			(at 124.46 180.34 0)
 			(hide yes)
 			(show_name no)
@@ -7115,9 +6499,9 @@
 			(uuid "f8e06bc6-d60f-4b00-bf18-6aeb57e3377c")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J117")
+					(reference "J113")
 					(unit 1)
 				)
 			)
@@ -7135,7 +6519,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1bcd5424-3fb3-422f-a287-0dbcecfc12f7")
-		(property "Reference" "J108"
+		(property "Reference" "J102"
 			(at 317.5 60.96 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7213,90 +6597,9 @@
 			(uuid "c5a750d8-e8e2-47ed-8683-1c8536da7dbe")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J108")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 167.64 182.88 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "212f354a-0a65-4300-b44d-7fc2b0c875e1")
-		(property "Reference" "J120"
-			(at 167.64 176.53 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "I2C"
-			(at 167.64 179.07 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
-			(at 167.64 182.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 167.64 182.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 167.64 182.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "2eeb0a1c-e815-4d73-b0ae-b69e27e45eeb")
-		)
-		(pin "1"
-			(uuid "69014a91-855a-4a2f-9f3b-82c5ae3f2d00")
-		)
-		(instances
-			(project "7seg-panel-control-040"
-				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J120")
+					(reference "J102")
 					(unit 1)
 				)
 			)
@@ -7313,7 +6616,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "216a5766-c341-4389-8abf-380ad3681904")
-		(property "Reference" "R128"
+		(property "Reference" "R106"
 			(at 227.584 217.932 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7474,9 +6777,9 @@
 			(uuid "4f0d365a-3db5-4317-b0d5-66ae687a6bfe")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "R128")
+					(reference "R106")
 					(unit 1)
 				)
 			)
@@ -7494,7 +6797,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2b44f14d-e211-4ec1-8c74-97b546cc51c3")
-		(property "Reference" "J112"
+		(property "Reference" "J108"
 			(at 317.5 101.6 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7572,9 +6875,9 @@
 			(uuid "6a927224-d08f-460b-a1c2-f3a08586b647")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J112")
+					(reference "J108")
 					(unit 1)
 				)
 			)
@@ -7592,7 +6895,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3281a471-dc2d-483c-be88-492ff7e38165")
-		(property "Reference" "#PWR0117"
+		(property "Reference" "#PWR0110"
 			(at 152.4 167.64 0)
 			(hide yes)
 			(show_name no)
@@ -7650,9 +6953,9 @@
 			(uuid "adcfce8e-eded-4eaa-89d2-cd3e0ee0230f")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0117")
+					(reference "#PWR0110")
 					(unit 1)
 				)
 			)
@@ -7726,7 +7029,7 @@
 			)
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "H102")
 					(unit 1)
@@ -7745,7 +7048,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3e33e349-1b48-49f9-8258-6e3cf5535f75")
-		(property "Reference" "#PWR0103"
+		(property "Reference" "#PWR0112"
 			(at 152.4 193.04 0)
 			(hide yes)
 			(show_name no)
@@ -7803,9 +7106,9 @@
 			(uuid "6166455c-99dc-45b1-a59c-07f2b72ba016")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0103")
+					(reference "#PWR0112")
 					(unit 1)
 				)
 			)
@@ -7879,7 +7182,7 @@
 			)
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "H106")
 					(unit 1)
@@ -7955,7 +7258,7 @@
 			)
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "H103")
 					(unit 1)
@@ -7975,7 +7278,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4805b16c-aa51-44f9-b259-9a94dc9009c9")
-		(property "Reference" "J109"
+		(property "Reference" "J112"
 			(at 318.77 151.13 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8053,9 +7356,9 @@
 			(uuid "a9968e30-3b64-4efd-8453-4fcc3ea5d5c3")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J109")
+					(reference "J112")
 					(unit 1)
 				)
 			)
@@ -8234,7 +7537,7 @@
 			(uuid "9439098f-9ac2-48d4-a6f3-373ff00412f3")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "C105")
 					(unit 1)
@@ -8254,7 +7557,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5d7f1b33-6559-4fef-8834-22e572ca046d")
-		(property "Reference" "C108"
+		(property "Reference" "C107"
 			(at 220.98 181.6162 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8415,89 +7718,9 @@
 			(uuid "ef35546d-97a7-4b1b-bb4d-b03bf943893b")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "C108")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 123.19 90.17 0)
-		(mirror x)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "60a0b53c-c5d2-4d75-bad2-486f84925611")
-		(property "Reference" "J114"
-			(at 123.19 96.52 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 123.19 93.98 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
-			(at 123.19 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 123.19 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 123.19 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "f389914f-dfe9-4c5b-afe0-d5785e150cff")
-		)
-		(pin "1"
-			(uuid "532653a7-45d1-4022-b604-b21f478d3e32")
-		)
-		(instances
-			(project "7seg-panel-control-040"
-				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J114")
+					(reference "C107")
 					(unit 1)
 				)
 			)
@@ -8571,7 +7794,7 @@
 			)
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "H109")
 					(unit 1)
@@ -8647,90 +7870,9 @@
 			)
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "H108")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 58.42 113.03 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "71ed9499-beba-4dec-af41-47261cf3f19c")
-		(property "Reference" "J102"
-			(at 58.42 106.68 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "I2C"
-			(at 58.42 109.22 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
-			(at 58.42 113.03 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 58.42 113.03 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 58.42 113.03 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "bc7f7745-f417-44d6-97ee-589d68a509f4")
-		)
-		(pin "1"
-			(uuid "71593dae-80f0-4d82-92c2-f945e2c6caaf")
-		)
-		(instances
-			(project "7seg-panel-control-040"
-				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J102")
 					(unit 1)
 				)
 			)
@@ -8748,7 +7890,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7b682099-c172-44db-bc79-8844622e5e3a")
-		(property "Reference" "J110"
+		(property "Reference" "J105"
 			(at 317.5 81.28 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8826,9 +7968,9 @@
 			(uuid "a83c6693-1204-488e-8d60-49b916132b7d")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J110")
+					(reference "J105")
 					(unit 1)
 				)
 			)
@@ -8902,7 +8044,7 @@
 			)
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "H104")
 					(unit 1)
@@ -8922,7 +8064,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8069844e-6185-49f8-af8d-f44816b89b0e")
-		(property "Reference" "J111"
+		(property "Reference" "J115"
 			(at 318.77 171.45 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9000,9 +8142,9 @@
 			(uuid "104007e9-75b9-4b33-b1fc-ae99023398a9")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J111")
+					(reference "J115")
 					(unit 1)
 				)
 			)
@@ -9021,7 +8163,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "84b69a91-413b-49fb-a75b-95964a48d3ca")
-		(property "Reference" "J121"
+		(property "Reference" "J107"
 			(at 166.37 101.6 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9041,7 +8183,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
+		(property "Footprint" "7seg-panel:Generic_XH_S2B-XH-A-1_1x02_P2.50mm_Horizontal"
 			(at 166.37 107.95 0)
 			(hide yes)
 			(show_name no)
@@ -9081,9 +8223,9 @@
 			(uuid "73675c80-a31a-4e03-8cee-57f1cb3ddd1e")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J121")
+					(reference "J107")
 					(unit 1)
 				)
 			)
@@ -9101,7 +8243,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "910744b1-2fb5-434a-8b87-dadf838a1a01")
-		(property "Reference" "#PWR0120"
+		(property "Reference" "#PWR0113"
 			(at 218.44 193.04 0)
 			(hide yes)
 			(show_name no)
@@ -9159,9 +8301,9 @@
 			(uuid "0b4f29e8-db3d-4902-b440-7bbc759dda7f")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0120")
+					(reference "#PWR0113")
 					(unit 1)
 				)
 			)
@@ -9178,7 +8320,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "932a3f6a-c270-4def-80c4-1e1e143da966")
-		(property "Reference" "#PWR0113"
+		(property "Reference" "#PWR0103"
 			(at 217.17 78.74 0)
 			(hide yes)
 			(show_name no)
@@ -9236,9 +8378,9 @@
 			(uuid "4847fabc-84a2-4ec0-b777-f503a8e46916")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0113")
+					(reference "#PWR0103")
 					(unit 1)
 				)
 			)
@@ -9338,7 +8480,7 @@
 			(uuid "45f3e771-f20e-485b-8640-ce819f28d033")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "D102")
 					(unit 1)
@@ -9358,7 +8500,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9a147864-8f8b-4cb8-a3a9-d9dfcef600a1")
-		(property "Reference" "#PWR0112"
+		(property "Reference" "#PWR0105"
 			(at 217.17 93.98 0)
 			(hide yes)
 			(show_name no)
@@ -9416,9 +8558,9 @@
 			(uuid "0f6dc34e-33ea-48ef-ae0b-d35d573924b8")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0112")
+					(reference "#PWR0105")
 					(unit 1)
 				)
 			)
@@ -9436,7 +8578,7 @@
 		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "9eefc9a7-59c2-4ea8-8bfd-d28279fbc57a")
-		(property "Reference" "C104"
+		(property "Reference" "C103"
 			(at 153.67 83.2738 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9597,9 +8739,9 @@
 			(uuid "09283079-58e3-46d3-ba78-2e038e41215c")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "C104")
+					(reference "C103")
 					(unit 1)
 				)
 			)
@@ -9617,7 +8759,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a4612940-3d0b-4b1b-81ea-dcc182dcafe0")
-		(property "Reference" "#PWR0121"
+		(property "Reference" "#PWR0108"
 			(at 279.4 158.75 0)
 			(hide yes)
 			(show_name no)
@@ -9675,9 +8817,9 @@
 			(uuid "70ffc966-7970-4fa1-b8c5-71ebbea0597f")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0121")
+					(reference "#PWR0108")
 					(unit 1)
 				)
 			)
@@ -9695,7 +8837,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a8342e15-e3d7-47cf-b02f-1dbcd3279259")
-		(property "Reference" "C103"
+		(property "Reference" "C102"
 			(at 142.24 83.8262 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9856,9 +8998,9 @@
 			(uuid "689b873c-5c83-4b38-8fa2-20e72bb4cb8a")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "C103")
+					(reference "C102")
 					(unit 1)
 				)
 			)
@@ -9875,7 +9017,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a9f26f94-f7f7-4533-9d9a-ee6ed6ae19fe")
-		(property "Reference" "#PWR0118"
+		(property "Reference" "#PWR0109"
 			(at 218.44 168.91 0)
 			(hide yes)
 			(show_name no)
@@ -9933,9 +9075,9 @@
 			(uuid "b6a69930-71da-4070-a8a3-20fdf9625d2d")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0118")
+					(reference "#PWR0109")
 					(unit 1)
 				)
 			)
@@ -9954,7 +9096,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ae308680-f3df-4097-a64b-305aed1c3cee")
-		(property "Reference" "J122"
+		(property "Reference" "J117"
 			(at 167.64 191.77 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9974,7 +9116,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
+		(property "Footprint" "7seg-panel:Generic_XH_S2B-XH-A-1_1x02_P2.50mm_Horizontal"
 			(at 167.64 198.12 0)
 			(hide yes)
 			(show_name no)
@@ -10014,9 +9156,9 @@
 			(uuid "221f3e93-5174-4af0-9703-bfd3916818e5")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J122")
+					(reference "J117")
 					(unit 1)
 				)
 			)
@@ -10033,7 +9175,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b13af5ff-c954-425f-a08a-dfe9c3bac43e")
-		(property "Reference" "R129"
+		(property "Reference" "R107"
 			(at 228.092 220.98 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10194,9 +9336,9 @@
 			(uuid "7a397ef9-92d6-4ed1-b210-b6406c88a051")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "R129")
+					(reference "R107")
 					(unit 1)
 				)
 			)
@@ -10214,7 +9356,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b2cf5290-623e-44d9-bdf6-8fcaf5834fa3")
-		(property "Reference" "J123"
+		(property "Reference" "J120"
 			(at 251.46 199.39 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10286,9 +9428,9 @@
 			(uuid "58ca6ed4-ae49-4349-a9d8-f5652dfbd16f")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J123")
+					(reference "J120")
 					(unit 1)
 				)
 			)
@@ -10306,7 +9448,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "b54a94fc-151d-4564-8eb6-c2cdd6fb13ed")
-		(property "Reference" "J119"
+		(property "Reference" "J114"
 			(at 133.35 186.69 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10326,7 +9468,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
+		(property "Footprint" "7seg-panel:Generic_XH_S2B-XH-A-1_1x02_P2.50mm_Horizontal"
 			(at 133.35 180.34 0)
 			(hide yes)
 			(show_name no)
@@ -10366,9 +9508,9 @@
 			(uuid "d2c5cb02-6f7f-4537-a825-bcf90f5e4ca3")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J119")
+					(reference "J114")
 					(unit 1)
 				)
 			)
@@ -10386,7 +9528,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b907c596-ffa8-4c53-ab15-2243e4620e66")
-		(property "Reference" "C106"
+		(property "Reference" "C104"
 			(at 219.71 91.4462 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10547,89 +9689,9 @@
 			(uuid "6cebfc0c-e382-4617-ae6e-dce6ca89f5a0")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "C106")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 132.08 90.17 0)
-		(mirror x)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "c5651a4e-6523-4e9b-9f32-d31f2ace9b55")
-		(property "Reference" "J115"
-			(at 132.08 96.52 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 132.08 93.98 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
-			(at 132.08 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 132.08 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 132.08 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "46c824b8-d1dd-45d0-9164-c244476f8cd9")
-		)
-		(pin "1"
-			(uuid "cd479a0e-5c49-42d6-82ff-be9a4b43ae6f")
-		)
-		(instances
-			(project "7seg-panel-control-040"
-				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J115")
+					(reference "C104")
 					(unit 1)
 				)
 			)
@@ -10647,7 +9709,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d215b39d-d911-46f1-bf49-46201c335d5e")
-		(property "Reference" "#PWR0116"
+		(property "Reference" "#PWR0102"
 			(at 278.13 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -10705,9 +9767,9 @@
 			(uuid "8f2c67aa-f2c6-4536-8fab-a71680432c1d")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0116")
+					(reference "#PWR0102")
 					(unit 1)
 				)
 			)
@@ -10725,7 +9787,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d716204f-651e-4c77-9e2a-71d8f27226e4")
-		(property "Reference" "#PWR0119"
+		(property "Reference" "#PWR0111"
 			(at 218.44 184.15 0)
 			(hide yes)
 			(show_name no)
@@ -10783,9 +9845,9 @@
 			(uuid "fa6a8e33-ec37-46eb-a301-44f88f7a0cda")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0119")
+					(reference "#PWR0111")
 					(unit 1)
 				)
 			)
@@ -10803,7 +9865,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d9c3e2dd-6774-4dac-b442-bee5d19f5c8a")
-		(property "Reference" "#PWR0115"
+		(property "Reference" "#PWR0107"
 			(at 217.17 102.87 0)
 			(hide yes)
 			(show_name no)
@@ -10861,9 +9923,9 @@
 			(uuid "81feebcd-05c5-46e3-9fa7-3b03945e95b2")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0115")
+					(reference "#PWR0107")
 					(unit 1)
 				)
 			)
@@ -10881,7 +9943,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "df668279-bd63-4a2a-97f8-6c9d35118b40")
-		(property "Reference" "#PWR0114"
+		(property "Reference" "#PWR0104"
 			(at 151.13 77.47 0)
 			(hide yes)
 			(show_name no)
@@ -10939,9 +10001,9 @@
 			(uuid "6d7f051f-d3ea-4e06-a6ac-6df2ca6717cf")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0114")
+					(reference "#PWR0104")
 					(unit 1)
 				)
 			)
@@ -10958,7 +10020,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e097ef9b-c97c-4662-adbd-cb08a362a2a2")
-		(property "Reference" "R124"
+		(property "Reference" "R102"
 			(at 226.568 124.714 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11119,9 +10181,9 @@
 			(uuid "7c3b2e3c-8bdf-4670-9997-81d0a2c4a876")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "R124")
+					(reference "R102")
 					(unit 1)
 				)
 			)
@@ -11139,7 +10201,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e0ae4462-12d0-4674-a528-0cfaa03bc847")
-		(property "Reference" "J113"
+		(property "Reference" "J118"
 			(at 318.77 191.77 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11217,9 +10279,9 @@
 			(uuid "240eb0b0-c210-4894-900e-decc61ab01bc")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J113")
+					(reference "J118")
 					(unit 1)
 				)
 			)
@@ -11237,7 +10299,7 @@
 		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "e465ee80-fb4b-4626-9321-c6aae05d0a92")
-		(property "Reference" "C107"
+		(property "Reference" "C106"
 			(at 154.94 173.4438 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11398,90 +10460,9 @@
 			(uuid "28822119-1408-4662-a46a-e1c708a1bc5d")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "C107")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 59.69 203.2 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "e5e83655-9b58-48d6-9513-a5febae4c3e9")
-		(property "Reference" "J103"
-			(at 59.69 196.85 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "I2C"
-			(at 59.69 199.39 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
-			(at 59.69 203.2 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 59.69 203.2 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 59.69 203.2 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "8986b0c1-95ef-4a12-bcc6-0e22ded78e53")
-		)
-		(pin "1"
-			(uuid "70be9651-9e38-4513-bcd0-c7c535f36f15")
-		)
-		(instances
-			(project "7seg-panel-control-040"
-				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J103")
+					(reference "C106")
 					(unit 1)
 				)
 			)
@@ -11498,7 +10479,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "eee98daf-c901-47d8-b272-aafb94a79a93")
-		(property "Reference" "R127"
+		(property "Reference" "R105"
 			(at 227.838 214.884 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11659,9 +10640,9 @@
 			(uuid "f2209d67-dbfb-4cd4-b153-6dd52281a8c4")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "R127")
+					(reference "R105")
 					(unit 1)
 				)
 			)
@@ -11735,7 +10716,7 @@
 			)
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "H107")
 					(unit 1)
@@ -11837,7 +10818,7 @@
 			(uuid "d6e50e7b-15e2-4433-bc11-00fcd4a63fc4")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "D103")
 					(unit 1)
@@ -11856,7 +10837,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f2d5411b-d4d6-4123-a61c-db3215b8ffbd")
-		(property "Reference" "#PWR0102"
+		(property "Reference" "#PWR0106"
 			(at 151.13 102.87 0)
 			(hide yes)
 			(show_name no)
@@ -11914,171 +10895,9 @@
 			(uuid "14726cce-eea0-454d-b267-4a643b56a7e2")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "#PWR0102")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 166.37 92.71 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f4621802-a9e2-4a7f-b780-833050d83c76")
-		(property "Reference" "J118"
-			(at 166.37 86.36 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "I2C"
-			(at 166.37 88.9 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
-			(at 166.37 92.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 166.37 92.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 166.37 92.71 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "95afec85-91eb-402f-bd2f-1bca613cf8de")
-		)
-		(pin "1"
-			(uuid "8981a8ac-412c-4808-b11a-ab138dc06bc4")
-		)
-		(instances
-			(project "7seg-panel-control-040"
-				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J118")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 58.42 129.54 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f8fe5648-ce13-4676-bdcf-982dd368e81c")
-		(property "Reference" "J104"
-			(at 58.42 123.19 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "I2C"
-			(at 58.42 125.73 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-AM_1x02_P2.50mm_Vertical"
-			(at 58.42 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 58.42 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 58.42 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "2"
-			(uuid "d3f739bd-deec-4ee4-b3da-0b09f162c51a")
-		)
-		(pin "1"
-			(uuid "6e80ee2b-2258-48d2-8962-75547c20f50e")
-		)
-		(instances
-			(project "7seg-panel-control-040"
-				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "J104")
+					(reference "#PWR0106")
 					(unit 1)
 				)
 			)
@@ -12152,7 +10971,7 @@
 			)
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
 					(reference "H105")
 					(unit 1)
@@ -12171,7 +10990,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "fe0505f4-1165-4595-b540-1cf4ff58d6d1")
-		(property "Reference" "R125"
+		(property "Reference" "R103"
 			(at 226.314 127.762 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -12332,9 +11151,9 @@
 			(uuid "8f842b51-8130-4ff5-8baa-c7e3c886126b")
 		)
 		(instances
-			(project "7seg-panel-control-040"
+			(project "7seg-panel-control-040-dual"
 				(path "/f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
-					(reference "R125")
+					(reference "R103")
 					(unit 1)
 				)
 			)

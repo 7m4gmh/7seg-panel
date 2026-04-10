@@ -365,6 +365,29 @@
           "total_width": 8,
           "total_height": 2
         },
+        "24x2-direct": {
+          "name": "24x2 Grid (Direct I2C, 3 modules)",
+          "buses": {
+            "0": {
+              "tca9548as": [
+                {
+                  "address": null,
+                  "channels": {
+                    "-1": [
+                      ["0x70"],
+                      ["0x71"],
+                      ["0x72"]
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "module_digits_width": 24,
+          "module_digits_height": 2,
+          "total_width": 24,
+          "total_height": 2
+        },
         "8x2-direct-rev": {
           "name": "8x2 Grid Reversed Columns (Direct I2C)",
           "buses": {

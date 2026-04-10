@@ -1,0 +1,10 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"C102, C105",0603,2,22uF,
+"C104, C107",0603,2,0.1uF,
+"D102, D103",D_SOD-123,2,1N4148W,
+"J102, J105, J108, J112, J115, J118",PinSocket_2x04_P2.54mm_Vertical,6,Conn_02x04_Odd_Even,
+"J107, J117",Generic_XH_S2B-XH-A-1_1x02_P2.50mm_Horizontal,2,I2C,
+"J110, J120",PinHeader_2x03_P2.54mm_Vertical,2,Conn_02x03_Odd_Even,
+"J113, J114",Generic_XH_S2B-XH-A-1_1x02_P2.50mm_Horizontal,2,+5V,
+"R102, R103, R104, R105, R106, R107",0603,6,39kR,
+"U102, U103",SOP-28_8.4x18.16mm_P1.27mm,2,HT16K33-28-SOPA,

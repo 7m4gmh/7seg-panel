@@ -503,7 +503,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "7seg-panel-control-040.kicad_pro",
+    "filename": "7seg-panel-control-040-dual.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -553,7 +553,7 @@
     "annotate_start_num": 101,
     "annotation": {
       "method": 0,
-      "sort_order": 0
+      "sort_order": 1
     },
     "bom_export_filename": "",
     "bom_fmt_presets": [],
@@ -736,18 +736,18 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "7seg-panel-control-040.kicad_sch",
-        "name": "7seg-panel-control-040",
+        "filename": "7seg-panel-control-040-dual.kicad_sch",
+        "name": "7seg-panel-control-040-dual",
         "uuid": "f15a2eb9-fdcc-4981-acd3-42a966d94cc8"
       }
     ],
-    "used_designators": "U104,R127-129,H106-109,#PWR103,#PWR117-121,D103,C105,C107-108,J103,J105,J109,J111,J113,J117,J119-120,J122-123",
+    "used_designators": "U102-103,R102-107,H102-109,#PWR102-113,D102-103,C102-107,J102-121",
     "variants": []
   },
   "sheets": [
     [
       "f15a2eb9-fdcc-4981-acd3-42a966d94cc8",
-      "7seg-panel-control-040"
+      "7seg-panel-control-040-dual"
     ]
   ],
   "text_variables": {},
