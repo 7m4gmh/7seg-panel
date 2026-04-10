@@ -455,6 +455,14 @@ def apply_grid_to_modules(bus: SMBus, layout: dict, grid: list[int], error_on_fa
 
                     bus_col_offset = 0
                     bus_row_offset = 0
+                    # compute channel dimensions once so bus offsets are
+                    # updated per-channel (matches C implementation)
+                    channel_width_in_digits = 0
+                    channel_height_in_digits = 0
+                    if channel_grid_height > 0 and channel_grid_width > 0:
+                        channel_width_in_digits = sum(mod_widths[0][cc] for cc in range(channel_grid_width))
+                        channel_height_in_digits = sum(mod_heights[rr][0] for rr in range(channel_grid_height))
+
                     for grid_r in range(channel_grid_height):
                         for grid_c in range(channel_grid_width):
                             module_addr_raw = address_grid[grid_r][grid_c]
@@ -509,14 +517,15 @@ def apply_grid_to_modules(bus: SMBus, layout: dict, grid: list[int], error_on_fa
                             ok = update_module_from_grid_py(bus, module_addr, local_module_buffer)
                             if not ok and error_on_fail:
                                 return False
-                            # update bus_col_offset similar to C
-                            channel_width_in_digits = sum(mod_widths[0][cc] for cc in range(channel_grid_width))
-                            channel_height_in_digits = sum(mod_heights[rr][0] for rr in range(channel_grid_height))
-                            if (bus_col_offset + channel_width_in_digits) < int(layout.get("total_width",0)):
-                                bus_col_offset += channel_width_in_digits
-                            else:
-                                bus_col_offset = 0
-                                bus_row_offset += channel_height_in_digits
+                    # update bus offsets once per channel (after processing all modules
+                    # in this channel) — prevents per-module row increments that
+                    # caused modules to be stacked vertically instead of side-by-side
+                    if channel_width_in_digits > 0:
+                        if (bus_col_offset + channel_width_in_digits) < int(layout.get("total_width", 0)):
+                            bus_col_offset += channel_width_in_digits
+                        else:
+                            bus_col_offset = 0
+                            bus_row_offset += channel_height_in_digits
     return True
 
 
