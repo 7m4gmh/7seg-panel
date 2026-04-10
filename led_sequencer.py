@@ -25,6 +25,7 @@ except Exception:
 
 
 SEGMENTS = ["A", "B", "C", "D", "E", "F", "G", "DP"]
+DEBUG = False
 
 
 def load_config(path: str) -> dict:
@@ -64,6 +65,7 @@ def main() -> None:
     p.add_argument("--layout", help="configuration name in config.json to use")
     p.add_argument("--delay", help="delay seconds between steps", type=float, default=0.5)
     p.add_argument("--mode", choices=["print", "i2c"], default="print", help="operation mode: print (default) or i2c (write to HT16K33 devices)")
+    p.add_argument("--debug", action="store_true", help="print per-module display buffers before I2C write")
     args = p.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -81,6 +83,8 @@ def main() -> None:
     print(f"Using layout: {layout.get('name', 'unknown')} ({len(digits)} digits) delay={delay}s")
 
     mode = args.mode
+    global DEBUG
+    DEBUG = bool(args.debug)
 
     try:
         modules = []
@@ -266,6 +270,12 @@ def update_module_from_grid_py(bus: SMBus, ht_addr: int, local_module_buffer: li
                     bit_pos = digit_index - 8
                 if addr_to_write < 16:
                     display_buffer[addr_to_write] |= (1 << bit_pos)
+    if DEBUG:
+        try:
+            addr_repr = hex(ht_addr)
+        except Exception:
+            addr_repr = str(ht_addr)
+        print(f"DEBUG: HT {addr_repr} display_buffer: {' '.join(f'{b:02X}' for b in display_buffer)}")
     try:
         bus.write_i2c_block_data(ht_addr, 0x00, display_buffer)
         return True

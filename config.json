@@ -374,16 +374,16 @@
                   "address": null,
                   "channels": {
                     "-1": [
-                      ["0x70"],
-                      ["0x71"],
-                      ["0x72"]
+                      ["0x70",
+                      "0x71",
+                      "0x72"]
                     ]
                   }
                 }
               ]
             }
           },
-          "module_digits_width": 24,
+          "module_digits_width": 8,
           "module_digits_height": 2,
           "total_width": 24,
           "total_height": 2
