@@ -409,6 +409,20 @@ def apply_grid_to_modules(bus: SMBus, layout: dict, grid: list[int], error_on_fa
                         continue
                     channel_grid_height = len(address_grid)
                     channel_grid_width = len(address_grid[0])
+                    # Explicit handling for direct-style definitions where
+                    # channels use "-1": [["0x70"],["0x71"],["0x72"]]
+                    # which semantically represent a single horizontal row
+                    # of modules. Transpose into one-row layout so start_row
+                    # calculations are correct.
+                    if str(channel) == "-1" and channel_grid_width == 1 and channel_grid_height > 1:
+                        try:
+                            cand_width = sum(module_size_for_address(layout, address_grid[r][0])[0] for r in range(channel_grid_height))
+                        except Exception:
+                            cand_width = 0
+                        if cand_width == total_w:
+                            address_grid = [[address_grid[r][0] for r in range(channel_grid_height)]]
+                            channel_grid_height = 1
+                            channel_grid_width = len(address_grid[0])
                     # If channels are defined as multiple single-column rows
                     # but actually represent a horizontal sequence of modules,
                     # transpose to a single-row grid when total widths match.
