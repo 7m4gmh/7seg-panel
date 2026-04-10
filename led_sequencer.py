@@ -448,10 +448,19 @@ def apply_grid_to_modules(bus: SMBus, layout: dict, grid: list[int], error_on_fa
                                 module_addr = parse_hex(module_addr_raw) if isinstance(module_addr_raw, str) else int(module_addr_raw)
                             except Exception:
                                 module_addr = module_addr_raw
-                            col_sum = sum(mod_widths[grid_r][pc] for pc in range(grid_c))
-                            module_start_col = channel_col_offset + bus_col_offset + col_sum
-                            row_sum = sum(mod_heights[pr][grid_c] for pr in range(grid_r))
-                            module_start_row = channel_row_offset + bus_row_offset + row_sum
+                            # If address_grid was provided as N rows x 1 column
+                            # but semantically represents a single horizontal row
+                            # of modules, compute start_col by summing widths of
+                            # preceding rows and keep start_row at the channel offset.
+                            if channel_grid_width == 1 and channel_grid_height > 1:
+                                col_sum = sum(mod_widths[pr][0] for pr in range(grid_r))
+                                module_start_col = channel_col_offset + bus_col_offset + col_sum
+                                module_start_row = channel_row_offset + bus_row_offset
+                            else:
+                                col_sum = sum(mod_widths[grid_r][pc] for pc in range(grid_c))
+                                module_start_col = channel_col_offset + bus_col_offset + col_sum
+                                row_sum = sum(mod_heights[pr][grid_c] for pr in range(grid_r))
+                                module_start_row = channel_row_offset + bus_row_offset + row_sum
                             mod_w = mod_widths[grid_r][grid_c]
                             mod_h = mod_heights[grid_r][grid_c]
                             local_module_buffer = [0] * (mod_w * mod_h)
