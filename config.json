@@ -26,38 +26,27 @@
       "total_width": 24,
       "total_height": 4
     },
-    "12x8": {
-      "name": "12x8 Expanded (2x 12x4 via TCA9548a)",
+    "24x4-exp": {
+      "name": "24x4 Expanded (6 x 8x2 via TCA9548a)",
       "buses": {
-        "0": {
-          "tca9548as": [
-            {
-              "address": "0x77",
-              "channels": {
-                "0": [
-                  ["0x70", "0x71", "0x72"]
-                ]
-              }
-            }
-          ]
-        },
         "1": {
           "tca9548as": [
             {
               "address": "0x77",
               "channels": {
-                "0": [
-                  ["0x70", "0x71", "0x72"]
+                "5": [
+                  ["0x70", "0x72", "0x74"],
+                  ["0x71", "0x73", "0x75"]
                 ]
               }
             }
           ]
         }
       },
-      "module_digits_width": 4,
-      "module_digits_height": 4,
-      "total_width": 12,
-      "total_height": 8
+      "module_digits_width": 8,
+      "module_digits_height": 2,
+      "total_width": 24,
+      "total_height": 4
     },
     "1x1_exp": {
       "name": "1x1 Expanded (Bus 1, 1x1 via TCA9548a)",
@@ -210,7 +199,7 @@
     "16x12": {
       "name": "16x12 Expanded (3x 16x4 via TCA9548a)",
       "buses": {
-        "0": {
+        "1": {
           "tca9548as": [
             {
               "address": "0x77",
@@ -302,22 +291,22 @@
                 ], 
                   "2": [
                   ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
-                  ],
+                ],
                   "3": [
                   ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
-                  ],
+                ],
                   "4": [
-                      ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
-                  ],
+                  ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
+                ],
                   "5": [
-                      ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
-                  ],
-                   "6": [
-                      ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
-                  ],
-                   "7": [
-                      ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
-                   ]
+                  ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
+               ],
+                 "6": [
+                  ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
+               ],
+                 "7": [
+                  ["0x70", "0x71",  "0x72", "0x73", "0x74",  "0x75"]
+               ]
               }
             }
           ]
@@ -396,7 +385,7 @@
         "8x2-direct": {
           "name": "8x2 Grid (Direct I2C, single module)",
           "buses": {
-            "0": {
+            "1": {
               "tca9548as": [
                 {
                   "address": null,
