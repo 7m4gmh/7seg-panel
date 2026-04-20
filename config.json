@@ -317,6 +317,66 @@
       "total_width": 48,
       "total_height": 16
     },
+    "48x16-ch-grid": {
+      "name": "48x16 Channel Grid (bus 1, CH0..CH7 layout)",
+      "buses": {
+        "1": {
+          "tca9548as": [
+            {
+              "address": "0x77",
+              "channels": {
+                "0": [
+                  ["0x70", "0x72", "0x74"],
+                  ["0x71", "0x73", "0x75"]
+                ],
+                "1": [
+                  ["0x70", "0x72", "0x74"],
+                  ["0x71", "0x73", "0x75"]
+                ],
+                "2": [
+                  ["0x70", "0x72", "0x74"],
+                  ["0x71", "0x73", "0x75"]
+                ],
+                "3": [
+                  ["0x70", "0x72", "0x74"],
+                  ["0x71", "0x73", "0x75"]
+                ],
+                "4": [
+                  ["0x70", "0x72", "0x74"],
+                  ["0x71", "0x73", "0x75"]
+                ],
+                "5": [
+                  ["0x70", "0x72", "0x74"],
+                  ["0x71", "0x73", "0x75"]
+                ],
+                "6": [
+                  ["0x70", "0x72", "0x74"],
+                  ["0x71", "0x73", "0x75"]
+                ],
+                "7": [
+                  ["0x70", "0x72", "0x74"],
+                  ["0x71", "0x73", "0x75"]
+                ]
+              },
+              "rows": {
+                "0": {"channel": 0, "row_offset": 0, "col_offset": 0},
+                "1": {"channel": 1, "row_offset": 0, "col_offset": 24},
+                "2": {"channel": 2, "row_offset": 4, "col_offset": 0},
+                "3": {"channel": 3, "row_offset": 4, "col_offset": 24},
+                "4": {"channel": 4, "row_offset": 8, "col_offset": 0},
+                "5": {"channel": 5, "row_offset": 8, "col_offset": 24},
+                "6": {"channel": 6, "row_offset": 12, "col_offset": 0},
+                "7": {"channel": 7, "row_offset": 12, "col_offset": 24}
+              }
+            }
+          ]
+        }
+      },
+      "module_digits_width": 8,
+      "module_digits_height": 2,
+      "total_width": 48,
+      "total_height": 16
+    },
     "12x8-direct": {
       "name": "12x8 Grid (Direct Connection)",
       "buses": {
