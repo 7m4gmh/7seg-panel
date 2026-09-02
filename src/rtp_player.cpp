@@ -265,14 +265,34 @@ static GstElement* build_audio_pipeline(int port, GstAppSink** out_asink) {
 //------------- main -------------
 int main(int argc, char* argv[]) {
     // ./7seg-rtp-player [config_name] [video_port] [audio_port]
-    std::string config_name = (argc > 1) ? argv[1] : "24x4";
-    int video_port = (argc > 2) ? std::stoi(argv[2]) : 5004;
-    int audio_port = (argc > 3) ? std::stoi(argv[3]) : 5006;
+    std::string config_file = "config.json";
+    std::vector<std::string> positionals;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--config-file") {
+            if (i + 1 < argc) {
+                config_file = argv[i + 1];
+                ++i;
+            } else {
+                std::cerr << "Missing path after --config-file" << std::endl;
+                return 1;
+            }
+        } else if (arg.rfind("--", 0) == 0) {
+            continue;
+        } else {
+            positionals.push_back(arg);
+        }
+    }
+
+    std::string config_name = positionals.size() > 0 ? positionals[0] : "24x4";
+    int video_port = positionals.size() > 1 ? std::stoi(positionals[1]) : 5004;
+    int audio_port = positionals.size() > 2 ? std::stoi(positionals[2]) : 5006;
 
     DisplayConfig active_config;
     try {
-        active_config = load_config_from_json(config_name);
+        active_config = load_config_from_json(config_name, config_file);
         std::cout << "Successfully loaded configuration: " << active_config.name << std::endl;
+        std::cout << "Config file: " << config_file << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error loading configuration: " << e.what() << std::endl;
         return 1;

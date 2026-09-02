@@ -183,14 +183,34 @@ int main(int argc, char* argv[]) {
     //     ./7seg-net-player raw 24x4 5004
     //     ./7seg-net-player stdin 24x4
 
-    std::string mode = (argc > 1) ? argv[1] : "ts";
-    std::string config_name = (argc > 2) ? argv[2] : "24x4";
-    int port = (argc > 3) ? std::stoi(argv[3]) : 5004;
+    std::string config_file = "config.json";
+    std::vector<std::string> positionals;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--config-file") {
+            if (i + 1 < argc) {
+                config_file = argv[i + 1];
+                ++i;
+            } else {
+                std::cerr << "Missing path after --config-file" << std::endl;
+                return 1;
+            }
+        } else if (arg.rfind("--", 0) == 0) {
+            continue;
+        } else {
+            positionals.push_back(arg);
+        }
+    }
+
+    std::string mode = positionals.size() > 0 ? positionals[0] : "ts";
+    std::string config_name = positionals.size() > 1 ? positionals[1] : "24x4";
+    int port = positionals.size() > 2 ? std::stoi(positionals[2]) : 5004;
 
     DisplayConfig active_config;
     try {
-        active_config = load_config_from_json(config_name);
+        active_config = load_config_from_json(config_name, config_file);
         std::cout << "Successfully loaded configuration: " << active_config.name << std::endl;
+        std::cout << "Config file: " << config_file << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error loading configuration: " << e.what() << std::endl;
         return 1;

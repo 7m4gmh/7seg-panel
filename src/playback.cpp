@@ -10,9 +10,12 @@
 #include <iostream>
 #include <chrono>             // ★★★ 'std::chrono' のために必要 ★★★
 #include <thread>             // ★★★ 'std::this_thread' のために必要 ★★★
+#include <condition_variable>
+#include <deque>
 #include <map>    // std::map のために必要
 #include <utility> // std::pair のために必要
 #include <csignal> // signal のために必要
+#include <cstdio>
 #include <unistd.h>
 #include <fcntl.h>
 #include <atomic>             // std::atomic のために念のため
@@ -442,7 +445,8 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
 }
 
 int play_video_stream_emulator(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag,
-                              ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug) {
+                              ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug,
+                              const std::string& record_mp4_path, bool headless) {
     g_current_stop_flag = &stop_flag;
     stop_flag = false;
 
@@ -508,6 +512,58 @@ int play_video_stream_emulator(const std::string& video_path, const DisplayConfi
     auto frame_duration = std::chrono::microseconds(static_cast<long long>(1000000.0 / fps));
     std::cout << "エミュレータ再生開始: " << video_path << " (" << fps << " FPS)" << std::endl;
 
+    cv::VideoWriter mp4_writer;
+    std::string record_temp_path;
+    bool record_video_enabled = false;
+    std::atomic<bool> record_writer_stop(false);
+    std::mutex record_mtx;
+    std::condition_variable record_cv;
+    std::deque<cv::Mat> record_queue;
+    std::thread record_writer_thread;
+    cv::Mat last_display_frame;
+    bool has_last_display_frame = false;
+
+    if (!record_mp4_path.empty()) {
+        record_temp_path = record_mp4_path + ".video_only.mp4";
+        std::remove(record_temp_path.c_str());
+
+        const cv::Size output_size(cache.window_width, cache.window_height);
+        const int mp4v_fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
+        mp4_writer.open(record_temp_path, cv::CAP_FFMPEG, mp4v_fourcc, fps, output_size);
+        if (!mp4_writer.isOpened()) {
+            const int avc1_fourcc = cv::VideoWriter::fourcc('a', 'v', 'c', '1');
+            mp4_writer.open(record_temp_path, cv::CAP_FFMPEG, avc1_fourcc, fps, output_size);
+        }
+        if (!mp4_writer.isOpened()) {
+            std::cerr << "MP4録画を開始できません: " << record_mp4_path << std::endl;
+        } else {
+            record_video_enabled = true;
+            std::cout << "MP4録画開始: " << record_mp4_path << std::endl;
+            record_writer_thread = std::thread([&] {
+                while (true) {
+                    cv::Mat frame_to_write;
+                    {
+                        std::unique_lock<std::mutex> lk(record_mtx);
+                        record_cv.wait_for(lk, std::chrono::milliseconds(5), [&] {
+                            return record_writer_stop || !record_queue.empty();
+                        });
+                        if (record_queue.empty()) {
+                            if (record_writer_stop) {
+                                break;
+                            }
+                            continue;
+                        }
+                        frame_to_write = std::move(record_queue.front());
+                        record_queue.pop_front();
+                    }
+                    if (!frame_to_write.empty()) {
+                        mp4_writer.write(frame_to_write);
+                    }
+                }
+            });
+        }
+    }
+
     auto next_frame_time = std::chrono::steady_clock::now();
     cv::Mat frame;
 
@@ -525,6 +581,16 @@ int play_video_stream_emulator(const std::string& video_path, const DisplayConfi
         
         // 動画が音声より遅れている場合、フレームをスキップして追いつく
         if (actual_elapsed > expected_frame_time + 0.1) { // 100ms以上の遅れ
+            if (record_video_enabled && has_last_display_frame) {
+                {
+                    std::lock_guard<std::mutex> lk(record_mtx);
+                    record_queue.push_back(last_display_frame.clone());
+                    if (record_queue.size() > 4) {
+                        record_queue.pop_front();
+                    }
+                }
+                record_cv.notify_one();
+            }
             frame_count++;
             continue; // 次のフレームを処理
         }
@@ -643,9 +709,23 @@ int play_video_stream_emulator(const std::string& video_path, const DisplayConfi
                 cv::circle(display_frame, cache.all_dp_centers[idx], cache.all_dp_radii[idx], cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
             }
         }
+        last_display_frame = display_frame.clone();
+        has_last_display_frame = true;
         // エミュレータ表示 (macOSでもGUIウィンドウを表示)
-        cv::imshow("7seg-emulator", display_frame);
-        if (cv::waitKey(1) == 27) break; // ESCで終了
+        if (record_video_enabled) {
+            {
+                std::lock_guard<std::mutex> lk(record_mtx);
+                record_queue.push_back(display_frame.clone());
+                if (record_queue.size() > 4) {
+                    record_queue.pop_front();
+                }
+            }
+            record_cv.notify_one();
+        }
+        if (!headless) {
+            cv::imshow("7seg-emulator", display_frame);
+            if (cv::waitKey(1) == 27) break; // ESCで終了
+        }
 
         // 音声同期: 理想的なフレームタイミングを計算
         frame_count++;
@@ -669,7 +749,50 @@ int play_video_stream_emulator(const std::string& video_path, const DisplayConfi
             audio_cleanup();
         }
     }
+
+    if (record_writer_thread.joinable()) {
+        record_writer_stop = true;
+        record_cv.notify_all();
+        record_writer_thread.join();
+    }
     cap.release();
+    if (mp4_writer.isOpened()) {
+        mp4_writer.release();
+    }
+
+    if (record_video_enabled) {
+        auto shell_quote = [](const std::string& text) {
+            std::string quoted = "'";
+            for (char ch : text) {
+                if (ch == '\'') {
+                    quoted += "'\\''";
+                } else {
+                    quoted += ch;
+                }
+            }
+            quoted += "'";
+            return quoted;
+        };
+
+        bool muxed_audio = false;
+        if (video_path != "-") {
+            std::string mux_command =
+                "ffmpeg -y -i " + shell_quote(record_temp_path) +
+                " -i " + shell_quote(video_path) +
+                " -map 0:v:0 -map 1:a:0? -c:v copy -c:a aac -shortest " +
+                shell_quote(record_mp4_path) +
+                " > /dev/null 2>&1";
+            int rc = std::system(mux_command.c_str());
+            muxed_audio = (rc == 0);
+        }
+
+        if (muxed_audio) {
+            std::remove(record_temp_path.c_str());
+        } else {
+            std::remove(record_mp4_path.c_str());
+            std::rename(record_temp_path.c_str(), record_mp4_path.c_str());
+        }
+    }
     cv::destroyAllWindows();
 
     // テキストエミュレータの終了メッセージは削除

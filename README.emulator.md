@@ -77,6 +77,9 @@ make core
 
    # または直接設定
    ./7seg-file-player video.mp4 emulator-20x20
+
+  # 設定ファイルのパスを明示的に指定
+  ./7seg-file-player video.mp4 emulator-36x16 --config-file ./config.json
    ```
 
 ### 設定オプション
@@ -105,6 +108,22 @@ make core
 
 - **ESCキー**: 再生停止
 - **Ctrl+C**: プログラム終了
+
+### MP4への録画
+
+エミュレータ画面をそのまま MP4 に保存できます。録画時は音声も同時に記録され、通常のエミュレータ再生と同じ同期ロジックで出力されます。
+
+```bash
+./7seg-file-player video.mp4 emulator-24x4 --record-mp4 output.mp4
+```
+
+設定ファイルを別パスに置いている場合は、`--config-file` を併用できます。
+
+```bash
+./7seg-file-player video.mp4 emulator-36x16 --config-file ./config.json --record-mp4 output.mp4
+```
+
+録画先を指定すると、表示されるエミュレータ画面をそのまま書き出します。
 
 ## アーキテクチャ
 

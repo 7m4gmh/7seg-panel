@@ -695,6 +695,15 @@
       "total_width": 24,
       "total_height": 8
     },
+    "emulator-36x16": {
+      "name": "36x16 Emulator",
+      "type": "emulator",
+      "buses": {},
+      "module_digits_width": 4,
+      "module_digits_height": 4,
+      "total_width": 36,
+      "total_height": 16
+    },
     "emulator-30x40": {
       "name": "30x40 Emulator",
       "type": "emulator",

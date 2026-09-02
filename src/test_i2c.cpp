@@ -26,9 +26,21 @@ static int try_open_i2c_auto() {
 
 int main(int argc, char* argv[]) {
     std::string cfg = (argc > 1) ? argv[1] : "24x4";
+    std::string config_file = "config.json";
+    for (int i = 2; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--config-file") {
+            if (i + 1 < argc) {
+                config_file = argv[++i];
+            } else {
+                std::cerr << "Missing path after --config-file" << std::endl;
+                return 1;
+            }
+        }
+    }
     DisplayConfig dc;
     try {
-        dc = load_config_from_json(cfg);
+        dc = load_config_from_json(cfg, config_file);
         std::cout << "Config: " << dc.name << " (TCA addresses: ";
         for (const auto& [bus_id, bus_config] : dc.buses) {
             for (const auto& tca : bus_config.tca9548as) {

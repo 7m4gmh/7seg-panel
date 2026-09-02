@@ -29,8 +29,9 @@ extern std::map<std::pair<int, int>, int> g_error_counts;
 
 // C++17の [[nodiscard]] 属性。戻り値を使わないと警告を出す。
 [[nodiscard]]
-bool parse_arguments(int argc, char* argv[], std::string& first_arg, std::string& config_name, 
-                    ScalingMode& scaling_mode, int& min_threshold, int& max_threshold, bool& debug, bool& loop) {
+bool parse_arguments(int argc, char* argv[], std::string& first_arg, std::string& config_name,
+                    ScalingMode& scaling_mode, int& min_threshold, int& max_threshold, bool& debug, bool& loop,
+                    std::string& record_mp4_path, std::string& config_file_path) {
     if (argc < 2) {
         return false;
     }
@@ -42,6 +43,8 @@ bool parse_arguments(int argc, char* argv[], std::string& first_arg, std::string
 
     debug = false;
     loop = false;
+    record_mp4_path.clear();
+    config_file_path = "config.json";
     for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--debug" || arg == "-d") {
@@ -72,6 +75,20 @@ bool parse_arguments(int argc, char* argv[], std::string& first_arg, std::string
                 std::cerr << "Missing threshold values after " << arg << std::endl;
                 return false;
             }
+        } else if (arg == "--record-mp4") {
+            if (i + 1 < argc) {
+                record_mp4_path = argv[++i];
+            } else {
+                std::cerr << "Missing output path after --record-mp4" << std::endl;
+                return false;
+            }
+        } else if (arg == "--config-file") {
+            if (i + 1 < argc) {
+                config_file_path = argv[++i];
+            } else {
+                std::cerr << "Missing path after --config-file" << std::endl;
+                return false;
+            }
         } else {
             // 設定名として扱う
             config_name = arg;
@@ -90,15 +107,18 @@ int common_main_runner(const std::string& usage, int argc, char* argv[], PlayerL
     int min_threshold, max_threshold;
     bool debug = false;
     bool loop = false;
+    std::string record_mp4_path;
+    std::string config_file_path;
 
-    if (!parse_arguments(argc, argv, first_arg, config_name, scaling_mode, min_threshold, max_threshold, debug, loop)) {
+    if (!parse_arguments(argc, argv, first_arg, config_name, scaling_mode, min_threshold, max_threshold, debug, loop, record_mp4_path, config_file_path)) {
         std::cerr << usage << std::endl;
         return 1;
     }
 
     try {
-        DisplayConfig active_config = load_config_from_json(config_name);
+        DisplayConfig active_config = load_config_from_json(config_name, config_file_path);
         std::cout << "Using display configuration: " << active_config.name << std::endl;
+        std::cout << "Config file: " << config_file_path << std::endl;
         std::string mode_str;
         if (scaling_mode == ScalingMode::CROP) mode_str = "CROP";
         else if (scaling_mode == ScalingMode::STRETCH) mode_str = "STRETCH";
@@ -110,7 +130,7 @@ int common_main_runner(const std::string& usage, int argc, char* argv[], PlayerL
         setup_signal_handlers();
 
     // 各プレイヤー固有のロジックをここで実行
-    player_logic(first_arg, active_config, scaling_mode, min_threshold, max_threshold, debug, loop);
+    player_logic(first_arg, active_config, scaling_mode, min_threshold, max_threshold, debug, loop, record_mp4_path);
 
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

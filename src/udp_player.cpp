@@ -23,17 +23,28 @@ int main(int argc, char* argv[]) {
         std::cerr << "    --stretch, -s: Stretch to fill display" << std::endl;
         std::cerr << "    --fit, -f: Fit entire video within display (may add padding) (default)" << std::endl;
         std::cerr << "    --threshold min max, -t min max: Set binarization threshold (default: 64 255)" << std::endl;
+        std::cerr << "    --config-file PATH: Load settings from a specific config file" << std::endl;
         return 1;
     }
 
     int port = std::stoi(argv[1]);
     std::string config_name = "24x4";
+    std::string config_file = "config.json";
     ScalingMode scaling_mode = ScalingMode::CROP;
     int min_threshold = 64;
     int max_threshold = 255;
 
     for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
+        if (arg == "--config-file") {
+            if (i + 1 < argc) {
+                config_file = argv[++i];
+            } else {
+                std::cerr << "Missing path after --config-file" << std::endl;
+                return 1;
+            }
+            continue;
+        }
         if (arg == "--stretch" || arg == "-s") {
             scaling_mode = ScalingMode::STRETCH;
         } else if (arg == "--crop" || arg == "-c") {
@@ -59,8 +70,9 @@ int main(int argc, char* argv[]) {
 
     DisplayConfig active_config;
     try {
-        active_config = load_config_from_json(config_name);
+        active_config = load_config_from_json(config_name, config_file);
         std::cout << "Successfully loaded configuration: " << active_config.name << std::endl;
+        std::cout << "Config file: " << config_file << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error loading configuration: " << e.what() << std::endl;
         return 1;

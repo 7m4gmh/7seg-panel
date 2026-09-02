@@ -12,11 +12,19 @@
 
 int main(int argc, char* argv[]) {
     std::string config_name = "emulator-12x8"; // デフォルト
+    std::string config_file = "config.json";
     bool debug = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--debug") {
             debug = true;
+        } else if (arg == "--config-file") {
+            if (i + 1 < argc) {
+                config_file = argv[++i];
+            } else {
+                std::cerr << "Missing path after --config-file" << std::endl;
+                return 1;
+            }
         } else if (config_name == "emulator-12x8") { // 最初の非--debug引数を構成名とする
             config_name = arg;
         }
@@ -26,9 +34,9 @@ int main(int argc, char* argv[]) {
     debug_mode = debug;
 
     // JSONから構成を読み込み
-    std::ifstream f("config.json");
+    std::ifstream f(config_file);
     if (!f.is_open()) {
-        std::cerr << "Failed to open config.json" << std::endl;
+        std::cerr << "Failed to open " << config_file << std::endl;
         return 1;
     }
     nlohmann::json config;
@@ -41,7 +49,7 @@ int main(int argc, char* argv[]) {
     int total_width = conf["total_width"];
     int total_height = conf["total_height"];
 
-    IDisplayOutput* display = create_emulator_display(config_name);
+    IDisplayOutput* display = create_emulator_display(config_name, config_file);
     if (!display) {
         std::cerr << "Failed to create emulator display" << std::endl;
         return 1;

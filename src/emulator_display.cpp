@@ -290,9 +290,13 @@ IDisplayOutput* create_emulator_display(int rows, int cols) {
 }
 
 IDisplayOutput* create_emulator_display(const std::string& config_name) {
-    std::ifstream f("config.json");
+    return create_emulator_display(config_name, "config.json");
+}
+
+IDisplayOutput* create_emulator_display(const std::string& config_name, const std::string& config_file) {
+    std::ifstream f(config_file);
     if (!f.is_open()) {
-        std::cerr << "Failed to open config.json" << std::endl;
+        std::cerr << "Failed to open " << config_file << std::endl;
         return nullptr;
     }
     nlohmann::json config;

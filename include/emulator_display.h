@@ -2,6 +2,7 @@
 #pragma once
 #include <vector>
 #include <cstdint>
+#include <string>
 
 // 7segエミュレータ/物理LED共通の出力インターフェース
 class IDisplayOutput {
@@ -17,3 +18,4 @@ extern bool debug_mode;
 IDisplayOutput* create_emulator_display(int digits);
 IDisplayOutput* create_emulator_display(int rows, int cols);
 IDisplayOutput* create_emulator_display(const std::string& config_name);
+IDisplayOutput* create_emulator_display(const std::string& config_name, const std::string& config_file);

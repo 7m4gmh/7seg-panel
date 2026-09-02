@@ -148,14 +148,17 @@ void playback_thread_worker_main(const DisplayConfig& config) {
 int main(int argc, char* argv[]) {
     const std::string usage = 
         "Usage: " + std::string(argv[0]) + " <default_video_path> [config_name]\n"
-        "  config_name: 24x4 (default), 12x8, etc. from config.json";
+        "  config_name: 24x4 (default), 12x8, etc. from config.json\n"
+        "  options:\n"
+        "    --config-file PATH: Load settings from a specific config file";
 
     signal(SIGINT, http_player_shutdown_handler);
 
     return common_main_runner(usage, argc, argv,
-        [](const std::string& default_video_path, const DisplayConfig& config, ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug, bool loop) {
+        [](const std::string& default_video_path, const DisplayConfig& config, ScalingMode scaling_mode, int min_threshold, int max_threshold, bool debug, bool loop, const std::string& record_mp4_path) {
             (void)debug; // debug flag is provided by caller; not used in this lambda
             (void)loop; // loop flag is not applicable to http_player
+            (void)record_mp4_path;
 
             // 画像処理パラメータを設定
             g_scaling_mode = scaling_mode;
