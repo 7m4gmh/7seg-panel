@@ -18,6 +18,8 @@ bin/
 test/
 *.mp4
 *.mov
+sample-output-7seg-badapple.mp4
+vertical_test.mp4
 
 # KiCad cache / build artifacts
 hardware/**/fp-info-cache

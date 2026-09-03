@@ -22,7 +22,8 @@ int play_video_stream(const std::string& video_path, const DisplayConfig& config
 
 // エミュレータ用の再生エンジン
 int play_video_stream_emulator(const std::string& video_path, const DisplayConfig& config, std::atomic<bool>& stop_flag,
-                              ScalingMode scaling_mode = ScalingMode::CROP, int min_threshold = 64, int max_threshold = 255, bool debug = false);
+                              ScalingMode scaling_mode = ScalingMode::CROP, int min_threshold = 64, int max_threshold = 255,
+                              bool debug = false, const std::string& record_mp4_path = "", bool headless = false);
 
 
 #endif // PLAYBACK_H
