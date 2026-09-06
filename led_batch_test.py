@@ -38,9 +38,9 @@ def choose_layout(cfg: dict, preferred: str | None = None) -> dict:
         raise SystemExit("config.json contains no configurations")
     if preferred and preferred in layouts:
         return layouts[preferred]
-    for name in ("emulator-24x4", "emulator-12x8", "emulator-24x8"):
-        if name in layouts:
-            return layouts[name]
+    for layout in layouts.values():
+        if layout.get("buses"):
+            return layout
     first_key = next(iter(layouts))
     return layouts[first_key]
 
@@ -55,6 +55,16 @@ def build_digits_list(layout: dict) -> list[tuple[int, int]]:
         for col in range(w):
             digits.append((row, col))
     return digits
+
+
+def get_bus_number(layout: dict) -> int:
+    buses = layout.get("buses", {})
+    if not isinstance(buses, dict) or not buses:
+        raise SystemExit("Selected layout contains no I2C bus configuration")
+    try:
+        return int(next(iter(buses)))
+    except (TypeError, ValueError) as e:
+        raise SystemExit("Invalid I2C bus number in selected layout") from e
 
 
 def main() -> None:
@@ -74,10 +84,11 @@ def main() -> None:
     cfg = load_config(config_path)
     layout = choose_layout(cfg, args.layout)
     digits = build_digits_list(layout)
+    bus_number = get_bus_number(layout)
 
     delay = float(args.delay)
 
-    print(f"Using layout: {layout.get('name', 'unknown')} ({len(digits)} digits) delay={delay}s")
+    print(f"Using layout: {layout.get('name', 'unknown')} ({len(digits)} digits) bus={bus_number} delay={delay}s")
 
     mode = args.mode
     global DEBUG
@@ -93,7 +104,7 @@ def main() -> None:
             if not modules:
                 print("No HT16K33 modules detected in config; cannot run in i2c mode.")
                 sys.exit(1)
-            bus = SMBus(1)
+            bus = SMBus(bus_number)
             init_modules(bus, modules)
 
         while True:
