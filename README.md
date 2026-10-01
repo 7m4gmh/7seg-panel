@@ -14,7 +14,7 @@ Note (platform): Developed and tested primarily on Raspberry Pi 3 and Radxa ROCK
 
 **macOS対応**: 本プロジェクトはmacOSでの開発・テスト用にエミュレータモードを搭載しています。物理的なLEDパネルを自動的にシミュレートし、正確なセグメント描画と音声同期を実現します。
 
----
+[エミュレータでの実行例](https://x.com/HijiriUmemoto/status/2095140881489899897?s=20)
 
 **Languages:**
 
