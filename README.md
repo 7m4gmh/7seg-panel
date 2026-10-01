@@ -27,9 +27,11 @@ You can define per-module physical mappings in `config.json` to accommodate diff
 ハードウェア毎に桁順や配線が異なる場合、`config.json` でモジュール単位のマッピングを定義できます。簡易的に列方向を反転する `module_column_reverse`（真偽値）を使うか、論理インデックス（左上から行優先）からモジュール内の物理インデックスへ明示的に変換する `module_index_map`（配列）を定義してください。優先順位は `module_index_map` → `module_column_reverse` → 既定順（row-major）です。詳しい書き方とテスト手順は `docs/module-mapping.md` を参照してください。
 
 
+実機縮退モデルでのデモ動画
+
 [![実機縮退モデルでのデモ動画](./docs/7seg-output_hq.gif)](https://www.instagram.com/reel/DOIo3QTEZs0/?utm_source=ig_web_button_share_sheet)
 
-エミュレータでの実行例 {% include x_embed.html id="2095140881489899897" %}
+[エミュレータでの実行例](https://x.com/HijiriUmemoto/status/2095140881489899897?s=20)
 
 ---
 
